@@ -13,8 +13,6 @@ Execute `npm link eslint` command to link the eslint dependency to your global e
 
 ## Setup
 
-Execute `npm run generate` command to generate basic set of table configuration for the configured instance.
-
 Rename `config.json-example` to `config.json` and modify it as follows:
 - `domain`: url to the service now domain; must end with "/"
 - `username`: username to connect as (it is best to use **read only admin account**; if not available role access to sys_update_set and sys_update_xml tables is needed)
@@ -24,6 +22,8 @@ Rename `config.json-example` to `config.json` and modify it as follows:
 - `report`: file name of the report template that should be used to generate a report
 - `tables`: set of tables that should be additionally checked (extends the tables.json file)
 - `cliEngine`: options for the [ESLint CLIEngine](https://eslint.org/docs/developer-guide/nodejs-api#cliengine)
+
+Execute `npm run generate` command to generate basic set of table configuration for the configured instance.
 
 ## Execution
 
