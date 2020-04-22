@@ -3,7 +3,7 @@ NodeJS command to lint script update set changes on Service Now instances
 
 ## Download
 
-- [Download latest development version](https://github.com/hrax/now-eslint/archive/master.zip)
+- Download [latest development version](https://github.com/hrax/now-eslint/archive/master.zip) or check [releases](https://github.com/hrax/now-eslint/releases) for the latest available release
 
 ## Installation
 
