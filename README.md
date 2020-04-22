@@ -20,8 +20,8 @@ Rename `config.json-example` to `config.json` and modify it as follows:
 - `query`: Endoded query from sys_update_set list returning update sets to be linted
 - `name`: file name that should be used to save the report as; without file extension, all reports are/will be HTML
 - `report`: file name of the report template that should be used to generate a report
-- `tables`: set of tables that should be additionally checked (extends the tables.json file)
-- `cliEngine`: options for the [ESLint CLIEngine](https://eslint.org/docs/developer-guide/nodejs-api#cliengine)
+- `tables`: set of tables that should be additionally checked (extends the tables.json file); optional can be removed from the configuration
+- `cliEngine`: options for the [ESLint CLIEngine](https://eslint.org/docs/developer-guide/nodejs-api#cliengine); optional can be removed from the configuration
 
 Execute `npm run generate` command to generate basic set of table configuration for the configured instance.
 
