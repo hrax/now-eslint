@@ -9,7 +9,7 @@ NodeJS command to lint script update set changes on Service Now instances
 
 Execute `npm install` command to install all of the required dependencies.
 
-Execute `npm link eslint` command to link the eslint dependency to your global eslint installation; local eslint dependency is not provided.
+Execute `npm link eslint` command to link the eslint dependency to your global eslint installation; local eslint dependency is not provided. (ESLint version tested: v5.16.0)
 
 ## Setup
 
