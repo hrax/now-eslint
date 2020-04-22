@@ -1,4 +1,6 @@
 
+const fs = require("fs");
+
 const CLIEngine = require("eslint").CLIEngine;
 // eslint-disable-next-line no-unused-vars
 const Linter = require("eslint").Linter;
@@ -112,6 +114,18 @@ class NowLinter {
 
       console.log("");
     });
+  }
+
+  async generate() {
+    const tables = await this.loader.fetchTableConfigurationData();
+
+    if (Object.keys(tables).length > 0 && fs.existsSync("tables.json")) {
+      console.log("Creating backup for the original tables.json file");
+      fs.renameSync("tables.json", "tables.json-backup");
+    }
+
+    console.log("Loaded " + Object.keys(tables).length + " table entries. Saving into tables.json");
+    fs.writeFileSync("tables.json", JSON.stringify(tables));
   }
 
   static getJSONFieldValue(payload, field) {
