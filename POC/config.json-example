@@ -1,0 +1,10 @@
+{
+  "domain": "https://{instance-id}.service-now.com/",
+  "username": "",
+  "password": "",
+  "query": "",
+  "tables": {
+    "sys_script_include": ["script"]
+  },
+  "cliEngine": {}
+}
