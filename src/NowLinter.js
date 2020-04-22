@@ -3,9 +3,9 @@ const CLIEngine = require("eslint").CLIEngine;
 // eslint-disable-next-line no-unused-vars
 const Linter = require("eslint").Linter;
 
-const NowLoader = require("../src/NowLoader");
-const NowUpdateXML = require("../src/NowUpdateXML").NowUpdateXML;
-const NowUpdateXMLStatus = require("../src/NowUpdateXML").NowUpdateXMLStatus;
+const NowLoader = require("./NowLoader");
+const NowUpdateXML = require("./NowUpdateXML").NowUpdateXML;
+const NowUpdateXMLStatus = require("./NowUpdateXML").NowUpdateXMLStatus;
 
 class NowLinter {
   constructor(options) {
