@@ -15,7 +15,7 @@ Execute `npm link eslint` command to link the eslint dependency to your global e
 
 Rename `config.json-example` to `config.json` and modify it as follows:
 - `domain`: url to the service now domain; must end with "/"
-- `username`: username to connect as (it is best to use **read only admin account**; if not available role access to `sys_update_set` and `sys_update_xml` tables is needed; if you want to generated the tables.json file via command, access to `sys_dictionary` table is needed as well)
+- `username`: username to connect as (it is best to use **read only admin account**; if not available role access to `sys_update_set` and `sys_update_xml` tables is needed; if you want to generate the tables.json file via command, access to `sys_dictionary` table is needed as well)
 - `password`: password of the username above
 - `query`: Endoded query from sys_update_set list returning update sets to be linted
 - `name`: file name that should be used to save the report as; without file extension, all reports are/will be HTML
