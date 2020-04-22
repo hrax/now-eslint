@@ -1,6 +1,10 @@
 # now-eslint
 NodeJS command to lint script update set changes on Service Now instances
 
+## Download
+
+- [Download latest development version](https://github.com/hrax/now-eslint/archive/master.zip)
+
 ## Installation
 
 Execute `npm install` command to install all of the required dependencies.
@@ -15,7 +19,7 @@ Rename `config.json-example` to `config.json` and modify it as follows:
 - `name`: file name that should be used to save the report as; without file extension, all reports are/will be HTML
 - `report`: file name of the report template that should be used to generate a report
 - `tables`: set of tables that should be additionally checked (extends the tables.json file)
-- `cliEngine`: options for the ESLint CLIEngine as specified at https://eslint.org/docs/developer-guide/nodejs-api#cliengine
+- `cliEngine`: options for the [ESLint CLIEngine](https://eslint.org/docs/developer-guide/nodejs-api#cliengine)
 
 ## Execution
 
