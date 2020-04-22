@@ -14,6 +14,8 @@ class NowLinter {
       "username": "",
       "password": "",
       "query": "",
+      "name": "",
+      "report": "",
       "tables": {},
       "cliEngine": {}
     }, options || {});
