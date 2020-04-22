@@ -47,6 +47,8 @@ class NowUpdateXML {
     // By default ignore everything, once json payload is intialized status will be updated to scan
     this._status = NowUpdateXMLStatus.IGNORE;
     this._reports = {};
+    this._warningCount = 0;
+    this._errorCount = 0;
 
     if (this._action === NowUpdateXMLAction.INSERT_OR_UPDATE) {
       this._payloadXML = data.payload;
@@ -69,6 +71,7 @@ class NowUpdateXML {
     // Parse XML payload into JSON
     const payloadJSON = JSON.parse(xml2js.xml2json(this._payloadXML, {compact: true}));
     const record = payloadJSON.record_update;
+    // Sys_dictionary changes do not have table specified as attribute, default to name of the first child
     const table = record._attributes ? record._attributes.table : Object.keys(record)[0];
 
     // Set up table value
@@ -152,8 +155,8 @@ class NowUpdateXML {
     return this._status;
   }
 
-  set status(status) {
-    this._status = status;
+  get hasReports() {
+    return Object.keys(this._reports).length !== 0;
   }
 
   get reportEntries() {
@@ -170,6 +173,49 @@ class NowUpdateXML {
 
   setReport(fieldName, report) {
     this._reports[fieldName] = report;
+
+    this._warningCount = this._warningCount + report.warningCount;
+    this._errorCount = this._errorCount + report.errorCount;
+
+    if (this.hasErrors) {
+      this._status = NowUpdateXMLStatus.ERROR;
+    } else if (this.hasWarnings) {
+      this._status = NowUpdateXMLStatus.WARNING;
+    } else {
+      this._status = NowUpdateXMLStatus.OK;
+    }
+  }
+
+  setSkippedReport() {
+    if (this.hasReports || this._status === NowUpdateXMLStatus.SKIPPED) {
+      return;
+    }
+
+    this._status = NowUpdateXMLStatus.SKIPPED;
+  }
+
+  setIgnoreReport() {
+    if (this._status !== NowUpdateXMLStatus.SCAN) {
+      return;
+    }
+
+    this._status = NowUpdateXMLStatus.IGNORE;
+  }
+
+  get warningCount() {
+    return this._warningCount;
+  }
+
+  get errorCount() {
+    return this._errorCount;
+  }
+
+  get hasWarnings() {
+    return this._warningCount > 0;
+  }
+
+  get hasErrors() {
+    return this._errorCount > 0;
   }
 }
 

@@ -3,6 +3,8 @@
   "username": "",
   "password": "",
   "query": "",
+  "name": "now-eslint-test-run",
+  "report": "report-template",
   "tables": {
     "sys_script_include": ["script"]
   },

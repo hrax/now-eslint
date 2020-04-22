@@ -5,6 +5,7 @@ const Linter = require("eslint").Linter;
 
 const NowLoader = require("../src/NowLoader");
 const NowUpdateXML = require("../src/NowUpdateXML").NowUpdateXML;
+const NowUpdateXMLStatus = require("../src/NowUpdateXML").NowUpdateXMLStatus;
 
 class NowLinter {
   constructor(options) {
@@ -18,7 +19,11 @@ class NowLinter {
     }, options || {});
     this.changes = {};
 
-    this.tables = this._options.tables;
+    this.tables = Object.assign({}, this._options.tables || {});
+
+    if (this._options.query === "" || this._options.query == null) {
+      throw Error("Query needs to be specified!");
+    }
 
     this.loader = new NowLoader(this._options.domain, this._options.username, this._options.password);
     this.cli = new CLIEngine(this._options.cliEngine || {});
@@ -41,45 +46,33 @@ class NowLinter {
     });
   }
 
+  /**
+   * Lint configured change records. Should be called after the change records
+   * have been loaded and processed
+   *
+   * @see #fetch()
+   * @return {void}
+   */
   async lint() {
     // Check the changes against configured lint tables
     Object.values(this.changes).filter((change) => {
-      return change.status === "SCAN";
+      return change.status === NowUpdateXMLStatus.SCAN;
     })
       .forEach((change) => {
         if (!this.tables[change.table]) {
-          change.status = "IGNORE";
+          change.setIgnoreReport();
         } else {
-          let hasWarnings = false;
-          let hasErrors = false;
           // For each configured field run lint
           this.tables[change.table].forEach((field) => {
             const data = NowLinter.getJSONFieldValue(change.payload, field);
             if (data == null || data === "") {
+              change.setSkippedReport();
               return;
             }
             const report = this.cli.executeOnText(data);
             report.results[0].filePath = "<" + change.name + "@" + field + ">";
             change.setReport(field, report);
-            if (report.warningCount > 0) {
-              hasWarnings = true;
-            }
-
-            if (report.errorCount > 0) {
-              hasErrors = true;
-            }
           });
-
-          // TODO: set status based on the number of warnings/errors found
-          if (hasErrors) {
-            change.status = "ERROR";
-          } else if (hasWarnings) {
-            change.status = "WARNING";
-          } else if (change.reports.length === 0) {
-            change.status = "SKIPPED";
-          } else {
-            change.status = "OK";
-          }
         }
       });
   }
@@ -89,6 +82,34 @@ class NowLinter {
     await this.lint();
 
     return Object.values(this.changes);
+  }
+
+  toJSON() {
+    // TODO: process changes into a JSON
+    return {};
+  }
+
+  save() {
+    // TODO: save changes as JSON file into CWD
+  }
+
+  report() {
+    // TODO: generate a HTML report from the changes into CWD
+    console.log("GENERATE: from template '" + this._options.report + "' to '" + this._options.name + "'");
+    console.log("");
+
+    Object.values(this.changes).forEach((i) => {
+      console.log("ID: " + i.id);
+      console.log("Name: " + i.name);
+      console.log("Action: " + i.action);
+      console.log("Status: " + i.status);
+      console.log("Updates: " + i.updateCount);
+
+      console.log("Warnings: " + i.warningCount);
+      console.log("Errors: " + i.errorCount);
+
+      console.log("");
+    });
   }
 
   static getJSONFieldValue(payload, field) {

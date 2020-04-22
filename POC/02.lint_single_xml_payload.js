@@ -7,7 +7,7 @@ const Linter = require("eslint").Linter;
 const config = require("./config.json");
 const QUERY = "sys_idIN1f717b74db141010ccc9c4ab0b9619db";
 
-const url = config.domain + config.base + QUERY;
+const url = config.domain + "sys_update_xml_list.do?JSONv2&sysparm_order=sys_updated_on&sysparm_order_direction=desc&sysparm_query=" + QUERY;
 console.log("URL: " + url);
 console.log("");
 
