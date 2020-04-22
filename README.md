@@ -11,6 +11,10 @@ Execute `npm install` command to install all of the required dependencies.
 
 Execute `npm link eslint` command to link the eslint dependency to your global eslint installation; local eslint dependency is not provided.
 
+## Setup
+
+Execute `npm run generate` command to generate basic set of table configuration for the configured instance.
+
 Rename `config.json-example` to `config.json` and modify it as follows:
 - `domain`: url to the service now domain; must end with "/"
 - `username`: username to connect as (it is best to use **read only admin account**; if not available role access to sys_update_set and sys_update_xml tables is needed)
