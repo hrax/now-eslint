@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "node ./now_linter.js",
+    "lint": "node ./now_report.js",
     "generate": "node ./now_generate.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ejs": "^3.0.2",
     "xml-js": "^1.6.11"
   }
 }

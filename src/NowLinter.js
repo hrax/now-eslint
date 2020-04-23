@@ -1,5 +1,6 @@
 
 const fs = require("fs");
+const ejs = require("ejs");
 
 const CLIEngine = require("eslint").CLIEngine;
 // eslint-disable-next-line no-unused-vars
@@ -63,7 +64,7 @@ class NowLinter {
       return change.status === NowUpdateXMLStatus.SCAN;
     })
       .forEach((change) => {
-        if (!this.tables[change.table]) {
+        if (!this.tables[change.table] || this.tables[change.table] == null) {
           change.setIgnoreReport();
         } else {
           // For each configured field run lint
@@ -89,30 +90,93 @@ class NowLinter {
   }
 
   toJSON() {
+    const now = new Date();
+
     // TODO: process changes into a JSON
-    return {};
+    const json = {
+      config: {
+        "domain": this._options.domain,
+        "query": this._options.query,
+        "name": this._options.name
+      },
+      stats: {
+        createdOn: now.getFullYear() + "-" + ("0" + now.getMonth()).slice(-2) + "-" + ("0" + now.getDate()).slice(-2) + " " + ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2) + ":" + ("0" + now.getSeconds()).slice(-2),
+        type: {
+          ignoreCount: 0,
+          warningCount: 0,
+          errorCount: 0,
+          okCount: 0,
+          skippedCount: 0,
+          scanCount: 0
+        }
+      },
+      changes: []
+    };
+
+    Object.entries(this.changes).forEach(([key, value]) => {
+      json.changes.push([
+        key, {
+          "name": value.name,
+          "id": value.id,
+          "action": value.action,
+          "updateCount": value.updateCount,
+          "createdBy": value.createdBy,
+          "createdOn": value.createdOn,
+          "updatedBy": value.updatedBy,
+          "updatedOn": value.updatedOn,
+          "type": value.type,
+          "targetName": value.targetName,
+          "table": value.table,
+          "updateSet": value.updateSet,
+          "status": value.status,
+          "warningCount": value.warningCount,
+          "errorCount": value.errorCount,
+          "reports": value.reportEntries,
+          "payload": value.payloadXML
+        }
+      ]);
+
+      // Do the statistics count
+      if (value.status === "IGNORE") {
+        json.stats.type.ignoreCount++;
+      }
+
+      if (value.status === "WARNING") {
+        json.stats.type.warningCount++;
+      }
+
+      if (value.status === "ERROR") {
+        json.stats.type.errorCount++;
+      }
+
+      if (value.status === "OK") {
+        json.stats.type.okCount++;
+      }
+
+      if (value.status === "SKIPPED") {
+        json.stats.type.skippedCount++;
+      }
+
+      if (value.status === "SCAN") {
+        json.stats.type.scanCount++;
+      }
+    });
+
+    return json;
   }
 
   save() {
-    // TODO: save changes as JSON file into CWD
+    const json = this.toJSON();
+    fs.writeFileSync(this._options.name + ".json", JSON.stringify(json));
   }
 
   report() {
-    // TODO: generate a HTML report from the changes into CWD
-    console.log("GENERATE: from template '" + this._options.report + "' to '" + this._options.name + "'");
-    console.log("");
-
-    Object.values(this.changes).forEach((i) => {
-      console.log("ID: " + i.id);
-      console.log("Name: " + i.name);
-      console.log("Action: " + i.action);
-      console.log("Status: " + i.status);
-      console.log("Updates: " + i.updateCount);
-
-      console.log("Warnings: " + i.warningCount);
-      console.log("Errors: " + i.errorCount);
-
-      console.log("");
+    const data = this.toJSON();
+    ejs.renderFile("./template/" + this._options.report + ".html", data, (err, html) => {
+      if (err) {
+        throw Error(err);
+      }
+      fs.writeFileSync(this._options.name + ".html", html);
     });
   }
 

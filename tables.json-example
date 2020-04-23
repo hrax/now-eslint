@@ -1,0 +1,602 @@
+{
+  "agent_assist_recommendation": [
+    "script"
+  ],
+  "asmt_metric": [
+    "script"
+  ],
+  "automation_pipeline_transformer_javascript": [
+    "script"
+  ],
+  "bsm_chart": [
+    "chart",
+    "filter"
+  ],
+  "bsm_context_menu": [
+    "script"
+  ],
+  "bsm_map_filter": [
+    "filter"
+  ],
+  "ci_identifier": [
+    "script"
+  ],
+  "clone_cleanup_script": [
+    "script"
+  ],
+  "cmdb_ci_translation_rule": [
+    "rule"
+  ],
+  "cmdb_depreciation": [
+    "script"
+  ],
+  "cmdb_sw_license_calculation": [
+    "calculation"
+  ],
+  "cmn_map_coordinate_definition": [
+    "script"
+  ],
+  "cmn_map_data_item": [
+    "query_condition_script"
+  ],
+  "cmn_map_filter_item": [
+    "default_value_script",
+    "script"
+  ],
+  "cmn_map_marker_click_action": [
+    "script"
+  ],
+  "cmn_map_marker_icon": [
+    "scripted_condition"
+  ],
+  "cmn_map_page": [
+    "script"
+  ],
+  "cmn_relative_duration": [
+    "script"
+  ],
+  "cmn_schedule_page": [
+    "client_script",
+    "server_script"
+  ],
+  "connect_action": [
+    "script"
+  ],
+  "content_block": [
+    "condition"
+  ],
+  "content_block_detail": [
+    "script"
+  ],
+  "csm_field_map": [
+    "transform_script"
+  ],
+  "csm_table_map": [
+    "advanced_condition",
+    "mapping_script"
+  ],
+  "cxs_fltr_config": [
+    "filter_script"
+  ],
+  "cxs_search_res_config": [
+    "grsr_script"
+  ],
+  "cxs_table_config": [
+    "search_as_script"
+  ],
+  "cxs_ui_action": [
+    "script",
+    "ui_action_visibility_script"
+  ],
+  "cxs_ui_action_config": [
+    "ui_action_visibility_script"
+  ],
+  "diagrammer_action": [
+    "script"
+  ],
+  "discovery_classy": [
+    "script"
+  ],
+  "discovery_port_probe": [
+    "script"
+  ],
+  "discovery_probes": [
+    "post_processor_script",
+    "script"
+  ],
+  "ecc_agent_capability_value_test": [
+    "script"
+  ],
+  "ecc_agent_ext": [
+    "script"
+  ],
+  "ecc_agent_script": [
+    "script"
+  ],
+  "ecc_agent_script_include": [
+    "script"
+  ],
+  "ecc_handler": [
+    "condition_script",
+    "script"
+  ],
+  "expert_panel_template": [
+    "script"
+  ],
+  "expert_panel_transition": [
+    "transition_script"
+  ],
+  "live_table_notification": [
+    "before_script"
+  ],
+  "metric_definition": [
+    "script"
+  ],
+  "mid_selector_override": [
+    "script"
+  ],
+  "ngbsm_context_menu": [
+    "script"
+  ],
+  "ngbsm_filter": [
+    "filter"
+  ],
+  "ngbsm_script": [
+    "script_plain"
+  ],
+  "password_policy": [
+    "strength_rule"
+  ],
+  "pa_diagnostic": [
+    "script"
+  ],
+  "pa_scripts": [
+    "script"
+  ],
+  "planned_change_validation_script": [
+    "script"
+  ],
+  "process_guide": [
+    "advanced_condition"
+  ],
+  "process_step_approval": [
+    "approval_script",
+    "approver_script",
+    "rejection_script"
+  ],
+  "proposed_change_verification_rules": [
+    "rule_script"
+  ],
+  "pwd_cred_store": [
+    "pwd_rule",
+    "strength_rule"
+  ],
+  "pwd_extension_type": [
+    "template"
+  ],
+  "risk_conditions": [
+    "advanced_condition"
+  ],
+  "sa_context_menu": [
+    "script"
+  ],
+  "scan_check": [
+    "script"
+  ],
+  "scheduled_data_export": [
+    "post_script",
+    "pre_script"
+  ],
+  "scheduled_data_import": [
+    "partition_script",
+    "post_script",
+    "pre_script"
+  ],
+  "sc_category": [
+    "entitlement_script"
+  ],
+  "sc_cat_item": [
+    "delivery_plan_script",
+    "entitlement_script"
+  ],
+  "sc_cat_item_delivery_task": [
+    "condition_script",
+    "generation_script"
+  ],
+  "sc_cat_item_dt_approval": [
+    "approval_script"
+  ],
+  "sc_cat_item_guide": [
+    "script",
+    "validator"
+  ],
+  "sc_cat_item_producer": [
+    "post_insert_script",
+    "script"
+  ],
+  "sc_ic_aprvl_type_defn": [
+    "approver_script"
+  ],
+  "sc_ic_aprvl_type_defn_staging": [
+    "approver_script"
+  ],
+  "sc_ic_task_assign_defn": [
+    "assignment_script"
+  ],
+  "sc_ic_task_assign_defn_staging": [
+    "assignment_script"
+  ],
+  "signature_image": [
+    "data"
+  ],
+  "sm_flapper_strategy": [
+    "eval_script",
+    "predicate"
+  ],
+  "sn_bm_client_recommendation": [
+    "script"
+  ],
+  "sn_devstudio_navigation_module": [
+    "script_client",
+    "script_server"
+  ],
+  "sn_publications_recipients_list": [
+    "script"
+  ],
+  "sp_angular_provider": [
+    "script"
+  ],
+  "sp_instance": [
+    "widget_parameters"
+  ],
+  "sp_rectangle_menu_item": [
+    "record_script"
+  ],
+  "sp_search_source": [
+    "data_fetch_script",
+    "facet_generation_script"
+  ],
+  "sp_widget": [
+    "client_script",
+    "link",
+    "script"
+  ],
+  "sysauto": [
+    "condition"
+  ],
+  "sysauto_script": [
+    "script"
+  ],
+  "sysevent_email_action": [
+    "advanced_condition"
+  ],
+  "sysevent_in_email_action": [
+    "script"
+  ],
+  "sysevent_script_action": [
+    "script"
+  ],
+  "sysrule_escalate": [
+    "advanced_condition",
+    "assignment_script"
+  ],
+  "sysrule_view": [
+    "script"
+  ],
+  "sys_alias_templates": [
+    "post_process_script"
+  ],
+  "sys_amb_processor": [
+    "channel_create_advanced_authorization",
+    "channel_subscribe_advanced_authorization",
+    "message_receive_advanced_authorization",
+    "message_receive_listener",
+    "message_send_advanced_authorization",
+    "message_send_listener",
+    "user_subscribe_listener",
+    "user_unsubscribe_listener"
+  ],
+  "sys_atf_step_config": [
+    "description_generator",
+    "step_execution_generator"
+  ],
+  "sys_client_extension_point": [
+    "example"
+  ],
+  "sys_data_source": [
+    "data_loader",
+    "parsing_script"
+  ],
+  "sys_declarative_action_assignment": [
+    "server_script"
+  ],
+  "sys_dictionary": [
+    "calculation"
+  ],
+  "sys_email_client_template": [
+    "script_from"
+  ],
+  "sys_email_filter": [
+    "action_script",
+    "condition_script"
+  ],
+  "sys_extension_point": [
+    "example"
+  ],
+  "sys_impex_entry": [
+    "script"
+  ],
+  "sys_impex_map": [
+    "script"
+  ],
+  "sys_installation_exit": [
+    "script"
+  ],
+  "sys_listener_detail": [
+    "script"
+  ],
+  "sys_navigator": [
+    "script"
+  ],
+  "sys_nav_link": [
+    "text_script",
+    "url_script"
+  ],
+  "sys_processor": [
+    "script"
+  ],
+  "sys_push_notif_act_script": [
+    "script"
+  ],
+  "sys_push_notif_msg_content": [
+    "script"
+  ],
+  "sys_recipient_qualifier": [
+    "script"
+  ],
+  "sys_relationship": [
+    "apply_to",
+    "insert_callback",
+    "query_from",
+    "query_with"
+  ],
+  "sys_rte_eb_entity_mapping": [
+    "condition_script"
+  ],
+  "sys_rte_eb_multi_in_script_operation": [
+    "script"
+  ],
+  "sys_rte_eb_operation": [
+    "conditional_script"
+  ],
+  "sys_rte_eb_operation_type": [
+    "template_script"
+  ],
+  "sys_rte_eb_script_operation": [
+    "script"
+  ],
+  "sys_rte_transformer_definition": [
+    "condition"
+  ],
+  "sys_script": [
+    "script"
+  ],
+  "sys_script_adapter_rule": [
+    "script"
+  ],
+  "sys_script_ajax": [
+    "script"
+  ],
+  "sys_script_batch_adapter_rule": [
+    "script"
+  ],
+  "sys_script_client": [
+    "script"
+  ],
+  "sys_script_email": [
+    "script"
+  ],
+  "sys_script_execution_history": [
+    "script"
+  ],
+  "sys_script_fix": [
+    "script"
+  ],
+  "sys_script_include": [
+    "script"
+  ],
+  "sys_script_validator": [
+    "validator"
+  ],
+  "sys_script_vtable": [
+    "script"
+  ],
+  "sys_security_acl": [
+    "script"
+  ],
+  "sys_service_api": [
+    "script"
+  ],
+  "sys_sg_data_item": [
+    "query_condition_script"
+  ],
+  "sys_sg_write_back_action_item": [
+    "execution_script"
+  ],
+  "sys_suggestion_rule": [
+    "condition",
+    "script"
+  ],
+  "sys_transform_entry": [
+    "source_script"
+  ],
+  "sys_transform_map": [
+    "script"
+  ],
+  "sys_transform_script": [
+    "script"
+  ],
+  "sys_ui_action": [
+    "client_script_v2",
+    "script"
+  ],
+  "sys_ui_context_menu": [
+    "action_script",
+    "dynamic_actions_script",
+    "on_show_script"
+  ],
+  "sys_ui_list_control": [
+    "columns_condition",
+    "edit_condition",
+    "empty_condition",
+    "filter_condition",
+    "link_condition",
+    "new_condition"
+  ],
+  "sys_ui_list_control_embedded": [
+    "columns_condition",
+    "empty_condition",
+    "link_condition",
+    "new_condition"
+  ],
+  "sys_ui_list_script_client": [
+    "script"
+  ],
+  "sys_ui_list_script_server": [
+    "script"
+  ],
+  "sys_ui_ng_action": [
+    "script"
+  ],
+  "sys_ui_page": [
+    "client_script",
+    "processing_script"
+  ],
+  "sys_ui_policy": [
+    "script_false",
+    "script_true"
+  ],
+  "sys_ui_script": [
+    "script"
+  ],
+  "sys_ui_title": [
+    "script"
+  ],
+  "sys_ux_lib_source_script": [
+    "script"
+  ],
+  "sys_web_service": [
+    "script"
+  ],
+  "sys_widgets": [
+    "script"
+  ],
+  "sys_ws_operation": [
+    "operation_script"
+  ],
+  "trend_definition": [
+    "script"
+  ],
+  "trend_recommendation": [
+    "script"
+  ],
+  "trigger_rule": [
+    "trigger_script"
+  ],
+  "usageanalytics_count_cfg": [
+    "script"
+  ],
+  "user_criteria": [
+    "script"
+  ],
+  "var__m_0a6c97790a0a0b2756919eb960284334": [
+    "email_to_script"
+  ],
+  "var__m_283e8bb80a2581021d036a052ffc3433": [
+    "approval_script"
+  ],
+  "var__m_35433da80a0a029a0028c639a1e51eb4": [
+    "approval_script",
+    "approver_script",
+    "script"
+  ],
+  "var__m_354e911f0a0a029a00e6a0e6ad74206f": [
+    "approval_script",
+    "approver_script",
+    "script"
+  ],
+  "var__m_35ef56111b211100adca1e094f071315": [
+    "final_completion_script",
+    "flow_completion_script"
+  ],
+  "var__m_38891b6f0a0a0b1e00efdfdd77602027": [
+    "advanced_script",
+    "script"
+  ],
+  "var__m_3961a1da0a0a0b5c00ecd84822f70d85": [
+    "script"
+  ],
+  "var__m_435603515f112100a9ad2572f2b477f5": [
+    "approver_script"
+  ],
+  "var__m_46359d4e373111003e7d40ed9dbe5d55": [
+    "script"
+  ],
+  "var__m_5994b389c0a80011000e64de81b1864c": [
+    "script",
+    "script_post"
+  ],
+  "var__m_80c4d7115f112100a9ad2572f2b477b3": [
+    "approver_script"
+  ],
+  "var__m_9359a22ac0a801975710cd9e7daa8bfe": [
+    "sensor_script"
+  ],
+  "var__m_98f621ca0a0a0b5900f7c291f5e45a0e": [
+    "script"
+  ],
+  "var__m_9f46fb44c0a8016400e10261db653ecd": [
+    "script",
+    "script_post"
+  ],
+  "var__m_9f4d1be5c0a8016400043d34ce066316": [
+    "advanced_script",
+    "script"
+  ],
+  "var__m_9f680b92c0a801640026553f665b429f": [
+    "event_param1",
+    "event_param2"
+  ],
+  "var__m_a1e18d75c33101008de24a3c5bba8fe4": [
+    "advanced_script"
+  ],
+  "var__m_atf_input_variable_41de4a935332120028bc29cac2dc349a": [
+    "script"
+  ],
+  "var__m_d6eb35df07b31000dada43c0d1021e90": [
+    "sensor_script"
+  ],
+  "var__m_d93a02ae0a0a0aa30077abad3fdac035": [
+    "script_condition"
+  ],
+  "var__m_db8c65aec0a8016501d00259bc7203a4": [
+    "script"
+  ],
+  "var__m_sys_flow_step_definition_input_106afb6647032200b4fad7527c9a71e7": [
+    "script"
+  ],
+  "var__m_wf_activity_variable_08ffb1f1730123008ef62d2b04f6a743": [
+    "policy_input"
+  ],
+  "wf_activity_definition": [
+    "script"
+  ],
+  "wf_element_activity": [
+    "input_process_script",
+    "output_process_script",
+    "processing_script"
+  ],
+  "wf_workflow_version": [
+    "on_cancel"
+  ]
+}

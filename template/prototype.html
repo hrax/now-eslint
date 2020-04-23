@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Popper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script src="https://kit.fontawesome.com/764ae1cff1.js" crossorigin="anonymous"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <title>Service Now ESLint Report</title>
+</head>
+<body>
+    <header>
+        <div class="navbar navbar-dark bg-dark shadow-sm">
+            <div class="container d-flex justify-content-between">
+                <a href="#" class="navbar-brand d-flex align-items-center">
+                    Service Now ESLint Report (prototype)
+                </a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="container pt-2">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <!-- svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect><text x="35%" y="50%" fill="#eceeef" dy=".3em">Graph by Status</text></svg -->
+                        <canvas id="chart-by-status" class="card-img-top pt-2"></canvas>
+                        <script type="text/javascript">
+                            var ctx = document.getElementById('chart-by-status').getContext('2d');
+                            var chart = new Chart(ctx, {
+                                // The type of chart we want to create
+                                type: 'doughnut',
+
+                                // The data for our dataset
+                                data: {
+                                    labels: ['Ignore', 'Warning', 'Error', 'OK', 'Skipped', 'Scan'],
+                                    datasets: [{
+                                        backgroundColor: ['#6c757d','#ffc107','#dc3545','#28a745','#007bff', '#17a2b8'],
+                                        borderColor: ['#6c757d','#ffc107','#dc3545','#28a745','#007bff', '#17a2b8'],
+                                        data: [0, 10, 5, 2, 20, 30]
+                                    }]
+                                },
+
+                                // Configuration options go here
+                                options: {
+                                    'legend': {
+                                        'position': 'bottom'
+                                    }
+                                }
+                            });
+                        </script>
+                        <!-- div class="card-body">
+                            <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                </div>
+                                <small class="text-muted">9 mins</small>
+                            </div>
+                        </div -->
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <canvas id="chart-by-type" class="card-img-top pt-2"></canvas>
+                        <script type="text/javascript">
+                            var ctx = document.getElementById('chart-by-type').getContext('2d');
+                            var chart = new Chart(ctx, {
+                                // The type of chart we want to create
+                                type: 'pie',
+
+                                // The data for our dataset
+                                data: {
+                                    labels: ['Ignore', 'Warning', 'Error', 'OK', 'Skipped', 'Scan'],
+                                    datasets: [{
+                                        backgroundColor: ['#6c757d','#ffc107','#dc3545','#28a745','#007bff', '#17a2b8'],
+                                        borderColor: ['#6c757d','#ffc107','#dc3545','#28a745','#007bff', '#17a2b8'],
+                                        data: [0, 10, 5, 2, 20, 30]
+                                    }]
+                                },
+
+                                // Configuration options go here
+                                options: {
+                                    'legend': {
+                                        'position': 'bottom'
+                                    }
+                                }
+                            });
+                        </script>
+                        <!-- div class="card-body">
+                            <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                </div>
+                                <small class="text-muted">9 mins</small>
+                            </div>
+                        </div -->
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-body">
+                            <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                </div>
+                                <small class="text-muted">9 mins</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center border-bottom border-gray pb-2 mb-0">
+                        <h4 class="flex-grow-1 mr-3">ESLint Results (5)</h4>
+                        <div class="dropdown">
+                          <a class="btn btn-dark" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-bars"></i>
+                          </a>
+
+                          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item small" href="https://dev90155.service-now.com/sys_update_set.do?sys_id=40bc7db1db101010ccc9c4ab0b9619ce" target="_blank">Open Update Sets</a>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="border-bottom border-gray">
+                        <div class="pt-3 d-flex justify-content-between small">
+                            <div class="flex-grow-1 pb-3 mb-0">
+                                <h6 class="d-block">Script Include (test)</h6>
+                                
+                                <span class="mr-2">
+                                    <strong class="text-uppercase small font-weight-bold">Created by</strong>
+                                    admin
+                                    <span class="text-uppercase small font-weight-bold">at</span>
+                                    2020-04-21 21:01:39
+                                </span>
+                                <span class="mr-2">
+                                    <strong class="text-uppercase small font-weight-bold">Updated by</strong>
+                                    admin
+                                    <span class="text-uppercase small font-weight-bold">at</span>
+                                    2020-04-21 21:01:39
+                                </span>
+                                <span class="d-block"></span>
+                                <span class="mr-2">
+                                    <strong class="text-uppercase small font-weight-bold">Updates</strong>
+                                    2
+                                </span>
+                                <span class="mr-2">
+                                    <strong class="text-uppercase small font-weight-bold">Action</strong>
+                                    INSERT_OR_UPDATE
+                                </span>
+                                <span class="mr-2">
+                                    <strong class="text-uppercase small font-weight-bold">Errors</strong>
+                                    6
+                                </span>
+                                <span class="mr-2">
+                                    <strong class="text-uppercase small font-weight-bold">Warnings</strong>
+                                    1
+                                </span>
+                                
+                            </div>
+                            <div class="col-2 d-flex flex-column justify-content-center pb-3 mb-0">
+                                <span><i class="fas fa-ban text-secondary mr-2"></i>IGNORE</span>
+                                <span><i class="fas fa-exclamation text-warning mr-2"></i>WARNING</span>
+                                <span><i class="fas fa-exclamation-triangle text-danger mr-2"></i>ERROR</span>
+                                <span><i class="fas fa-check text-success mr-2"></i>OK</span>
+                                <span><i class="fas fa-sync text-primary mr-2"></i>SKIPPED</span>
+                                <span><i class="fas fa-search text-info mr-2"></i>SCAN</span>
+                            </div>
+                            <div class="d-flex align-items-center pb-3 mb-0">
+                                <div class="dropdown">
+                                  <a class="btn btn-dark" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-angle-down"></i>
+                                  </a>
+
+                                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item small" href="https://dev90155.service-now.com/sys_update_xml.do?sys_id=230b6bb1db141010ccc9c4ab0b961961" target="_blank">Open Customer Update</a>
+                                    <a class="dropdown-item small" href="https://dev90155.service-now.com/sys_update_set.do?sys_id=40bc7db1db101010ccc9c4ab0b9619ce" target="_blank">Open Update Set</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item small" href="#" target="_blank">Show XML Payload</a>
+                                  </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div class="">
+                            <table class="table table-sm table-stripped small">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col" width="5%">@</th>
+                                        <th scope="col" width="10%">Severity</th>
+                                        <th scope="col" width="15%">Rule</th>
+                                        <th scope="col">Message</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1:12</td>
+                                        <td>warning</td>
+                                        <td>no-undef</td>
+                                        <td>'Class' is not defined.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

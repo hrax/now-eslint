@@ -2,9 +2,9 @@
 const http = require("https");
 
 // eslint-disable-next-line max-len
-const UPDATE_XML_BASE_URL = "sys_update_xml_list.do?JSONv2&sysparm_order=sys_updated_on&sysparm_order_direction=desc&sysparm_query=";
+const UPDATE_XML_BASE_URL = "sys_update_xml_list.do?JSONv2&sysparm_query=ORDERBYDESCsys_updated_on^";
 // eslint-disable-next-line max-len
-const UPDATE_SET_BASE_URL = "sys_update_set_list.do?JSONv2&sysparm_order=sys_created_on&sysparm_order_direction=desc&sysparm_query=";
+const UPDATE_SET_BASE_URL = "sys_update_set_list.do?JSONv2&sysparm_query=ORDERBYDESCsys_created_on^";
 // eslint-disable-next-line max-len
 const DICTIONARY_SCRIPTS_BASE_URL = "sys_dictionary_list.do?JSONv2&sysparm_query=internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement";
 
