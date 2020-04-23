@@ -190,7 +190,10 @@
                             </div>
                         </div>
                         
-                        <% change.reports.forEach(([field, reportSet]) => { %>
+                        <% 
+                            if (change.errorCount > 0 || change.warningCount > 0 ) {
+                            change.reports.forEach(([field, reportSet]) => { 
+                        %>
                         <div>
                             <h6>Report for field '<%= field %>'</h6>
                             <table class="table table-sm table-stripped small">
@@ -214,7 +217,10 @@
                                 </tbody>
                             </table>
                         </div>
-                        <% }) %>
+                        <% 
+                            });
+                            }
+                        %>
                     </div>
                     <% }) %>
                 </div>

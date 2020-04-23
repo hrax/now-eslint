@@ -10,7 +10,8 @@
 <!-- Chart.js --><script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <!-- Bootstrap Tour --><script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.12.0/js/bootstrap-tour-standalone.min.js" integrity="sha256-yw2gxCA8ajzFaQT3M6OAlc+j+u6louuE91FdCc6Vghg=" crossorigin="anonymous"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.12.0/css/bootstrap-tour-standalone.min.css" integrity="sha256-U3XOxpt3EMRgULgaBrCl51hlDx7GpPZlS6/VSuU9szk=" crossorigin="anonymous" />
 <!-- Title --><title><%= config.title %></title>
-<!-- Custom styles --><style type="text/css">
+<!-- Custom styles -->
+<style type="text/css">
 html, body {background-color: #343a40 !important;}
 main {background-color: #fff !important;}
 </style>
@@ -19,8 +20,7 @@ main {background-color: #fff !important;}
 <header>
 <div class="navbar navbar-dark bg-dark shadow-sm">
 <div class="container d-flex justify-content-between">
-<span class="navbar-brand d-flex align-items-center"><%= config.title %></span>
-<a href="javascript:void(0)" class="d-none btn btn-light" id="tour-start"><i class="fas fa-question-circle" aria-hidden="true"></i></a>
+<span class="navbar-brand d-flex align-items-center"><%= config.title %></span><a href="javascript:void(0)" class="d-none btn btn-light" id="tour-start"><i class="fas fa-question-circle" aria-hidden="true"></i></a>
 </div>
 </div>
 </header>
@@ -49,7 +49,8 @@ main {background-color: #fff !important;}
 </div>
 <div class="col-md-6 d-flex">
 <div class="card flex-grow-1 mb-4 shadow-sm" id="tour-chart">
-<h6 class="text-center pt-2">by Status</h6><canvas id="chart-by-status" class="card-img-top"></canvas>
+<h6 class="text-center pt-2">by Status</h6>
+<canvas id="chart-by-status" class="card-img-top"></canvas>
 <script type="text/javascript">
 var ctx = document.getElementById('chart-by-status').getContext('2d');
 var chart = new Chart(ctx, {
@@ -135,9 +136,7 @@ r.update();
 <%= change.warningCount %>
 </span>
 </div>
-<div class="col-2 d-flex flex-column justify-content-center pb-3 mb-0">
-<% if (change.status === "IGNORE") { %><span><i class="fas fa-ban text-secondary mr-2"></i>IGNORE</span><% } %><% if (change.status === "WARNING") { %><span><i class="fas fa-exclamation text-warning mr-2"></i>WARNING</span><% } %><% if (change.status === "ERROR") { %><span><i class="fas fa-exclamation-triangle text-danger mr-2"></i>ERROR</span><% } %><% if (change.status === "OK") { %><span><i class="fas fa-check text-success mr-2"></i>OK</span><% } %><% if (change.status === "SKIPPED") { %><span><i class="fas fa-sync text-primary mr-2"></i>SKIPPED</span><% } %><% if (change.status === "SCAN") { %><span><i class="fas fa-search text-danger mr-2"></i>SCAN</span><% } %>
-</div>
+<div class="col-2 d-flex flex-column justify-content-center pb-3 mb-0"><% if (change.status === "IGNORE") { %><span><i class="fas fa-ban text-secondary mr-2"></i>IGNORE</span><% } %><% if (change.status === "WARNING") { %><span><i class="fas fa-exclamation text-warning mr-2"></i>WARNING</span><% } %><% if (change.status === "ERROR") { %><span><i class="fas fa-exclamation-triangle text-danger mr-2"></i>ERROR</span><% } %><% if (change.status === "OK") { %><span><i class="fas fa-check text-success mr-2"></i>OK</span><% } %><% if (change.status === "SKIPPED") { %><span><i class="fas fa-sync text-primary mr-2"></i>SKIPPED</span><% } %><% if (change.status === "SCAN") { %><span><i class="fas fa-search text-danger mr-2"></i>SCAN</span><% } %></div>
 <div class="d-flex align-items-center pb-3 mb-0">
 <div class="dropdown">
 <a class="btn btn-dark" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-bars"></i></a>
@@ -148,20 +147,31 @@ r.update();
 </div>
 </div>
 </div>
-<% change.reports.forEach(([field, reportSet]) => { %>
+<% if (change.errorCount > 0 || change.warningCount > 0 ) {change.reports.forEach(([field, reportSet]) => { %>
 <div>
 <h6>Report for field '<%= field %>'</h6>
 <table class="table table-sm table-stripped small">
-<thead class="thead-dark"><tr><th scope="col" width="5%">@</th><th scope="col" width="10%">Severity</th><th scope="col" width="15%">Rule</th><th scope="col">Message</th></tr></thead>
+<thead class="thead-dark">
+<tr>
+<th scope="col" width="5%">@</th>
+<th scope="col" width="10%">Severity</th>
+<th scope="col" width="15%">Rule</th>
+<th scope="col">Message</th>
+</tr>
+</thead>
 <tbody>
 <% reportSet.results[0].messages.forEach((message) => { %>
-<tr><td><%= message.line %>:<%= message.column %></td><td><% if (message.severity === 1) { %>Warning<% } %><% if (message.severity === 2) { %>Error<% } %></td><td><%= message.ruleId %></td>
-<td><%= message.message %></td></tr>
+<tr>
+<td><%= message.line %>:<%= message.column %></td>
+<td><% if (message.severity === 1) { %>Warning<% } %><% if (message.severity === 2) { %>Error<% } %></td>
+<td><%= message.ruleId %></td>
+<td><%= message.message %></td>
+</tr>
 <% }) %>
 </tbody>
 </table>
 </div>
-<% }) %>
+<% });} %>
 </div>
 <% }) %>
 </div>
@@ -170,9 +180,7 @@ r.update();
 </main>
 <footer>
 <div class="navbar navbar-dark bg-dark">
-<div class="container d-flex justify-content-between">
-<span class="navbar-text small">Generated with <a href="https://github.com/hrax/now-eslint" target="_blank">now-eslint</a></span>
-</div>
+<div class="container d-flex justify-content-between"><span class="navbar-text small">Generated with <a href="https://github.com/hrax/now-eslint" target="_blank">now-eslint</a></span></div>
 </div>
 </footer>
 <script type="text/javascript">
@@ -199,7 +207,9 @@ placement: "top"
 ]});
 // Initialize the tour
 tour.init();
-$("#tour-start").removeClass("d-none").click(function() {tour.restart();});
+$("#tour-start").removeClass("d-none").click(function() {
+tour.restart();
+});
 </script>
 </body>
 </html>

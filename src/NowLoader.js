@@ -1,8 +1,5 @@
 
 const http = require("https");
-const HttpsProxyAgent = require("https-proxy-agent");
-
-// TODO: add https-proxy-agent module and initialize it via configuration when needed
 
 // eslint-disable-next-line max-len
 const UPDATE_XML_BASE_URL = "sys_update_xml_list.do?JSONv2&sysparm_query=ORDERBYDESCsys_updated_on^";
@@ -33,11 +30,6 @@ class NowLoader {
     this.domain = domain;
     this.username = username;
     this.password = password;
-    this.proxy = null;
-  }
-
-  setProxy(proxy) {
-    this.proxy = new HttpsProxyAgent(proxy);
   }
 
   async load(url) {
@@ -47,11 +39,9 @@ class NowLoader {
     }
 
     const options = {
-      "auth": [this.username, this.password].join(":")
+      "auth": [this.username, this.password].join(":"),
+      "rejectUnauthorized": false
     };
-    if (this.proxy != null) {
-      options.agent = this.proxy;
-    }
 
     return new Promise((resolve, reject) => {
       const request = http.request(
