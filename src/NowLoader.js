@@ -1,5 +1,6 @@
 
 const http = require("https");
+const HttpsProxyAgent = require("https-proxy-agent");
 
 // TODO: add https-proxy-agent module and initialize it via configuration when needed
 
@@ -32,6 +33,11 @@ class NowLoader {
     this.domain = domain;
     this.username = username;
     this.password = password;
+    this.proxy = null;
+  }
+
+  setProxy(proxy) {
+    this.proxy = new HttpsProxyAgent(proxy);
   }
 
   async load(url) {
@@ -40,10 +46,17 @@ class NowLoader {
       url = url.substring(1);
     }
 
+    const options = {
+      "auth": [this.username, this.password].join(":")
+    };
+    if (this.proxy != null) {
+      options.agent = this.proxy;
+    }
+
     return new Promise((resolve, reject) => {
       const request = http.request(
         this.domain + url,
-        {"auth": [this.username, this.password].join(":")},
+        options,
         (response) => {
           let data = "";
           response.setEncoding("utf8");
