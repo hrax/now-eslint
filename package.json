@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "node ./now_report.js",
+    "report": "node ./now_report.js",
     "generate": "node ./now_generate.js"
   },
   "author": "",

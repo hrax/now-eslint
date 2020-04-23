@@ -1,6 +1,8 @@
 
 const http = require("https");
 
+// TODO: add https-proxy-agent module and initialize it via configuration when needed
+
 // eslint-disable-next-line max-len
 const UPDATE_XML_BASE_URL = "sys_update_xml_list.do?JSONv2&sysparm_query=ORDERBYDESCsys_updated_on^";
 // eslint-disable-next-line max-len

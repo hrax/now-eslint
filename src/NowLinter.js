@@ -108,10 +108,13 @@ class NowLinter {
           okCount: 0,
           skippedCount: 0,
           scanCount: 0
-        }
+        },
+        uniqueChanges: 0
       },
       changes: []
     };
+
+    json.stats.uniqueChanges = Object.keys(this.changes).length;
 
     Object.entries(this.changes).forEach(([key, value]) => {
       json.changes.push([

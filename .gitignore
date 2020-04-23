@@ -3,3 +3,5 @@
 /node_modules
 /tables.json
 /tables.json-backup
+/reports/*
+!/reports/.gitignore
