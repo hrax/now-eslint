@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Required meta tags --><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- jQuery --><script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<!-- Bootstrap CSS --><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<!-- Popper.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<!-- Bootstrap JS --><script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<!-- Font Awesome --><script src="https://kit.fontawesome.com/764ae1cff1.js" crossorigin="anonymous"></script>
+<!-- Chart.js --><script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<!-- Bootstrap Tour --><script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.12.0/js/bootstrap-tour-standalone.min.js" integrity="sha256-yw2gxCA8ajzFaQT3M6OAlc+j+u6louuE91FdCc6Vghg=" crossorigin="anonymous"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.12.0/css/bootstrap-tour-standalone.min.css" integrity="sha256-U3XOxpt3EMRgULgaBrCl51hlDx7GpPZlS6/VSuU9szk=" crossorigin="anonymous" />
+<!-- Title --><title><%= config.title %></title>
+<!-- Custom styles --><style type="text/css">
+html, body {background-color: #343a40 !important;}
+main {background-color: #fff !important;}
+</style>
+</head>
+<body>
+<header>
+<div class="navbar navbar-dark bg-dark shadow-sm">
+<div class="container d-flex justify-content-between">
+<span class="navbar-brand d-flex align-items-center"><%= config.title %></span>
+<a href="javascript:void(0)" class="d-none btn btn-light" id="tour-start"><i class="fas fa-question-circle" aria-hidden="true"></i></a>
+</div>
+</div>
+</header>
+<main>
+<div class="container pt-2">
+<div class="row">
+<div class="col-md-6 d-flex">
+<div class="card flex-grow-1 mb-4 shadow-sm small" id="tour-info">
+<div class="card-body">
+<div class="card-text">
+<p>
+<strong class="d-block text-uppercase">Domain</strong>
+<a href="<%= config.domain %>" target="_blank"><%= config.domain %></a>
+</p>
+<p>
+<strong class="d-block text-uppercase">Created at</strong>
+<%= stats.createdOn %>
+</p>
+<p>
+<strong class="d-block text-uppercase">Unique changes found</strong>
+<%= stats.uniqueChanges %>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="col-md-6 d-flex">
+<div class="card flex-grow-1 mb-4 shadow-sm" id="tour-chart">
+<h6 class="text-center pt-2">by Status</h6><canvas id="chart-by-status" class="card-img-top"></canvas>
+<script type="text/javascript">
+var ctx = document.getElementById('chart-by-status').getContext('2d');
+var chart = new Chart(ctx, {
+// The type of chart we want to create
+type: 'doughnut',
+// The data for our dataset
+data: {
+labels: ['Ignore', 'Warning', 'Error', 'OK', 'Skipped', 'Scan'],
+datasets: [{
+label: 'By Status',
+backgroundColor: ['#6c757d','#ffc107','#dc3545','#28a745','#007bff', '#17a2b8'],
+borderColor: ['#6c757d','#ffc107','#dc3545','#28a745','#007bff', '#17a2b8'],
+data: [<%= stats.type.ignoreCount %>, <%= stats.type.warningCount %>, <%= stats.type.errorCount %>, <%= stats.type.okCount %>, <%= stats.type.skippedCount %>, <%= stats.type.scanCount %>]
+}]
+},
+// Configuration options go here
+options: {
+'legend': {
+'position': 'bottom',
+'onClick': function(e, item) {
+var i, n, a, o = item.index, r = chart;
+for (i = 0, n = (r.data.datasets || []).length; i < n; ++i) {
+(a = r.getDatasetMeta(i)).data[o] && (a.data[o].hidden = !a.data[o].hidden);
+// toggle findings!
+if (a.data[o].hidden) {
+$(".report-" + item.text.toLowerCase()).addClass("d-none");
+} else {
+$(".report-" + item.text.toLowerCase()).removeClass("d-none");
+}
+}
+r.update();
+}
+}
+}
+});
+</script>
+</div>
+</div>
+</div>
+<div class="row" id="tour-reports">
+<div class="col">
+<div class="d-flex justify-content-between align-items-center border-bottom border-gray pb-2 mb-0">
+<h4 class="flex-grow-1 mr-3">ESLint Results</h4>
+<div class="dropdown">
+<a class="btn btn-dark" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-bars"></i></a>
+<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+<a class="dropdown-item small" href="<%= config.domain %>nav_to.do?uri=/sys_update_set_list.do?sysparm_query=<%= config.query %>" target="_blank">List Update Sets</a>
+</div>
+</div>
+</div>
+<% changes.forEach(([name, change]) => { %>
+<div class="border-bottom border-gray report report-<%= change.status.toLowerCase() %>">
+<div class="pt-3 d-flex justify-content-between small">
+<div class="flex-grow-1 pb-3 mb-0">
+<h5 class="d-block"><%= change.type %><% if (change.targetName) { %> (<%= change.targetName %>)<% } %></h5>
+<span class="mr-2">
+<strong class="text-uppercase small font-weight-bold">Created by</strong>
+<%= change.createdBy %>
+<span class="text-uppercase small font-weight-bold">at</span>
+<%= change.createdOn %>
+</span>
+<span class="mr-2">
+<strong class="text-uppercase small font-weight-bold">Updated by</strong>
+<%= change.updatedBy %>
+<span class="text-uppercase small font-weight-bold">at</span>
+<%= change.updatedOn %>
+</span>
+<span class="d-block"></span>
+<span class="mr-2">
+<strong class="text-uppercase small font-weight-bold">Action</strong>
+<%= change.action %>
+</span>
+<span class="mr-2">
+<strong class="text-uppercase small font-weight-bold">Updates</strong>
+<%= change.updateCount %>
+</span>
+<span class="mr-2">
+<strong class="text-uppercase small font-weight-bold">Errors</strong>
+<%= change.errorCount %>
+</span>
+<span class="mr-2">
+<strong class="text-uppercase small font-weight-bold">Warnings</strong>
+<%= change.warningCount %>
+</span>
+</div>
+<div class="col-2 d-flex flex-column justify-content-center pb-3 mb-0">
+<% if (change.status === "IGNORE") { %><span><i class="fas fa-ban text-secondary mr-2"></i>IGNORE</span><% } %><% if (change.status === "WARNING") { %><span><i class="fas fa-exclamation text-warning mr-2"></i>WARNING</span><% } %><% if (change.status === "ERROR") { %><span><i class="fas fa-exclamation-triangle text-danger mr-2"></i>ERROR</span><% } %><% if (change.status === "OK") { %><span><i class="fas fa-check text-success mr-2"></i>OK</span><% } %><% if (change.status === "SKIPPED") { %><span><i class="fas fa-sync text-primary mr-2"></i>SKIPPED</span><% } %><% if (change.status === "SCAN") { %><span><i class="fas fa-search text-danger mr-2"></i>SCAN</span><% } %>
+</div>
+<div class="d-flex align-items-center pb-3 mb-0">
+<div class="dropdown">
+<a class="btn btn-dark" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-bars"></i></a>
+<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+<a class="dropdown-item small" href="<%= config.domain %>nav_to.do?uri=/sys_update_xml.do?sys_id=<%= change.id %>" target="_blank">Open Customer Update</a>
+<a class="dropdown-item small" href="<%= config.domain %>nav_to.do?uri=/sys_update_set.do?sys_id=<%= change.updateSet %>" target="_blank">Open Update Set</a>
+</div>
+</div>
+</div>
+</div>
+<% change.reports.forEach(([field, reportSet]) => { %>
+<div>
+<h6>Report for field '<%= field %>'</h6>
+<table class="table table-sm table-stripped small">
+<thead class="thead-dark"><tr><th scope="col" width="5%">@</th><th scope="col" width="10%">Severity</th><th scope="col" width="15%">Rule</th><th scope="col">Message</th></tr></thead>
+<tbody>
+<% reportSet.results[0].messages.forEach((message) => { %>
+<tr><td><%= message.line %>:<%= message.column %></td><td><% if (message.severity === 1) { %>Warning<% } %><% if (message.severity === 2) { %>Error<% } %></td><td><%= message.ruleId %></td>
+<td><%= message.message %></td></tr>
+<% }) %>
+</tbody>
+</table>
+</div>
+<% }) %>
+</div>
+<% }) %>
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class="navbar navbar-dark bg-dark">
+<div class="container d-flex justify-content-between">
+<span class="navbar-text small">Generated with <a href="https://github.com/hrax/now-eslint" target="_blank">now-eslint</a></span>
+</div>
+</div>
+</footer>
+<script type="text/javascript">
+var tour = new Tour({
+steps: [
+{
+element: "#tour-info",
+title: "Report details",
+content: "Details about the generated report can be found here.",
+placement: "bottom"
+},
+{
+element: "#tour-chart",
+title: "Report chart by Status",
+content: "Chart of report results by its Status. You can hide the results on the list by clicking the item in the chart legend.",
+placement: "bottom"
+},
+{
+element: "#tour-reports",
+title: "Report results",
+content: "The results of the report.",
+placement: "top"
+}
+]});
+// Initialize the tour
+tour.init();
+$("#tour-start").removeClass("d-none").click(function() {tour.restart();});
+</script>
+</body>
+</html>

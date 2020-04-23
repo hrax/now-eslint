@@ -8,6 +8,7 @@ config.tables = Object.assign({}, tables, config.tables || {});
 
 const linter = new NowLinter(config);
 (async function() {
-  await linter.process();
+  await linter.process(true);
+  console.log("Generating the report");
   linter.report();
 })();

@@ -17,8 +17,9 @@ class NowLinter {
       "username": "",
       "password": "",
       "query": "",
-      "name": "",
-      "report": "",
+      "title": "Service Now ESLint Report",
+      "name": "now-eslint-report",
+      "template": "template-slim",
       "tables": {},
       "cliEngine": {}
     }, options || {});
@@ -82,8 +83,15 @@ class NowLinter {
       });
   }
 
-  async process() {
+  async process(verbose) {
+    if (verbose) {
+      console.log("Fetching Update Sets and their changes");
+    }
     await this.fetch();
+
+    if (verbose) {
+      console.log("Performing ESLint scan on the loaded changes");
+    }
     await this.lint();
 
     return Object.values(this.changes);
@@ -97,6 +105,7 @@ class NowLinter {
       config: {
         "domain": this._options.domain,
         "query": this._options.query,
+        "title": this._options.title,
         "name": this._options.name
       },
       stats: {
@@ -175,11 +184,11 @@ class NowLinter {
 
   report() {
     const data = this.toJSON();
-    ejs.renderFile("./template/" + this._options.report + ".html", data, (err, html) => {
+    ejs.renderFile("./templates/" + this._options.template + ".html", data, (err, html) => {
       if (err) {
         throw Error(err);
       }
-      fs.writeFileSync(this._options.name + ".html", html);
+      fs.writeFileSync("./reports/" + this._options.name + ".html", html);
     });
   }
 

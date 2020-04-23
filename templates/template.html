@@ -20,7 +20,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.12.0/js/bootstrap-tour-standalone.min.js" integrity="sha256-yw2gxCA8ajzFaQT3M6OAlc+j+u6louuE91FdCc6Vghg=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.12.0/css/bootstrap-tour-standalone.min.css" integrity="sha256-U3XOxpt3EMRgULgaBrCl51hlDx7GpPZlS6/VSuU9szk=" crossorigin="anonymous" />
     <!-- Title -->
-    <title>Service Now ESLint Report (<%= config.name %>)</title>
+    <title><%= config.title %></title>
     <!-- Custom styles -->
     <style type="text/css">
         html, body {
@@ -37,9 +37,9 @@
         <div class="navbar navbar-dark bg-dark shadow-sm">
             <div class="container d-flex justify-content-between">
                 <span class="navbar-brand d-flex align-items-center">
-                    Service Now ESLint Report (<%= config.name %>)
+                    <%= config.title %>
                 </span>
-                <a href="#" class="d-none btn btn-light" id="tour-start">
+                <a href="javascript:void(0)" class="d-none btn btn-light" id="tour-start">
                     <i class="fas fa-question-circle" aria-hidden="true"></i>
                 </a>
             </div>
