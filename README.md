@@ -36,7 +36,7 @@ To run the ESLint on the selected set of update sets on configured instance you 
 
 Execute `npm run report` command to run and generate your report
 
-## Command Access
+## Command Table Access
 
 ### report
 
@@ -55,3 +55,4 @@ Execute `npm run report` command to run and generate your report
 - TODO: Backup old report if the same name report exists
 - TODO: Allow to mark and skip changes that have field "active" = false
 - Nice to have: option to generate report as PDF
+- Nice to have: generate each report into special folder
