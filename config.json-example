@@ -4,9 +4,8 @@
   "password": "",
   "query": "",
   "name": "report",
-  "template": "template",
   "tables": {
-    "sys_script_include": ["script"]
+    "wf_workflow_version": null
   },
   "cliEngine": {
     "rules": {

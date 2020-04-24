@@ -205,7 +205,7 @@ class NowLinter {
   }
 
   static getJSONFieldValue(payload, field) {
-    return payload[field]._cdata || payload[field]._text || null;
+    return (payload[field] && (payload[field]._cdata || payload[field]._text)) || null;
   }
 }
 
