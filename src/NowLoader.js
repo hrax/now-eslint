@@ -1,5 +1,6 @@
 
 const http = require("https");
+const Assert = require("./Assert");
 
 // eslint-disable-next-line max-len
 const UPDATE_XML_BASE_URL = "sys_update_xml_list.do?JSONv2&sysparm_query=ORDERBYDESCsys_updated_on^";
@@ -10,17 +11,9 @@ const DICTIONARY_SCRIPTS_BASE_URL = "sys_dictionary_list.do?JSONv2&sysparm_query
 
 class NowLoader {
   constructor(domain, username, password) {
-    if (domain == null) {
-      throw Error("Domain must be specified");
-    }
-
-    if (username == null) {
-      throw Error("Username must be specified");
-    }
-
-    if (password == null) {
-      throw Error("Password must be specified");
-    }
+    Assert.notEmpty(domain, "Domain must be specified");
+    Assert.notEmpty(username, "Username must be specified");
+    Assert.notEmpty(password, "Password must be specified");
 
     // Cleanup add ending slash
     if (!domain.endsWith("/")) {

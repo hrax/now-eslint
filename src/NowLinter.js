@@ -6,6 +6,7 @@ const CLIEngine = require("eslint").CLIEngine;
 // eslint-disable-next-line no-unused-vars
 const Linter = require("eslint").Linter;
 
+const Assert = require("./Assert");
 const NowLoader = require("./NowLoader");
 const NowUpdateXML = require("./NowUpdateXML").NowUpdateXML;
 const NowUpdateXMLStatus = require("./NowUpdateXML").NowUpdateXMLStatus;
@@ -13,9 +14,9 @@ const NowUpdateXMLStatus = require("./NowUpdateXML").NowUpdateXMLStatus;
 class NowLinter {
   constructor(options) {
     this._options = Object.assign({
-      "domain": "",
-      "username": "",
-      "password": "",
+      "domain": null,
+      "username": null,
+      "password": null,
       "query": "",
       "title": "Service Now ESLint Report",
       "name": "now-eslint-report",
@@ -23,14 +24,11 @@ class NowLinter {
       "tables": {},
       "cliEngine": {}
     }, options || {});
+
+    Assert.notEmpty("Query needs to be specified!");
+
     this.changes = {};
-
     this.tables = Object.assign({}, this._options.tables || {});
-
-    if (this._options.query === "" || this._options.query == null) {
-      throw Error("Query needs to be specified!");
-    }
-
     this.loader = new NowLoader(this._options.domain, this._options.username, this._options.password);
     this.cli = new CLIEngine(this._options.cliEngine || {});
   }
@@ -99,6 +97,7 @@ class NowLinter {
 
   toJSON() {
     const now = new Date();
+    const slinceNo = -2;
 
     // TODO: process changes into a JSON
     const json = {
@@ -109,7 +108,7 @@ class NowLinter {
         "name": this._options.name
       },
       stats: {
-        createdOn: now.getFullYear() + "-" + ("0" + now.getMonth()).slice(-2) + "-" + ("0" + now.getDate()).slice(-2) + " " + ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2) + ":" + ("0" + now.getSeconds()).slice(-2),
+        createdOn: now.getFullYear() + "-" + ("0" + now.getMonth()).slice(slinceNo) + "-" + ("0" + now.getDate()).slice(slinceNo) + " " + ("0" + now.getHours()).slice(slinceNo) + ":" + ("0" + now.getMinutes()).slice(slinceNo) + ":" + ("0" + now.getSeconds()).slice(slinceNo),
         type: {
           ignoreCount: 0,
           warningCount: 0,
@@ -123,9 +122,8 @@ class NowLinter {
       changes: []
     };
 
-    json.stats.uniqueChanges = Object.keys(this.changes).length;
-
     Object.entries(this.changes).forEach(([key, value]) => {
+      ++json.stats.uniqueChanges;
       json.changes.push([
         key, {
           "name": value.name,
@@ -182,13 +180,19 @@ class NowLinter {
     fs.writeFileSync(this._options.name + ".json", JSON.stringify(json));
   }
 
-  report() {
+  report(verbose) {
+    if (verbose) {
+      console.log("Generating the report from template '" + this._options.template + "'");
+    }
     const data = this.toJSON();
     ejs.renderFile("./templates/" + this._options.template + ".html", data, (err, html) => {
       if (err) {
         throw Error(err);
       }
       fs.writeFileSync("./reports/" + this._options.name + ".html", html);
+      if (verbose) {
+        console.log("Report saved to './reports/" + this._options.name + ".html'");
+      }
     });
   }
 

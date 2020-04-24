@@ -5,3 +5,4 @@
 /tables.json-backup
 /reports/*
 !/reports/.gitignore
+/conn.json

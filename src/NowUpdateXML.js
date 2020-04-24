@@ -18,7 +18,9 @@ const NowUpdateXMLStatus = {
   // Should be linted but does not contain anything to lint
   SKIPPED: "SKIPPED",
   // JSON payload initialized can be scanned based on configuration
-  SCAN: "SCAN"
+  SCAN: "SCAN",
+  // JSON payload detected as inactive; mark, do not lint
+  INACTIVE: "INACTIVE"
 };
 
 class NowUpdateXML {
