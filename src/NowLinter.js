@@ -21,6 +21,7 @@ class NowLinter {
       "title": "Service Now ESLint Report",
       "name": "now-eslint-report",
       "template": "template-slim",
+      "skipInactive": false,
       "tables": {},
       "cliEngine": {}
     }, options || {});
@@ -65,19 +66,32 @@ class NowLinter {
       .forEach((change) => {
         if (!this.tables[change.table] || this.tables[change.table] == null) {
           change.setIgnoreReport();
-        } else {
-          // For each configured field run lint
-          this.tables[change.table].forEach((field) => {
-            const data = NowLinter.getJSONFieldValue(change.payload, field);
-            if (data == null || data === "") {
-              change.setSkippedReport();
-              return;
-            }
-            const report = this.cli.executeOnText(data);
-            report.results[0].filePath = "<" + change.name + "@" + field + ">";
-            change.setReport(field, report);
-          });
+          return;
         }
+
+        /* if (this._options.skipInactive) {
+          let active = NowLinter.getJSONFieldValue(change.payload, "active");
+          if (active == null) {
+            active = true;
+          }
+
+          if (!active) {
+            change.setInactiveReport();
+            return;
+          }
+        } */
+
+        // For each configured field run lint
+        this.tables[change.table].forEach((field) => {
+          const data = NowLinter.getJSONFieldValue(change.payload, field);
+          if (data == null || data === "") {
+            change.setSkippedReport();
+            return;
+          }
+          const report = this.cli.executeOnText(data);
+          report.results[0].filePath = "<" + change.name + "@" + field + ">";
+          change.setReport(field, report);
+        });
       });
   }
 
@@ -197,6 +211,10 @@ class NowLinter {
   }
 
   async generate() {
+    /*
+      TODO: Set up ignore tables (complex parsing; multi table payload)
+      TODO: Scan for parent table field configuration
+     */
     const tables = await this.loader.fetchTableConfigurationData();
 
     if (Object.keys(tables).length > 0 && fs.existsSync("tables.json")) {

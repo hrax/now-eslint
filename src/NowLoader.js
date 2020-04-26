@@ -15,7 +15,7 @@ class NowLoader {
     Assert.notEmpty(username, "Username must be specified");
     Assert.notEmpty(password, "Password must be specified");
 
-    // Cleanup add ending slash
+    // Cleanup; add ending slash
     if (!domain.endsWith("/")) {
       domain = domain + "/";
     }
@@ -26,7 +26,7 @@ class NowLoader {
   }
 
   async load(url) {
-    // Cleanup, remove starting slash
+    // Cleanup; remove starting slash
     if (url && url.startsWith("/")) {
       url = url.substring(1);
     }

@@ -204,6 +204,14 @@ class NowUpdateXML {
     this._status = NowUpdateXMLStatus.IGNORE;
   }
 
+  setInactiveReport() {
+    if (this._status === NowUpdateXMLStatus.INACTIVE) {
+      return;
+    }
+
+    this._status = NowUpdateXMLStatus.INACTIVE;
+  }
+
   get warningCount() {
     return this._warningCount;
   }
