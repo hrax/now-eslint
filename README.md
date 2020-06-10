@@ -34,7 +34,7 @@ To run the ESLint on the selected set of update sets on configured instance you 
 - Modify property `query` in `config.json` to match the update sets you want to check
 - Modify property `title` in `config.json` to match set the title of your report
 - Modify property `name` in `config.json` to match the name under which you want to save your report
-- (optional) Modify property `template` in `config.json` to match the name of the template used to render the report
+- (optional; field must be still present in the file) Modify property `template` in `config.json` to match the name of the template used to render the report
 
 Execute `npm run report` command to run and generate your report
 
@@ -56,5 +56,8 @@ Execute `npm run report` command to run and generate your report
 - TODO: Check if the specified template exists
 - TODO: Backup old report if the same name report exists
 - TODO: Allow to mark and skip changes that have field "active" = false
+- TODO: Allow to conditionally lint fields (e.g. if other_field is true/false or if other_field is empty/not empty)
 - Nice to have: option to generate report as PDF
 - Nice to have: generate each report into special folder
+- Nice to have: generate table conditional field configuration based on dictionary dependent field?
+- Nice to have: custom parse complex changes (e.g. workflow) to be able to lint selected nested complex records
