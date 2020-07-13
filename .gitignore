@@ -1,7 +1,7 @@
 *.sublime-project
 *.sublime-workspace
 /conf/*.json
-/conf/*.json-backup
+/conf/*.bak
 /POC/config.json
 /node_modules
 /reports/*

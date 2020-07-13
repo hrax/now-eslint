@@ -205,7 +205,7 @@ class NowLinter {
   _saveFile(path, data, force, verbose) {
     if (!force && fs.existsSync(path)) {
       verbose && console.log("Creating backup for '" + path + "'");
-      fs.renameSync(path, path + "-backup");
+      fs.renameSync(path, path + ".bak");
     }
     verbose && console.log("Saving data to '" + path + "'");
     fs.writeFileSync(path, data);
