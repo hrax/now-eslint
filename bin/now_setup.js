@@ -27,7 +27,10 @@ const schema = {
     testConnection: {
       description: "Do you want to test the connection to the instance?",
       type: "boolean",
-      default: false
+      default: false,
+      ask: function() {
+        return false;
+      }
     },
     generateTables: {
       description: "Do you want to generate table data from the instance?",

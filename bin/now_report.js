@@ -13,8 +13,8 @@ const schema = {
     },
     filename: {
       description: "Enter the file name of your report (without an extension):",
-      pattern: /^[a-z|-]+$/,
-      message: "File name must contain only lower case letters and  dash (-)",
+      pattern: /^[a-z0-9-]+$/,
+      message: "File name must contain only lower case letters, numbers and  dash (-)",
       required: true
     },
     query: {
