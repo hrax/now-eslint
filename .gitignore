@@ -1,8 +1,8 @@
+*.sublime-project
+*.sublime-workspace
+/conf/*.json
+/conf/*.json-backup
 /POC/config.json
-/config.json
 /node_modules
-/tables.json
-/tables.json-backup
 /reports/*
 !/reports/.gitignore
-/conn.json

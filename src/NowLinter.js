@@ -22,6 +22,8 @@ class NowLinter {
       "name": "now-eslint-report",
       "template": "template-slim",
       "skipInactive": false,
+      "verbose": true,
+      "autoJson": true,
       "tables": {},
       "cliEngine": {}
     }, options || {});
@@ -114,7 +116,7 @@ class NowLinter {
     const slinceNo = -2;
 
     // TODO: process changes into a JSON
-    const json = {
+    const report = {
       config: {
         "domain": this._options.domain,
         "query": this._options.query,
@@ -122,7 +124,14 @@ class NowLinter {
         "name": this._options.name
       },
       stats: {
-        createdOn: now.getFullYear() + "-" + ("0" + now.getMonth()).slice(slinceNo) + "-" + ("0" + now.getDate()).slice(slinceNo) + " " + ("0" + now.getHours()).slice(slinceNo) + ":" + ("0" + now.getMinutes()).slice(slinceNo) + ":" + ("0" + now.getSeconds()).slice(slinceNo),
+        createdOn: (
+          now.getFullYear() + "-" +
+          ("0" + now.getMonth()).slice(slinceNo) + "-" +
+          ("0" + now.getDate()).slice(slinceNo) + " " +
+          ("0" + now.getHours()).slice(slinceNo) + ":" +
+          ("0" + now.getMinutes()).slice(slinceNo) + ":" +
+          ("0" + now.getSeconds()).slice(slinceNo)
+        ),
         type: {
           ignoreCount: 0,
           warningCount: 0,
@@ -137,8 +146,8 @@ class NowLinter {
     };
 
     Object.entries(this.changes).forEach(([key, value]) => {
-      ++json.stats.uniqueChanges;
-      json.changes.push([
+      ++report.stats.uniqueChanges;
+      report.changes.push([
         key, {
           "name": value.name,
           "id": value.id,
@@ -162,31 +171,31 @@ class NowLinter {
 
       // Do the statistics count
       if (value.status === "IGNORE") {
-        json.stats.type.ignoreCount++;
+        report.stats.type.ignoreCount++;
       }
 
       if (value.status === "WARNING") {
-        json.stats.type.warningCount++;
+        report.stats.type.warningCount++;
       }
 
       if (value.status === "ERROR") {
-        json.stats.type.errorCount++;
+        report.stats.type.errorCount++;
       }
 
       if (value.status === "OK") {
-        json.stats.type.okCount++;
+        report.stats.type.okCount++;
       }
 
       if (value.status === "SKIPPED") {
-        json.stats.type.skippedCount++;
+        report.stats.type.skippedCount++;
       }
 
       if (value.status === "SCAN") {
-        json.stats.type.scanCount++;
+        report.stats.type.scanCount++;
       }
     });
 
-    return json;
+    return report;
   }
 
   save() {

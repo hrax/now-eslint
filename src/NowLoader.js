@@ -2,12 +2,29 @@
 const http = require("https");
 const Assert = require("./Assert");
 
+/**
+ * Base URL to load the update set xml changes ordered descending by updated on field
+ */
 // eslint-disable-next-line max-len
 const UPDATE_XML_BASE_URL = "sys_update_xml_list.do?JSONv2&sysparm_query=ORDERBYDESCsys_updated_on^";
+
+/**
+ * Base URL to load the update sets ordered descending by created on field
+ */
 // eslint-disable-next-line max-len
 const UPDATE_SET_BASE_URL = "sys_update_set_list.do?JSONv2&sysparm_query=ORDERBYDESCsys_created_on^";
+
+/**
+ * Base URL to load the fields of type script from the dictionary
+ */
 // eslint-disable-next-line max-len
 const DICTIONARY_SCRIPTS_BASE_URL = "sys_dictionary_list.do?JSONv2&sysparm_query=internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement";
+
+/**
+ * Base URL to load the tables that have parent which is not empty or not "Application File" order ascending by name
+ */
+// eslint-disable-next-line max-len
+const DB_OBJECT_CHILDREN_BASE_URL = "sys_db_object_list.do?JSONv2&sysparm_query=super_class!=b06a1330db101010ccc9c4ab0b961964^ORsuper_class=NULL^super_class!=NULL^ORDERBYname";
 
 class NowLoader {
   constructor(domain, username, password) {
@@ -25,6 +42,11 @@ class NowLoader {
     this.password = password;
   }
 
+  /**
+   * Load JSON data url from the domain using the username and password
+   * @param  {[type]} url the URL to load
+   * @return {[type]}     Promise
+   */
   async load(url) {
     // Cleanup; remove starting slash
     if (url && url.startsWith("/")) {
@@ -66,6 +88,11 @@ class NowLoader {
     });
   }
 
+  /**
+   * Fetch the data from the url as a JSON object
+   * @param  {[type]} url the URL to fetch
+   * @return {[type]} parsed JSON object
+   */
   async fetch(url) {
     const body = await this.load(url);
 
@@ -92,6 +119,10 @@ class NowLoader {
 
   async fetchUpdateXMLByUpdateSetXMLIds(ids) {
     return this.fetch(UPDATE_XML_BASE_URL + "sys_idIN" + ids.join(","));
+  }
+
+  async fetchTableParentData() {
+    return null;
   }
 
   async fetchTableConfigurationData() {
