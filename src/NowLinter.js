@@ -12,13 +12,13 @@ const NowUpdateXML = require("./NowUpdateXML").NowUpdateXML;
 const NowUpdateXMLStatus = require("./NowUpdateXML").NowUpdateXMLStatus;
 
 class NowLinter {
-  constructor(conn, options) {
+  constructor(instance, options, tables) {
     this._profile = {
-      connection: Object.assign({
+      instance: Object.assign({
         "domain": null,
         "username": null,
         "password": null
-      }, conn || {}),
+      }, instance || {}),
       options: Object.assign({
         "query": "",
         "title": "Service Now ESLint Report",
@@ -34,8 +34,8 @@ class NowLinter {
     // Assert.notEmpty("Query needs to be specified!");
 
     this.changes = {};
-    this.tables = Object.assign({}, this._profile.options.tables || {});
-    this.loader = new NowLoader(this._profile.connection.domain, this._profile.connection.username, this._profile.connection.password);
+    this.tables = Object.assign({}, tables || {}, this._profile.options.tables || {});
+    this.loader = new NowLoader(this._profile.instance.domain, this._profile.instance.username, this._profile.instance.password);
     this.cli = new CLIEngine(this._profile.options.cliEngine || {});
   }
 
@@ -45,7 +45,7 @@ class NowLinter {
     const response = await this.loader.fetchUpdateXMLByUpdateSetQuery(this._profile.options.query);
 
     // Get records from the response
-    response.records.forEach((record) => {
+    response.result.forEach((record) => {
       let change = new NowUpdateXML(record, true);
       if (!this.changes[change.name]) {
         change.initialize();
@@ -121,7 +121,7 @@ class NowLinter {
     // TODO: process changes into a JSON
     const report = {
       config: {
-        "domain": this._profile.connection.domain,
+        "domain": this._profile.instance.domain,
         "query": this._profile.options.query,
         "title": this._profile.options.title,
         "name": this._profile.options.name
@@ -228,12 +228,14 @@ class NowLinter {
     });
   }
 
+  // TODO: move this to different class, this has nothing to do with linting, maybe separate class for instance setup + table gen?
   async generate() {
     /*
       TODO: Set up ignore tables (complex parsing; multi table payload)
       TODO: Scan for parent table field configuration
      */
     const tables = await this.loader.fetchTableConfigurationData();
+
     console.log("Loaded " + Object.keys(tables).length + " table entries");
 
     this._saveFile("tables.json", JSON.stringify(tables), false, true);

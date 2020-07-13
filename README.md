@@ -13,10 +13,7 @@ Execute `npm link eslint` command to link the eslint dependency to your global e
 
 ## Setup
 
-Rename `conn.json-example` to `conn.json` and modify it as follows:
-- `domain`: url to the service now domain; must end with "/"
-- `username`: username to connect as (it is best to use **read only admin account** or see below for a table list for each command)
-- `password`: password of the username above
+Execute `npm run setup` command to setup connection to the instance.
 
 Rename `config.json-example` to `config.json` and modify it as follows:
 - `query`: Endoded query from sys_update_set list returning update sets to be linted
@@ -36,7 +33,7 @@ To run the ESLint on the selected set of update sets on configured instance you 
 - Modify property `name` in `config.json` to match the name under which you want to save your report
 - (optional) Modify property `template` in `config.json` to match the name of the template used to render the report
 
-Execute `npm run report` command to run and generate your report
+Execute `npm run report` command to run and generate your report. Report command will save generated HTML report as well as the report data in JSON format, so they can be processed later if necessary.
 
 ## Command Table Access
 

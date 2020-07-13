@@ -2,10 +2,9 @@
 const NowLinter = require("./src/NowLinter");
 
 const config = require("../conf/config.json");
-const conn = require(".../conf/conn.json");
-config.tables = {};
+const conn = require("../conf/instance.json");
 
-const linter = new NowLinter(conn, Object.assign({}, config));
+const linter = new NowLinter(conn, config, {});
 (async function() {
   linter.generate();
 })();

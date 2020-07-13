@@ -4,14 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "setup": "node ./bin/now_setup.js",
     "report": "node ./bin/now_report.js",
-    "generate": "node ./bin/now_generate.js",
-    "args": "node ./bin/now_argv.js"
+    "generate": "node ./bin/now_generate.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "ejs": "^3.0.2",
+    "prompt": "^1.0.0",
     "xml-js": "^1.6.11"
   }
 }

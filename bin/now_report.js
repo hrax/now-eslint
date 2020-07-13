@@ -1,13 +1,49 @@
 
-const NowLinter = require("./src/NowLinter");
+const prompt = require("prompt");
+const NowLinter = require("../src/NowLinter");
 
-const config = require("../conf/config.json");
-const conn = require("../conf/conn.json");
-const tables = require("../conf/tables.json");
-config.tables = Object.assign({}, tables, config.tables || {});
+prompt.message = "";
+prompt.delimiter = "";
 
-const linter = new NowLinter(conn, Object.assign({}, config));
-(async function() {
-  await linter.process(true);
-  linter.report(true);
-})();
+const schema = {
+  properties: {
+    title: {
+      description: "Enter the name of your report:",
+      required: true
+    },
+    filename: {
+      description: "Enter the file name of your report (without an extension):",
+      pattern: /^[a-z|-]+$/,
+      message: "File name must contain only lower case letters and  dash (-)",
+      required: true
+    },
+    query: {
+      description: "Enter the query of the report:",
+      required: true
+    }
+  }
+};
+
+// TODO: check that the setup has been configured
+
+prompt.start();
+
+prompt.get(schema, (err, result) => {
+  if (err) {
+    return;
+  }
+
+  const instance = require("../conf/instance.json");
+  const config = require("../conf/config.json") || {};
+  const tables = require("../conf/tables.json") || {};
+
+  config.query = result.query;
+  config.title = result.title;
+  config.name = result.filename;
+
+  const linter = new NowLinter(instance, config, tables);
+  (async function() {
+    await linter.process(true);
+    linter.report(true);
+  })();
+});
