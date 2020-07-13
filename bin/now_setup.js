@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const prompt = require("prompt");
 const fs = require("fs");
+const NowLinter = require("../src/NowLinter.js");
 
 prompt.message = "prompt: ";
 prompt.delimiter = "";
@@ -31,10 +32,7 @@ const schema = {
     generateTables: {
       description: "Do you want to generate table data from the instance?",
       type: "boolean",
-      default: false,
-      ask: function() {
-        return false;
-      }
+      default: false
     }
   }
 };
@@ -47,12 +45,30 @@ prompt.get(schema, (err, result) => {
     console.log(err);
     return;
   }
-  let conn = {
-    "domain": result.domain,
-    "username": result.username,
-    "password": result.password
-  };
 
-  fs.writeFileSync("./conf/conn.json", JSON.stringify(conn));
-  console.log("Connection setup generated");
+  (async function() {
+    let conn = {
+      "domain": result.domain,
+      "username": result.username,
+      "password": result.password
+    };
+
+    // TODO: Test connection before saving it, allow to reset the prompt
+
+    console.log("Generating instance connection configuration");
+    fs.writeFileSync("./conf/instance.json", JSON.stringify(conn));
+
+    console.log("Generating linter configuration");
+    fs.copyFileSync("./conf/config.json-example", "./conf/config.json");
+
+    console.log("Generating table configuration");
+    if (result.generateTables) {
+      // TODO: change this to NowLoader
+      const linter = new NowLinter(conn, {}, {});
+      await linter.generate();
+    } else {
+      fs.copyFileSync("./conf/tables.json-example", "./conf/tables.json");
+    }
+    console.log("Setup completed");
+  })();
 });

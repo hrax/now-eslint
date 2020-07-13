@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "setup": "node ./bin/now_setup.js",
-    "report": "node ./bin/now_report.js",
-    "generate": "node ./bin/now_generate.js"
+    "report": "node ./bin/now_report.js"
   },
   "author": "",
   "license": "ISC",

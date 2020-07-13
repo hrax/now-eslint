@@ -232,14 +232,28 @@ class NowLinter {
   async generate() {
     /*
       TODO: Set up ignore tables (complex parsing; multi table payload)
-      TODO: Scan for parent table field configuration
      */
-    const tables = await this.loader.fetchTableConfigurationData();
+    const fields = await this.loader.fetchTableFieldData();
+    const parents = await this.loader.fetchTableParentData();
+    const tables = {};
+    const getParentFields = function(table, fields, parents, toReturn) {
+      toReturn = toReturn || [];
+      if (fields[table] != null) {
+        toReturn = toReturn.concat(fields[table]);
+        if (parents[table]) {
+          return getParentFields(parents[table], fields, parents, toReturn);
+        }
+      }
 
-    console.log("Loaded " + Object.keys(tables).length + " table entries");
+      // Return unique set as array
+      return [...new Set(toReturn)];
+    };
 
-    this._saveFile("tables.json", JSON.stringify(tables), false, true);
-    console.log("Tables saved");
+    Object.keys(fields).forEach(table => {
+      tables[table] = getParentFields(table, fields, parents);
+    });
+
+    this._saveFile("./conf/tables.json", JSON.stringify(tables), false, true);
   }
 
   static getJSONFieldValue(payload, field) {

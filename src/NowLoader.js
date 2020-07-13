@@ -141,7 +141,7 @@ class NowLoader {
     return toReturn;
   }
 
-  async fetchTableConfigurationData() {
+  async fetchTableFieldData() {
     const response = await this.fetch(DICTIONARY_SCRIPTS_BASE_URL);
     const toReturn = {};
 

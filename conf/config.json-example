@@ -1,6 +1,5 @@
 {
-  "query": "",
-  "name": "report",
+  "template": "template-slim",
   "tables": {
     "wf_workflow_version": null
   },
