@@ -44,6 +44,9 @@ CLI uses NOW REST API to read necessary information. Easiest setup would be to g
 - TODO: Optimalize generated reports to minimize the file size
 - TODO: Check if the specified template exists
 - TODO: Allow to mark and skip changes that have field "active" = false
+- TODO: Allow to conditionally lint fields (e.g. if other_field is true/false or if other_field is empty/not empty)
 - Nice to have: option to generate report as PDF
 - Nice to have: generate each report into special folder
 - Nice to have: instance profiles
+- Nice to have: generate table conditional field configuration based on dictionary dependent field?
+- Nice to have: custom parse complex changes (e.g. workflow) to be able to lint selected nested complex records
