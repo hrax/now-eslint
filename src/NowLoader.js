@@ -1,6 +1,6 @@
 
 const http = require("https");
-const Assert = require("./Assert");
+const Assert = require("./Assert.js");
 
 /**
  * Base URL to load the update set xml changes ordered descending by updated on field
@@ -44,8 +44,8 @@ class NowLoader {
 
   /**
    * Load JSON data url from the domain using the username and password
-   * @param  {[type]} url the URL to load
-   * @return {[type]}     Promise
+   * @param  {String} url the URL to load
+   * @return {Promise} Promise
    */
   async load(url) {
     // Cleanup; remove starting slash
@@ -53,11 +53,15 @@ class NowLoader {
       url = url.substring(1);
     }
 
+    // TODO: Set headers, such as agent, timeout etc.
     const options = {
       "auth": [this.username, this.password].join(":"),
       "rejectUnauthorized": false
     };
 
+    /*
+     * TODO: Proxy configuration
+     */
     return new Promise((resolve, reject) => {
       const request = http.request(
         this.domain + url,
@@ -122,23 +126,29 @@ class NowLoader {
   }
 
   async fetchTableParentData() {
-    return null;
+    const response = await this.fetch(DB_OBJECT_CHILDREN_BASE_URL);
+    const toReturn = {};
+
+    response.records.forEach((record) => {
+      toReturn[record.name] = record.collection;
+    });
+
+    return toReturn;
   }
 
   async fetchTableConfigurationData() {
     const response = await this.fetch(DICTIONARY_SCRIPTS_BASE_URL);
-    const tables = {};
-    // Parse fields into a table configuration
+    const toReturn = {};
+
     response.records.forEach((record) => {
-      if (!tables[record.name]) {
-        tables[record.name] = [record.element];
+      if (!toReturn[record.name]) {
+        toReturn[record.name] = [record.element];
       } else {
-        tables[record.name].push(record.element);
+        toReturn[record.name].push(record.element);
       }
     });
 
-    // Return table config
-    return tables;
+    return toReturn;
   }
 }
 

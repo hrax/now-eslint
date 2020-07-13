@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "report": "node ./now_report.js",
-    "generate": "node ./now_generate.js",
-    "args": "node ./now_argv.js"
+    "report": "node ./bin/now_report.js",
+    "generate": "node ./bin/now_generate.js",
+    "args": "node ./bin/now_argv.js"
   },
   "author": "",
   "license": "ISC",
