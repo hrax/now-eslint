@@ -1,7 +1,9 @@
 # NOW ESLint
-NodeJS command to lint script update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
+NodeJS CLI to lint script update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
 
-Primary goal is to be utilized by user locally from their own PC, however option to generate JSON should allow this to be utilized in mid server as an extension to Service Now processes.
+Primary goal is to be utilized by user locally from their own PC, however option to generate JSON should allow this to be utilized in mid server as an extension to automate release processes using Service Now instance.
+
+Update sets need to be committed locally on the configured instance. Change in the committed update set is linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
 
 ## Download
 
