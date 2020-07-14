@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const prompt = require("prompt");
 const fs = require("fs");
-const NowLinter = require("../src/NowLinter.js");
+const NowLoader = require("../src/NowLoader.js");
 
 prompt.message = "prompt: ";
 prompt.delimiter = "";
@@ -10,8 +10,8 @@ const schema = {
   properties: {
     domain: {
       description: "Enter the URL to the service now instance:",
-      pattern: /^https:\/\//,
-      message: "Instance URL must start with 'https://'",
+      pattern: /^https:\/\/.*?\/$/,
+      message: "Instance URL must start with 'https://' and must end with '/'",
       required: true
     },
     username: {
@@ -35,7 +35,7 @@ const schema = {
     generateTables: {
       description: "Do you want to generate table data from the instance?",
       type: "boolean",
-      default: false
+      default: true
     }
   }
 };
@@ -50,13 +50,29 @@ prompt.get(schema, (err, result) => {
   }
 
   (async function() {
-    let conn = {
+    const conn = {
       "domain": result.domain,
       "username": result.username,
       "password": result.password
     };
+    const loader = new NowLoader(result.domain, result.username, result.password);
 
     // TODO: Test connection before saving it, allow to reset the prompt
+    if (result.testConnection) {
+      let message = "Unable to connect to the instance";
+      try {
+        let connected = await loader.testConnection();
+        if (!connected) {
+          console.log(message);
+          // End
+          return;
+        }
+      } catch (err) {
+        console.log(message);
+        console.log(err);
+        return;
+      }
+    }
 
     console.log("Generating instance connection configuration");
     fs.writeFileSync("./conf/instance.json", JSON.stringify(conn));
@@ -66,12 +82,31 @@ prompt.get(schema, (err, result) => {
 
     console.log("Generating table configuration");
     if (result.generateTables) {
-      // TODO: change this to NowLoader
-      const linter = new NowLinter(conn, {}, {});
-      await linter.generate();
+      const fields = await loader.fetchTableFieldData();
+      const parents = await loader.fetchTableParentData();
+      const tables = {};
+      const getParentFields = function(table, fields, parents, toReturn) {
+        toReturn = toReturn || [];
+        if (fields[table] != null) {
+          toReturn = toReturn.concat(fields[table]);
+          if (parents[table]) {
+            return getParentFields(parents[table], fields, parents, toReturn);
+          }
+        }
+
+        // Return unique set as array
+        return [...new Set(toReturn)];
+      };
+
+      Object.keys(fields).forEach(table => {
+        tables[table] = getParentFields(table, fields, parents);
+      });
+
+      fs.writeFileSync("./conf/tables.json", JSON.stringify(tables));
     } else {
       fs.copyFileSync("./conf/tables.json-example", "./conf/tables.json");
     }
+
     console.log("Setup completed");
   })();
 });

@@ -42,6 +42,7 @@ CLI uses NOW REST API to read necessary information. Easiest setup would be to g
 
 ## TODO/Nice to have
 
+- TODO: TESTS, TESTS, TESTS, TESTS, TESTS, TESTS, TESTS, TESTS!!!
 - TODO: HTTPs Proxy; unauthorized requests should not be rejected anymore
 - TODO: Optimalize generated reports to minimize the file size
 - TODO: Check if the specified template exists

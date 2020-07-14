@@ -25,7 +25,6 @@ class NowLinter {
         "name": "now-eslint-report",
         "template": "template-slim",
         "skipInactive": false,
-        "verbose": true,
         "tables": {},
         "cliEngine": {}
       }, options || {})
@@ -100,15 +99,11 @@ class NowLinter {
       });
   }
 
-  async process(verbose) {
-    if (verbose) {
-      console.log("Fetching Update Sets and their changes");
-    }
+  async process() {
+    console.log("Fetching Update Sets and their changes");
     await this.fetch();
 
-    if (verbose) {
-      console.log("Performing ESLint scan on the loaded changes");
-    }
+    console.log("Performing ESLint scan on the loaded changes");
     await this.lint();
 
     return Object.values(this.changes);
@@ -211,49 +206,19 @@ class NowLinter {
     fs.writeFileSync(path, data);
   }
 
-  report(verbose) {
-    if (verbose) {
-      console.log("Generating the report from template '" + this._profile.options.template + "'");
-    }
+  report() {
+    console.log("Generating the report from template '" + this._profile.options.template + "'");
     const data = this.toJSON();
-    this._saveFile("./reports/" + this._profile.options.name + ".json", JSON.stringify(data), false, verbose);
-    verbose && console.log("JSON saved");
+    this._saveFile("./reports/" + this._profile.options.name + ".json", JSON.stringify(data), false, true);
+    console.log("JSON saved");
 
     ejs.renderFile("./templates/" + this._profile.options.template + ".html", data, (err, html) => {
       if (err) {
         throw Error(err);
       }
-      this._saveFile("./reports/" + this._profile.options.name + ".html", html, false, verbose);
-      verbose && console.log("Report saved");
+      this._saveFile("./reports/" + this._profile.options.name + ".html", html, false, true);
+      console.log("Report saved");
     });
-  }
-
-  // TODO: move this to different class, this has nothing to do with linting, maybe separate class for instance setup + table gen?
-  async generate() {
-    /*
-      TODO: Set up ignore tables (complex parsing; multi table payload)
-     */
-    const fields = await this.loader.fetchTableFieldData();
-    const parents = await this.loader.fetchTableParentData();
-    const tables = {};
-    const getParentFields = function(table, fields, parents, toReturn) {
-      toReturn = toReturn || [];
-      if (fields[table] != null) {
-        toReturn = toReturn.concat(fields[table]);
-        if (parents[table]) {
-          return getParentFields(parents[table], fields, parents, toReturn);
-        }
-      }
-
-      // Return unique set as array
-      return [...new Set(toReturn)];
-    };
-
-    Object.keys(fields).forEach(table => {
-      tables[table] = getParentFields(table, fields, parents);
-    });
-
-    this._saveFile("./conf/tables.json", JSON.stringify(tables), false, true);
   }
 
   static getJSONFieldValue(payload, field) {
