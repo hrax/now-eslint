@@ -1,29 +1,25 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, max-len */
 const http = require("https");
 const Assert = require("./Assert.js");
 
 /**
  * Base URL to load the update set xml changes ordered descending by updated on field
  */
-// eslint-disable-next-line max-len
 const UPDATE_XML_BASE_URL = "api/now/table/sys_update_xml?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_fields=name,sys_id,action,sys_created_by,sys_created_on,sys_updated_by,sys_updated_on,type,target_name,update_set,payload&sysparm_query=ORDERBYDESCsys_updated_on^";
 
 /**
  * Base URL to load the update sets ordered descending by created on field
  */
-// eslint-disable-next-line max-len
 const UPDATE_SET_BASE_URL = "api/now/table/sys_update_set?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_fields=sys_id&sysparm_query=ORDERBYDESCsys_created_on^";
 
 /**
  * Base URL to load the fields of type script from the dictionary
  */
-// eslint-disable-next-line max-len
 const DICTIONARY_SCRIPTS_BASE_URL = "api/now/table/sys_dictionary?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_query=internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement&sysparm_fields=name,element";
 
 /**
  * Base URL to load the tables that have parent which is not empty or not "Application File" order ascending by name
  */
-// eslint-disable-next-line max-len
 const DB_OBJECT_CHILDREN_BASE_URL = "api/now/table/sys_db_object?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_query=super_class.name!=sys_metadata^ORDERBYname&sysparm_fields=name,super_class.name";
 
 class NowLoader {
@@ -103,7 +99,7 @@ class NowLoader {
               reject("Received response body starts with an '<' expected JSON formatted response");
               return;
             }
-            
+
             // TODO: check unauthorized access, http reponse or no access allowed responses before triggering success
             resolve(data);
           });
