@@ -66,7 +66,8 @@
     "condition"
   ],
   "content_block_detail": [
-    "script"
+    "script",
+    "condition"
   ],
   "csm_field_map": [
     "transform_script"
@@ -185,12 +186,14 @@
   ],
   "scheduled_data_export": [
     "post_script",
-    "pre_script"
+    "pre_script",
+    "condition"
   ],
   "scheduled_data_import": [
     "partition_script",
     "post_script",
-    "pre_script"
+    "pre_script",
+    "condition"
   ],
   "sc_category": [
     "entitlement_script"
@@ -204,15 +207,21 @@
     "generation_script"
   ],
   "sc_cat_item_dt_approval": [
-    "approval_script"
+    "approval_script",
+    "condition_script",
+    "generation_script"
   ],
   "sc_cat_item_guide": [
     "script",
-    "validator"
+    "validator",
+    "delivery_plan_script",
+    "entitlement_script"
   ],
   "sc_cat_item_producer": [
     "post_insert_script",
-    "script"
+    "script",
+    "delivery_plan_script",
+    "entitlement_script"
   ],
   "sc_ic_aprvl_type_defn": [
     "approver_script"
@@ -265,7 +274,8 @@
     "condition"
   ],
   "sysauto_script": [
-    "script"
+    "script",
+    "condition"
   ],
   "sysevent_email_action": [
     "advanced_condition"
@@ -364,7 +374,8 @@
     "condition_script"
   ],
   "sys_rte_eb_multi_in_script_operation": [
-    "script"
+    "script",
+    "conditional_script"
   ],
   "sys_rte_eb_operation": [
     "conditional_script"
@@ -373,7 +384,8 @@
     "template_script"
   ],
   "sys_rte_eb_script_operation": [
-    "script"
+    "script",
+    "conditional_script"
   ],
   "sys_rte_transformer_definition": [
     "condition"

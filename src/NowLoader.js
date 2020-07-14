@@ -1,4 +1,4 @@
-
+/* eslint-disable no-console */
 const http = require("https");
 const Assert = require("./Assert.js");
 
@@ -64,6 +64,8 @@ class NowLoader {
       "timeout": 10000
     };
 
+    const RESPONSE_STATUS_OK = 200;
+
     /*
      * TODO: Proxy configuration
      */
@@ -76,15 +78,33 @@ class NowLoader {
           response.setEncoding("utf8");
 
           response.on("data", (chunk) => {
+            // If response status code is not 200 we are not processing any data from the response body
+            if (response.statusCode !== RESPONSE_STATUS_OK) {
+              return;
+            }
             data += chunk;
           });
 
           response.on("end", () => {
-            // TODO: check unauthorized access, http reponse or no access allowed responses before triggering success
-            if (data === "" || data.startsWith("<")) {
-              reject(data);
+            // If response status code is not 200 resolve reject promise with an error
+            if (response.statusCode !== RESPONSE_STATUS_OK) {
+              reject("Received response status code is '" + response.statusCode + "' expected '" + RESPONSE_STATUS_OK + "'");
               return;
             }
+
+            // If response body is empty resolve reject promise with an error
+            if (data === "") {
+              reject("Received response body is empty");
+              return;
+            }
+
+            // If response body starts with an '<' (HTML/XML) character, reject promise with an error
+            if (data.startsWith("<")) {
+              reject("Received response body starts with an '<' expected JSON formatted response");
+              return;
+            }
+            
+            // TODO: check unauthorized access, http reponse or no access allowed responses before triggering success
             resolve(data);
           });
         }
@@ -110,6 +130,21 @@ class NowLoader {
     }
 
     return JSON.parse(body);
+  }
+
+  async testConnection() {
+    try {
+      // Load one update set named default; every instance should have one
+      const response = await this.fetch(UPDATE_SET_BASE_URL + "name=Default&sysparm_limit=1");
+      if (response.result && response.result.length && response.result[0].sys_id) {
+        // We have a result of a single record with a sys_id, assume connection is OK
+        return true;
+      }
+    } catch (err) {
+      console.log("An error occured during testConnection.");
+      console.log(err);
+    }
+    return false;
   }
 
   async fetchUpdateXMLByUpdateSetQuery(query) {

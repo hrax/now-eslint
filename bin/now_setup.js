@@ -27,10 +27,7 @@ const schema = {
     testConnection: {
       description: "Do you want to test the connection to the instance?",
       type: "boolean",
-      default: false,
-      ask: function() {
-        return false;
-      }
+      default: true
     },
     generateTables: {
       description: "Do you want to generate table data from the instance?",
@@ -56,10 +53,11 @@ prompt.get(schema, (err, result) => {
       "password": result.password
     };
     const loader = new NowLoader(result.domain, result.username, result.password);
+    console.log("");
 
-    // TODO: Test connection before saving it, allow to reset the prompt
     if (result.testConnection) {
-      let message = "Unable to connect to the instance";
+      console.log("Testing connection to the instance.");
+      let message = "Unable to connect to the instance, please verify the instance url, username and password.";
       try {
         let connected = await loader.testConnection();
         if (!connected) {
@@ -67,6 +65,8 @@ prompt.get(schema, (err, result) => {
           // End
           return;
         }
+
+        console.log("Succesfully connected to the instance.\n");
       } catch (err) {
         console.log(message);
         console.log(err);

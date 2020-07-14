@@ -32,6 +32,7 @@ prompt.get(schema, (err, result) => {
   if (err) {
     return;
   }
+  console.log("");
 
   const instance = require("../conf/instance.json");
   const config = require("../conf/config.json") || {};
