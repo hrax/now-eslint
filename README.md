@@ -30,7 +30,7 @@ Execute `npm run report` command to run and generate your report. Report command
 
 ## CLI Access
 
-CLI uses NOW REST API to read necessary information. Easiest setup would be to give the account `snc_read_only` and `admin` roles. If that is by any chance not possible, make sure account has read access to the following tables.
+CLI uses NOW REST API to read necessary information. Easiest setup would be to give the account `snc_read_only` and `admin` roles. If that is by any chance not possible, make sure account has read access to the following tables as well as access to the REST API.
 
 ### report CLI
 
