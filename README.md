@@ -1,5 +1,7 @@
-# now-eslint
-NodeJS command to lint script update set changes on Service Now instances
+# NOW ESLint
+NodeJS command to lint script update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
+
+Primary goal is to be utilized by user locally from their own PC, however option to generate JSON should allow this to be utilized in mid server as an extension to Service Now processes.
 
 ## Download
 
@@ -15,9 +17,9 @@ Execute `npm link eslint` command to link the eslint dependency to your global e
 
 Execute `npm run setup` command to setup connection to the instance and to generate default linter configuration.
 
-After the setup has been completed you have an option to set additonal configuration in `config.json`:
+After the setup has been completed you have an option to set additonal configuration in `conf/config.json`:
 - `template`: file name of the report template that should be used to generate a report; report template must be located in templates folder, be a html file and must be specified without the extension
-- `tables`: set of tables that should be additionally checked (extends the tables.json file); optional can be removed from the configuration
+- `tables`: set of tables that should be additionally checked (extends the `conf/tables.json` file); optional can be removed from the configuration
 - `cliEngine`: options for the [ESLint CLIEngine](https://eslint.org/docs/developer-guide/nodejs-api#cliengine); optional can be removed from the configuration
 
 ## Execution
