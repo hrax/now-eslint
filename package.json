@@ -1,17 +1,32 @@
 {
   "name": "now-eslint",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "NodeJS command to lint update set changes on Service Now instances",
+  "keywords": "",
+  "homepage": "https://github.com/hrax/now-eslint",
+  "bugs": "https://github.com/hrax/now-eslint/issues",
+  "license": "ISC",
+  "author": {
+    "name": "Gregor Magdolen",
+    "url": "https://hrax.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hrax/now-eslint.git"
+  },
   "scripts": {
     "setup": "node ./bin/now_setup.js",
     "report": "node ./bin/now_report.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "ejs": "^3.0.2",
     "prompt": "^1.0.0",
-    "xml-js": "^1.6.11"
-  }
+    "xml-js": "^1.6.11",
+    "eslint": "^5.16.0"
+  },
+  "engines": {
+    "node": "^11.13.0",
+    "npm": "^6.7.0"
+  },
+  "private": true
 }
