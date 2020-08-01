@@ -16,13 +16,17 @@
   },
   "scripts": {
     "setup": "node ./bin/now_setup.js",
-    "report": "node ./bin/now_report.js"
+    "report": "node ./bin/now_report.js",
+    "test": "jasmine"
   },
   "dependencies": {
     "ejs": "^3.0.2",
     "prompt": "^1.0.0",
     "xml-js": "^1.6.11",
     "eslint": "^5.16.0"
+  },
+  "devDependencies": {
+    "jasmine": "^3.6.1"
   },
   "engines": {
     "node": "^11.13.0",
