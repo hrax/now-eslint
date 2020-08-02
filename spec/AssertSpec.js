@@ -1,21 +1,21 @@
 const Assert = require("../src/Assert.js");
 
-describe("Assert", function() {
-  it("#notEmpty throws error on empty string value", function() {
+describe("Assert", () => {
+  it("#notEmpty throws error on empty string value", () => {
     let value = "";
     let msg = "A string value cannot be empty.";
 
     expect(() => Assert.notEmpty(value, msg)).toThrow(new Error(msg));
   });
 
-  it("#notEmpty throws error on null value", function() {
+  it("#notEmpty throws error on null value", () => {
     let value = null;
     let msg = "A value cannot be null.";
 
     expect(() => Assert.notEmpty(value, msg)).toThrow(new Error(msg));
   });
 
-  it("#notEmpty does not throw error on non-empty value", function() {
+  it("#notEmpty does not throw error on non-empty value", () => {
     let value = "Hello World!";
     let msg = "A value cannot be null.";
 

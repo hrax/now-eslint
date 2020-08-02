@@ -13,8 +13,6 @@ Update sets need to be committed locally on the configured instance. Change in t
 
 Execute `npm install` command to install all of the required dependencies.
 
-Execute `npm link eslint` command to link the eslint dependency to your global eslint installation; local eslint dependency is not provided. (ESLint version tested: v5.16.0)
-
 ## Setup
 
 Execute `npm run setup` command to setup connection to the instance and to generate default linter configuration.
