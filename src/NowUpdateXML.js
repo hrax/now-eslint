@@ -1,4 +1,4 @@
-
+const Assert = require("./Assert.js");
 const xml2js = require("xml-js");
 
 const NowUpdateXMLAction = {
@@ -24,8 +24,11 @@ const NowUpdateXMLStatus = {
 };
 
 class NowUpdateXML {
-  // TODO: validate presence of mandatory keys in data map
   constructor(data, dryRun) {
+    Assert.notNull(data, "Data must not be null.");
+    Assert.isObject(data, "Data must be an Object.");
+    Assert.objectContainsAllProperties(data, ["sys_id","name","action","sys_created_by","sys_created_on","sys_updated_by","sys_updated_on","type","target_name","update_set","payload"], "Data object must contain all of the following properties {0}.");
+
     dryRun = dryRun || false;
 
     this._initialized = false;

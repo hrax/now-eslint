@@ -1,5 +1,15 @@
 
 class Assert {
+  static _format(text, ...args) {
+    let s = text || "",
+        i = args.length || 0;
+
+    while (i--) {
+        s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), args[i]);
+    }
+    return s;
+};
+
   static notEmpty(value, message) {
     if (value == null || value === "") {
       throw new Error(message);
@@ -80,7 +90,7 @@ class Assert {
 
     const keys = Object.keys(obj);
     if (!props.every((key) => keys.indexOf(key) !== -1)) {
-      throw new Error(message);
+      throw new Error(Assert._format(message, props.join(",")));
     }
   }
 
@@ -92,7 +102,7 @@ class Assert {
 
     const keys = Object.keys(obj);
     if (!props.some((key) => keys.indexOf(key) !== -1)) {
-      throw new Error(message);
+      throw new Error(Assert._format(message, props.join(",")));
     }
   }
 }

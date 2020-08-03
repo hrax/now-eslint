@@ -1,6 +1,14 @@
 const Assert = require("../src/Assert.js");
 
 describe("Assert", () => {
+  it("#_format formats text with proper values", () => {
+    const msg = "A text with a format ref {0} and {1}";
+    const expected = "A text with a format ref 1,2,3 and hello world!";
+
+    expect(Assert._format(msg, [1,2,3].join(","), "hello world!")).toBe(expected);
+    expect(Assert._format(expected)).toBe(expected);
+  });
+
   it("#notEmpty throws error on empty string or null value", () => {
     const msg = "A string value cannot be empty.";
 
