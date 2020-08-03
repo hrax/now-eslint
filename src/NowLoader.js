@@ -120,7 +120,11 @@ class NowLoader {
    */
   async fetch(url) {
     const body = await this.load(url);
-    return JSON.parse(body);
+    try {
+      return JSON.parse(body);
+    } catch (e) {
+      throw new Error("Unable to parse JSON in provided format.");
+    }
   }
 
   async testConnection() {
