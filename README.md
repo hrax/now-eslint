@@ -48,6 +48,7 @@ CLI uses NOW REST API to read necessary information. Easiest setup would be to g
 - TODO: Check if the specified template exists
 - TODO: Allow to mark and skip changes that have field "active" = false
 - TODO: Allow to conditionally lint fields (e.g. if other_field is true/false or if other_field is empty/not empty)
+- TODO: setup to run against specific eslint config not the project one!
 - Nice to have: option to generate report as PDF
 - Nice to have: generate each report into special folder
 - Nice to have: instance profiles
