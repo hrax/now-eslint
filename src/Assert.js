@@ -30,6 +30,12 @@ class Assert {
     }
   }
 
+  static isObject(value, message) {
+    if ((typeof value !== "object")) {
+      throw new Error(message);
+    }
+  }
+
   static isFunction(value, message) {
     if ((typeof value !== "function")) {
       throw new Error(message);
@@ -50,6 +56,42 @@ class Assert {
 
   static isBigInt(value, message) {
     if ((typeof value !== "bigint")) {
+      throw new Error(message);
+    }
+  }
+
+  static objectContainsAllProperties(obj, props, message) {
+    Assert.notNull(obj);
+    Assert.notNull(props);
+    Assert.isObject(obj);
+    Assert.isArray(props);
+
+    const keys = Object.keys(obj);
+    if (!props.every((key) => keys.indexOf(key) !== -1)) {
+      throw new Error(message);
+    }
+  }
+
+  static objectContainsAllProperties(obj, props, message) {
+    Assert.notNull(obj);
+    Assert.notNull(props);
+    Assert.isObject(obj);
+    Assert.isArray(props);
+
+    const keys = Object.keys(obj);
+    if (!props.every((key) => keys.indexOf(key) !== -1)) {
+      throw new Error(message);
+    }
+  }
+
+  static objectContainsSomeProperties(obj, props, message) {
+    Assert.notNull(obj);
+    Assert.notNull(props);
+    Assert.isObject(obj);
+    Assert.isArray(props);
+
+    const keys = Object.keys(obj);
+    if (!props.some((key) => keys.indexOf(key) !== -1)) {
       throw new Error(message);
     }
   }

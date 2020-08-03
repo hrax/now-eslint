@@ -24,6 +24,7 @@ const NowUpdateXMLStatus = {
 };
 
 class NowUpdateXML {
+  // TODO: validate presence of mandatory keys in data map
   constructor(data, dryRun) {
     dryRun = dryRun || false;
 
@@ -55,9 +56,6 @@ class NowUpdateXML {
     if (this._action === NowUpdateXMLAction.INSERT_OR_UPDATE) {
       this._payloadXML = data.payload;
       this._payloadJSON = null;
-    } else {
-      // In case action is not INSERT_OR_UPDATE, we will never need to initialize the payload
-      this._initialized = true;
     }
 
     if (dryRun === false) {
@@ -66,27 +64,29 @@ class NowUpdateXML {
   }
 
   initialize() {
-    if (this._initialized === true || this._action !== NowUpdateXMLAction.INSERT_OR_UPDATE || this._payloadJSON != null) {
-      return;
+    try {
+      if (this._initialized === true || this._action !== NowUpdateXMLAction.INSERT_OR_UPDATE || this._payloadJSON != null) {
+        return;
+      }
+
+      // Parse XML payload into JSON
+      const payloadJSON = JSON.parse(xml2js.xml2json(this._payloadXML, {compact: true}));
+      const record = payloadJSON.record_update;
+      // Sys_dictionary changes do not have table specified as attribute, default to name of the first child
+      const table = record._attributes ? record._attributes.table : Object.keys(record)[0];
+
+      // Set up table value
+      this._table = table;
+
+      // Set up JSON payload to the "top" record element
+      this._payloadJSON = record[table];
+
+      // We have initialized payload, mark as ready to scan
+      this._status = NowUpdateXMLStatus.SCAN;
+    } finally {
+      // Always initialize!
+      this._initialized = true;
     }
-
-    // Parse XML payload into JSON
-    const payloadJSON = JSON.parse(xml2js.xml2json(this._payloadXML, {compact: true}));
-    const record = payloadJSON.record_update;
-    // Sys_dictionary changes do not have table specified as attribute, default to name of the first child
-    const table = record._attributes ? record._attributes.table : Object.keys(record)[0];
-
-    // Set up table value
-    this._table = table;
-
-    // Set up JSON payload to the "top" record element
-    this._payloadJSON = record[table];
-
-    // We have initialized payload, mark as ready to scan
-    this._status = NowUpdateXMLStatus.SCAN;
-
-    // Mark as initialized
-    this._initialized = true;
   }
 
   get isInitialized() {
