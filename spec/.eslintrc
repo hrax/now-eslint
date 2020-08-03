@@ -7,5 +7,9 @@
     "jasmine": true
   },
   "plugins": ["jasmine"],
-  "extends": "plugin:jasmine/recommended"
+  "extends": ["plugin:jasmine/recommended"],
+  "rules": {
+    "no-magic-numbers": "warn",
+    "no-console": "off"
+  }
 }

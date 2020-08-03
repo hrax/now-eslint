@@ -30,7 +30,7 @@ describe("Assert", () => {
   });
 
   it("#notNull does not throw error on non-null value", () => {
-    let value = new Object;
+    let value = {};
     let msg = "A value cannot be null.";
 
     expect(() => Assert.notNull(value, msg)).not.toThrow();
