@@ -1,7 +1,3 @@
-describe("NowLinter", () => {
-  
-  xit("", () => {
-
-  });
+xdescribe("NowLinter", () => {
 
 });

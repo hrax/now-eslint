@@ -1,5 +1,5 @@
 {
-  "name": "now-eslint",
+  "name": "@hrax/now-eslint",
   "version": "1.0.0",
   "description": "NodeJS command to lint update set changes on Service Now instances",
   "keywords": "",

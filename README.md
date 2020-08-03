@@ -11,7 +11,7 @@ Update sets need to be committed locally on the configured instance. Change in t
 
 ## Installation
 
-Execute `npm install` command to install all of the required dependencies.
+Execute `npm install --production` command to install all of the required dependencies.
 
 ## Setup
 

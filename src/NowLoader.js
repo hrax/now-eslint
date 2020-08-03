@@ -89,7 +89,7 @@ class NowLoader {
             }
 
             // If response body is empty resolve reject promise with an error
-            if (data === "") {
+            if (data == null || data === "") {
               reject("Received response body is empty");
               return;
             }
@@ -120,11 +120,6 @@ class NowLoader {
    */
   async fetch(url) {
     const body = await this.load(url);
-
-    if (body === "" || body == null) {
-      throw new Error("Response body is empty or null!");
-    }
-
     return JSON.parse(body);
   }
 
@@ -157,7 +152,7 @@ class NowLoader {
     return this.fetch(UPDATE_XML_BASE_URL + "update_setIN" + ids.join(","));
   }
 
-  async fetchUpdateXMLByUpdateSetXMLIds(ids) {
+  async fetchUpdateXMLByUpdateXMLIds(ids) {
     return this.fetch(UPDATE_XML_BASE_URL + "sys_idIN" + ids.join(","));
   }
 
