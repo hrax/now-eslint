@@ -34,6 +34,7 @@ class NowLinter {
 
     this.changes = {};
     this.tables = Object.assign({}, tables || {}, this._profile.options.tables || {});
+    // TODO: Externalize to a method, needs to be mocked
     this.loader = new NowLoader(this._profile.instance.domain, this._profile.instance.username, this._profile.instance.password);
     this.cli = new CLIEngine(this._profile.options.cliEngine || {});
   }
@@ -92,6 +93,7 @@ class NowLinter {
             change.setSkippedReport();
             return;
           }
+          // TODO: Externalize to a method, needs to be mocked
           const report = this.cli.executeOnText(data);
           report.results[0].filePath = "<" + change.name + "@" + field + ">";
           change.setReport(field, report);
