@@ -10,6 +10,9 @@
     "name": "Gregor Magdolen",
     "url": "https://hrax.dev"
   },
+  "bin": {
+    "now-eslint": "./bin/cli.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/hrax/now-eslint.git"
@@ -20,10 +23,11 @@
     "test": "jasmine"
   },
   "dependencies": {
+    "dotenv": "^8.2.0",
     "ejs": "^3.0.2",
+    "eslint": "^7.6.0",
     "prompt": "^1.0.0",
-    "xml-js": "^1.6.11",
-    "eslint": "^7.6.0"
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "eslint-plugin-jasmine": "^4.1.1",

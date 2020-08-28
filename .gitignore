@@ -1,5 +1,6 @@
 *.sublime-project
 *.sublime-workspace
+*.ENV
 /conf/*.json
 /conf/*.bak
 /POC/config.json

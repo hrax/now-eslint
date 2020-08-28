@@ -1,38 +1,68 @@
 /* eslint-disable no-console */
 const prompt = require("prompt");
+const colors = require("colors/safe");
 const fs = require("fs");
+
 const NowLoader = require("../src/NowLoader.js");
 
-prompt.message = "prompt: ";
+// Check if current folder is initialized... fs works against cwd
+const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json");
+
+prompt.message = "";
 prompt.delimiter = "";
+
+console.log(colors.green(`Will initialize folder on current path '${process.cwd()}'`) + "\n");
 
 const schema = {
   properties: {
+    override: {
+      description: colors.yellow("Current folder is already initialized, do you want to override?"),
+      type: "boolean",
+      default: true,
+      ask: () => {
+        return INITIALIZED;
+      }
+    },
     domain: {
-      description: "Enter the URL to the service now instance:",
-      pattern: /^https:\/\/.*?\/$/,
-      message: "Instance URL must start with 'https://' and must end with '/'",
-      required: true
+      description: colors.green("Enter the URL to the service now instance:"),
+      pattern: /^https:\/\/.*?\/?$/,
+      message: colors.red("Instance URL must start with 'https://' and should end with '/'"),
+      required: true,
+      ask: () => {
+        return !INITIALIZED || prompt.history("override").value;
+      }
     },
     username: {
-      description: "Enter username:",
-      required: true
+      description: colors.green("Enter username:"),
+      required: true,
+      ask: () => {
+        return !INITIALIZED || prompt.history("override").value;
+      }
     },
     password: {
-      description: "Enter password:",
+      description: colors.green("Enter password:"),
       required: true,
-      hidden: true
+      hidden: true,
+      ask: () => {
+        return !INITIALIZED || prompt.history("override").value;
+      }
     },
     // TODO: proxy setup here!
     testConnection: {
-      description: "Do you want to test the connection to the instance?",
+      description: colors.green("Do you want to test the connection to the instance?"),
       type: "boolean",
-      default: true
+      default: true,
+      ask: () => {
+        return !INITIALIZED || prompt.history("override").value;
+      }
     },
     generateTables: {
-      description: "Do you want to generate table data from the instance?",
+      description: colors.green("Do you want to generate table data from the instance?"),
       type: "boolean",
-      default: true
+      default: true,
+      ask: () => {
+        return !INITIALIZED || prompt.history("override").value;
+      }
     }
   }
 };
@@ -46,12 +76,19 @@ prompt.get(schema, (err, result) => {
     return;
   }
 
+  if (!result.override) {
+    return;
+  }
+
   (async function() {
     const conn = {
       "domain": result.domain,
       "username": result.username,
       "password": result.password
     };
+    if (!conn.domain.endsWith("/")) {
+      conn.domain = conn.domain + "/";
+    }
     const loader = new NowLoader(result.domain, result.username, result.password);
     console.log("");
 
@@ -74,11 +111,14 @@ prompt.get(schema, (err, result) => {
       }
     }
 
-    console.log("Generating instance connection configuration");
-    fs.writeFileSync("./conf/instance.json", JSON.stringify(conn));
+    // DOTENV
+    const DOTENV = `SNOW_DOMAIN=${conn.domain}
+SNOW_USERNAME=${conn.username}
+SNOW_PASSWORD=${conn.password}`;
+    fs.writeFileSync("./.ENV", DOTENV);
 
     console.log("Generating linter configuration");
-    fs.copyFileSync("./conf/config.json-example", "./conf/config.json");
+    fs.copyFileSync(require.resolve("../resources/config.json"), "./config.json");
 
     console.log("Generating table configuration");
     if (result.generateTables) {
@@ -102,10 +142,12 @@ prompt.get(schema, (err, result) => {
         tables[table] = getParentFields(table, fields, parents);
       });
 
-      fs.writeFileSync("./conf/tables.json", JSON.stringify(tables));
+      fs.writeFileSync("./tables.json", JSON.stringify(tables));
     } else {
-      fs.copyFileSync("./conf/tables.json-example", "./conf/tables.json");
+      fs.copyFileSync(require.resolve("../resources/tables.json"), "./tables.json");
     }
+
+    fs.copyFileSync(require.resolve("../resources/template-slim.html"), "./template.html");
 
     console.log("Setup completed");
   })();

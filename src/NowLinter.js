@@ -2,14 +2,12 @@
 const fs = require("fs");
 const ejs = require("ejs");
 
-const CLIEngine = require("eslint").CLIEngine;
 // eslint-disable-next-line no-unused-vars
-const Linter = require("eslint").Linter;
+const {CLIEngine, Linter} = require("eslint");
 
 const Assert = require("./Assert");
 const NowLoader = require("./NowLoader");
-const NowUpdateXML = require("./NowUpdateXML").NowUpdateXML;
-const NowUpdateXMLStatus = require("./NowUpdateXML").NowUpdateXMLStatus;
+const {NowUpdateXML, NowUpdateXMLStatus} = require("./NowUpdateXML");
 
 class NowLinter {
   constructor(instance, options, tables) {
@@ -30,19 +28,33 @@ class NowLinter {
       }, options || {})
     };
 
+    // TODO: validation
     // Assert.notEmpty("Query needs to be specified!");
 
     this.changes = {};
     this.tables = Object.assign({}, tables || {}, this._profile.options.tables || {});
-    // TODO: Externalize to a method, needs to be mocked
-    this.loader = new NowLoader(this._profile.instance.domain, this._profile.instance.username, this._profile.instance.password);
-    this.cli = new CLIEngine(this._profile.options.cliEngine || {});
+  }
+
+  /* Lazy init */
+  getLoader() {
+    if (!this.loader) {
+      this.loader = new NowLoader(this._profile.instance.domain, this._profile.instance.username, this._profile.instance.password);
+    }
+    return this.loader;
+  }
+
+  /* Lazy init */
+  getESLintCLI() {
+    if (!this.cli) {
+      this.cli = new CLIEngine(this._profile.options.cliEngine || {});
+    }
+    return this.cli;
   }
 
   async fetch() {
     this.changes = {};
 
-    const response = await this.loader.fetchUpdateXMLByUpdateSetQuery(this._profile.options.query);
+    const response = await this.getLoader().fetchUpdateXMLByUpdateSetQuery(this._profile.options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
@@ -94,7 +106,7 @@ class NowLinter {
             return;
           }
           // TODO: Externalize to a method, needs to be mocked
-          const report = this.cli.executeOnText(data);
+          const report = this.getESLintCLI().executeOnText(data);
           report.results[0].filePath = "<" + change.name + "@" + field + ">";
           change.setReport(field, report);
         });
@@ -199,7 +211,7 @@ class NowLinter {
     return report;
   }
 
-  _saveFile(path, data, force, verbose) {
+  x_saveFile(path, data, force, verbose) {
     if (!force && fs.existsSync(path)) {
       verbose && console.log("Creating backup for '" + path + "'");
       fs.renameSync(path, path + ".bak");
@@ -208,19 +220,9 @@ class NowLinter {
     fs.writeFileSync(path, data);
   }
 
-  report() {
-    console.log("Generating the report from template '" + this._profile.options.template + "'");
-    const data = this.toJSON();
-    this._saveFile("./reports/" + this._profile.options.name + ".json", JSON.stringify(data), false, true);
-    console.log("JSON saved");
-
-    ejs.renderFile("./templates/" + this._profile.options.template + ".html", data, (err, html) => {
-      if (err) {
-        throw Error(err);
-      }
-      this._saveFile("./reports/" + this._profile.options.name + ".html", html, false, true);
-      console.log("Report saved");
-    });
+  async report() {
+    await this.process();
+    return this.toJSON();
   }
 
   static getJSONFieldValue(payload, field) {

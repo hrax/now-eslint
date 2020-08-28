@@ -1,6 +1,27 @@
+/* eslint-disable */
+
+const fs = require("fs");
 
 const prompt = require("prompt");
+const colors = require("colors/safe");
+
+try {
+  require("dotenv").config();
+} catch (e) {
+  console.log(e);
+}
+
 const NowLinter = require("../src/NowLinter");
+
+// Check if current folder is initialized... fs works against cwd
+const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json");
+if (!INITIALIZED) {
+  console.log(colors.red(`Folder "${process.cwd()}" is not initialized. Run "now-eslint setup" first.`));
+  process.exit();
+  return;
+}
+
+console.log(colors.yellow(`Reporting against instance ${process.env.SNOW_DOMAIN}\n`));
 
 prompt.message = "";
 prompt.delimiter = "";
@@ -33,10 +54,18 @@ prompt.get(schema, (err, result) => {
     return;
   }
   console.log("");
+  
+  const instance = {
+    domain: process.env.SNOW_DOMAIN,
+    username: process.env.SNOW_USERNAME,
+    password: process.env.SNOW_PASSWORD
+  };
+  const config = require(process.cwd() + "/config.json") || {};
+  const tables = require(process.cwd() + "/tables.json") || {};
 
-  const instance = require("../conf/instance.json");
-  const config = require("../conf/config.json") || {};
-  const tables = require("../conf/tables.json") || {};
+  console.log(instance);
+  process.exit();
+  return;
 
   config.query = result.query;
   config.title = result.title;
@@ -44,7 +73,6 @@ prompt.get(schema, (err, result) => {
 
   const linter = new NowLinter(instance, config, tables);
   (async function() {
-    await linter.process(true);
-    linter.report(true);
+    await linter.report(true);
   })();
 });
