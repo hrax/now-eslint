@@ -1,5 +1,10 @@
 # NOW ESLint
-CLI and script library to lint code in Update Set changes
+
+NodeJS CLI/Library to lint scripts in update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
+
+Primary goal is to be utilized by user locally using CLI, however option to generate JSON should allow this to be utilized in mid server as an extension to automate release processes using Service Now instance.
+
+Update sets need to be committed locally on the configured instance. Change in the committed update set is linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
 
 ## Repository setup
 
@@ -7,17 +12,13 @@ To be able to install or update packages from GitHub's NPM repository, you will 
 
     @hrax:registry=https://npm.pkg.github.com/
 
-Please note that the setup above will only work for packages under scope `@hrax`.
-
-To be able to download any scoped package from GitHub, the repository setup needs to be as follows
-
-    registry=https://npm.pkg.github.com/
+Please note that the setup above will only work for installation of packages under scope `@hrax`.
 
 ## CLI
 
 ### Installation
 
-If the primary usage of the package will be CLI, it is recommended to install the package globally using
+CLI is the primary usage of the package, and it is recommended to install the package globally using
 
     npm i -g @hrax/now-eslint
 
@@ -38,15 +39,19 @@ Their usage is as follows
  * `.ENV` - This is where the connection information to your instance is saved
  * `config.json` - Tables and ESLint CLI configuration; tables in this file, override tables configured in `tables.json`
  * `tables.json` - Tables and field configuration, usually generated from the instance
- * `template.ejs` - HTML template used to generate the HTML Report
+ * `template.ejs` - HTML template used to generate the HTML Report. You can update this file as you wish to change the visual or functionality of the generated report
 
 ### Execution
 
 To generate an update set report, you should execute following command in the same folder you have set up step earlier.
 
+Update set changes are linted against `.eslintrc` present in the configured folder or in user's profile directory. You can specify custom ESLint CLI config file by using `configFile` in the `config.json` `cliEngine` property.
+
     now-eslint report
 
 You will be guided through a series of questions to provide name, filename and update set query for your report.
+
+Note that linter currently does not allow reporting on custom XML serialized Service Now records such as 'Workflows'. If you encounter such an error, you can specify the table to be skipped in the `config.json` `tables` property.
 
 ## Library
 
