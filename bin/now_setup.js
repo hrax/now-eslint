@@ -1,18 +1,13 @@
 /* eslint-disable no-console */
-const prompt = require("prompt");
-const colors = require("colors/safe");
 const fs = require("fs");
 
-try {
-  require("dotenv").config();
-} catch (e) {
-  console.log(e);
-}
+const prompt = require("prompt");
+const colors = require("colors/safe");
 
 const NowLoader = require("../src/NowLoader.js");
 
 // Check if current folder is initialized... fs works against cwd
-const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json");
+const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json") && fs.existsSync("./template.ejs");
 
 prompt.message = "";
 prompt.delimiter = "";
@@ -96,7 +91,6 @@ prompt.get(schema, (err, result) => {
       conn.domain = conn.domain + "/";
     }
     const loader = new NowLoader(result.domain, result.username, result.password);
-    console.log("");
 
     if (result.testConnection) {
       console.log("Testing connection to the instance.");
@@ -153,7 +147,7 @@ SNOW_PASSWORD=${conn.password}`;
       fs.copyFileSync(require.resolve("../resources/tables.json"), "./tables.json");
     }
 
-    fs.copyFileSync(require.resolve("../resources/template-slim.html"), "./template.ejs");
+    fs.copyFileSync(require.resolve("../resources/template-slim.ejs"), "./template.ejs");
 
     console.log("Setup completed");
   })();

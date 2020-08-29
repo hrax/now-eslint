@@ -1,5 +1,5 @@
 # NOW ESLint
-Library and CLI to lint code in Update Set changes
+CLI and script library to lint code in Update Set changes
 
 ## Repository setup
 
@@ -58,16 +58,35 @@ You will be guided through a series of questions to provide name, filename and u
 
 We use Service Now REST API to read necessary information from the instance. Easiest setup would be to give the account `snc_read_only` and `admin` roles. If that is by any chance not possible, make sure account has read access to the following tables as well as access to the REST API.
 
-#### report CLI
+#### Load table-field and table-parent information/setup CLI
 
-- `sys_update_xml`
-- `sys_update_set`
+- `sys_dictionary`  
+fields:  
+    - name
+    - element
+- `sys_db_object`  
+fields:  
+    - name
+    - super_class.name
 
-#### setup CLI
+#### Fetch update set data/report CLI
 
-- `sys_dictionary`
-- `sys_db_object`
-
+- `sys_update_xml`  
+fields:  
+    - name
+    - sys_id
+    - action
+    - sys_created_by
+    - sys_created_on
+    - sys_updated_by
+    - sys_updated_on
+    - type
+    - target_name
+    - update_set
+    - payload
+- `sys_update_set`  
+fields:  
+    - sys_id
 
 ## TODO/Nice to have
 

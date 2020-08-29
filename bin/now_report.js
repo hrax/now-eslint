@@ -1,27 +1,22 @@
 /* eslint-disable */
-
 const fs = require("fs");
 
 const prompt = require("prompt");
 const colors = require("colors/safe");
 
-try {
-  require("dotenv").config();
-} catch (e) {
-  console.log(e);
-}
-
 const NowLinter = require("../src/NowLinter");
 const NowReportGenerator = require("../src/NowReportGenerator");
 
 // Check if current folder is initialized... fs works against cwd
-const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json");
+const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json") && fs.existsSync("./template.ejs");
 if (!INITIALIZED) {
-  console.log(colors.red(`Folder "${process.cwd()}" is not initialized. Run "now-eslint setup" first.`));
+  console.log(colors.red(`Folder '${process.cwd()}' is not initialized. Run "now-eslint setup" first.`));
   return;
 }
 
-console.log(colors.yellow(`Reporting against instance ${process.env.SNOW_DOMAIN}\n`));
+console.log(colors.yellow(`Using following configuration:
+DOMAIN: ${process.env.SNOW_DOMAIN}
+CWD: ${process.cwd()}\n`));
 
 prompt.message = "";
 prompt.delimiter = "";

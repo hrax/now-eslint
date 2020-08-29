@@ -5,7 +5,6 @@ const fs = require("fs");
 
 var args = Array.prototype.slice.call(process.argv, 2);
 
-
 // args
 switch (args[0]) {
   case "setup":
