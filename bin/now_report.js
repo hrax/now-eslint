@@ -18,7 +18,6 @@ const NowReportGenerator = require("../src/NowReportGenerator");
 const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json");
 if (!INITIALIZED) {
   console.log(colors.red(`Folder "${process.cwd()}" is not initialized. Run "now-eslint setup" first.`));
-  process.exit();
   return;
 }
 
@@ -64,25 +63,30 @@ prompt.get(schema, (err, result) => {
   const config = require(process.cwd() + "/config.json") || {};
   const tables = require(process.cwd() + "/tables.json") || {};
 
-  console.log(instance);
-  return;
-
   config.query = result.query;
   config.title = result.title;
 
   const linter = new NowLinter(instance, config, tables);
   (async function() {
-    const report = await linter.report();
-    const generator = new NowReportGenerator(report)
+    console.log(colors.yellow(`Fetching data from the instance`));
+    await linter.fetch();
+
+    console.log(colors.yellow(`Linting fetched data`));
+    await linter.lint();
+    
+
+    console.log(colors.yellow(`Generating report '${config.title}'`));
+    const generator = new NowReportGenerator(linter.toJSON());
 
     // always override
     // read template file
-    const template = fs.readFileSync("./template.html");
+    const template = fs.readFileSync(process.cwd() + "/template.ejs", "utf8");
 
     const html = generator.toHTML(template);
 
+    console.log(colors.yellow(`Saving report '${result.filename}.html'`));
     // save
-    fs.writeFileSync(`./${result.filename}.html`, html);
+    fs.writeFileSync(process.cwd() + `/${result.filename}.html`, html);
 
   })();
 });

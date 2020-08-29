@@ -3,6 +3,12 @@ const prompt = require("prompt");
 const colors = require("colors/safe");
 const fs = require("fs");
 
+try {
+  require("dotenv").config();
+} catch (e) {
+  console.log(e);
+}
+
 const NowLoader = require("../src/NowLoader.js");
 
 // Check if current folder is initialized... fs works against cwd
@@ -147,7 +153,7 @@ SNOW_PASSWORD=${conn.password}`;
       fs.copyFileSync(require.resolve("../resources/tables.json"), "./tables.json");
     }
 
-    fs.copyFileSync(require.resolve("../resources/template-slim.html"), "./template.html");
+    fs.copyFileSync(require.resolve("../resources/template-slim.html"), "./template.ejs");
 
     console.log("Setup completed");
   })();

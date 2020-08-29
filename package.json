@@ -10,12 +10,20 @@
     "name": "Gregor Magdolen",
     "url": "https://hrax.dev"
   },
+  "main": "index.js",
   "bin": {
     "now-eslint": "./bin/cli.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "resources",
+    "index.js",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/hrax/now-eslint.git"
+    "url": "git://github.com/hrax/now-eslint.git"
   },
   "scripts": {
     "setup": "node ./bin/now_setup.js",
@@ -37,5 +45,7 @@
     "node": "^11.13.0",
     "npm": "^6.7.0"
   },
-  "private": true
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
 }

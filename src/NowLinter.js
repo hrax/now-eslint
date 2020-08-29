@@ -107,14 +107,16 @@ class NowLinter {
       });
   }
 
+  changes() {
+    return Object.values(this.changes);
+  }
+
   async process() {
-    console.log("Fetching Update Sets and their changes");
     await this.fetch();
 
-    console.log("Performing ESLint scan on the loaded changes");
     await this.lint();
 
-    return Object.values(this.changes);
+    return this.changes();
   }
 
   toJSON() {

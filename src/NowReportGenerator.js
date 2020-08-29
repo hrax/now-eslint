@@ -6,7 +6,7 @@ class NowReportGenerator {
     this._report = report;
   }
 
-  toHTMLReport(template) {
+  toHTML(template) {
     return ejs.render(template, this._report);
   }
 }
