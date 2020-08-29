@@ -1,4 +1,7 @@
 /* eslint-disable */
+try {
+  require("dotenv").config();
+} catch (e) {}
 const fs = require("fs");
 
 const prompt = require("prompt");
@@ -16,6 +19,7 @@ if (!INITIALIZED) {
 
 console.log(colors.yellow(`Using following configuration:
 DOMAIN: ${process.env.SNOW_DOMAIN}
+USERNAME: ${process.env.SNOW_USERNAME}
 CWD: ${process.cwd()}\n`));
 
 prompt.message = "";

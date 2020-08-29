@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable */
-
-const fs = require("fs");
-
 var args = Array.prototype.slice.call(process.argv, 2);
 
 // args
