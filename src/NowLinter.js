@@ -160,27 +160,7 @@ class NowLinter {
     // TODO: redo this to a id order and separate map
     Object.entries(this.changes).forEach(([key, value]) => {
       ++report.stats.uniqueChanges;
-      report.changes.push([
-        key, {
-          "name": value.name,
-          "id": value.id,
-          "action": value.action,
-          "updateCount": value.updateCount,
-          "createdBy": value.createdBy,
-          "createdOn": value.createdOn,
-          "updatedBy": value.updatedBy,
-          "updatedOn": value.updatedOn,
-          "type": value.type,
-          "targetName": value.targetName,
-          "table": value.table,
-          "updateSet": value.updateSet,
-          "status": value.status,
-          "warningCount": value.warningCount,
-          "errorCount": value.errorCount,
-          "reports": value.reportEntries,
-          "payload": value.payloadXML
-        }
-      ]);
+      report.changes.push([key, value.toJSON()]);
 
       // Do the statistics count
       if (value.status === "IGNORE") {

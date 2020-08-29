@@ -78,14 +78,20 @@ class NowUpdateXML {
       // Sys_dictionary changes do not have table specified as attribute, default to name of the first child
       const table = record._attributes ? record._attributes.table : Object.keys(record)[0];
 
-      // Set up table value
-      this._table = table;
+      if (this._table != null && this._table !== table) {
+        throw new Error(`Initialized table from json '${this._table}' does not match table '${table}' in payload `);
+      }
 
       // Set up JSON payload to the "top" record element
       this._payloadJSON = record[table];
 
-      // We have initialized payload, mark as ready to scan
-      this._status = NowUpdateXMLStatus.SCAN;
+      // If this table is set we initialize from JSON, skip the 2 below
+      if (this._table != null) {
+        // Set up table value
+        this._table = table;
+        // We have initialized payload, mark as ready to scan
+        this._status = NowUpdateXMLStatus.SCAN;
+      }
     } finally {
       // Always initialize!
       this._initialized = true;
@@ -229,6 +235,53 @@ class NowUpdateXML {
 
   get hasErrors() {
     return this._errorCount > 0;
+  }
+
+  toJSON() {
+    const toReturn = {
+      sys_id: this._id,
+      name: this._name,
+      action: this._action,
+      sys_created_by: this._createdBy,
+      sys_created_on: this._createdOn,
+      sys_updated_by: this._updatedBy,
+      sys_updated_on: this._updatedOn,
+      type: this._type,
+      target_name: this._targetName,
+      update_set: this._updateSet,
+      payload: this._payloadXML,
+      table: this._table,
+      status: this._status,
+      reports: this._reports,
+      updateCount: this._updateCount,
+      warningCount: this._warningCount,
+      errorCount: this._errorCount
+    };
+
+    // deep clone object
+    return JSON.parse(JSON.stringify(toReturn));
+  }
+
+  // to create instance from #toJSON method
+  // Allow changes if initialized from JSON?
+  static fromJSON(json, dryRun) {
+    Assert.notNull(json, "Data must not be null.");
+    Assert.isObject(json, "Data must be an Object.");
+    Assert.objectContainsAllProperties(json, ["sys_id","name","action","sys_created_by","sys_created_on","sys_updated_by","sys_updated_on","type","target_name","update_set","payload","table","status","reports","updateCount","warningCount","errorCount"], "JSON object must contain all of the following properties {0}.");
+
+    const update = new NowUpdateXML(json, true);
+
+    update._table = json.table;
+    update._status = json.status;
+    update._reports = json.reports;
+    update._updateCount = json.updateCount;
+    update._warningCount = json.warningCount;
+    update._errorCount = json.errorCount;
+
+    if (!dryRun) {
+      update.initialize();
+    }
+    return update;
   }
 }
 
