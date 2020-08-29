@@ -1,7 +1,4 @@
 /* eslint-disable no-console */
-const fs = require("fs");
-const ejs = require("ejs");
-
 // eslint-disable-next-line no-unused-vars
 const {CLIEngine, Linter} = require("eslint");
 
@@ -11,34 +8,31 @@ const {NowUpdateXML, NowUpdateXMLStatus} = require("./NowUpdateXML");
 
 class NowLinter {
   constructor(instance, options, tables) {
-    this._profile = {
-      instance: Object.assign({
-        "domain": null,
-        "username": null,
-        "password": null
-      }, instance || {}),
-      options: Object.assign({
-        "query": "",
-        "title": "Service Now ESLint Report",
-        "name": "now-eslint-report",
-        "template": "template-slim",
-        "skipInactive": false,
-        "tables": {},
-        "cliEngine": {}
-      }, options || {})
-    };
+    this._profile = Object.assign({
+      "domain": null,
+      "username": null,
+      "password": null
+    }, instance || {});
+
+    this._options = Object.assign({
+      "query": "",
+      "title": "Service Now ESLint Report",
+      "skipInactive": false,
+      "tables": {},
+      "cliEngine": {}
+    }, options || {});
 
     // TODO: validation
     // Assert.notEmpty("Query needs to be specified!");
 
     this.changes = {};
-    this.tables = Object.assign({}, tables || {}, this._profile.options.tables || {});
+    this.tables = Object.assign({}, tables || {}, this._options.tables || {});
   }
 
   /* Lazy init */
   getLoader() {
     if (!this.loader) {
-      this.loader = new NowLoader(this._profile.instance.domain, this._profile.instance.username, this._profile.instance.password);
+      this.loader = new NowLoader(this._profile.domain, this._profile.username, this._profile.password);
     }
     return this.loader;
   }
@@ -46,7 +40,7 @@ class NowLinter {
   /* Lazy init */
   getESLintCLI() {
     if (!this.cli) {
-      this.cli = new CLIEngine(this._profile.options.cliEngine || {});
+      this.cli = new CLIEngine(this._options.cliEngine || {});
     }
     return this.cli;
   }
@@ -54,7 +48,7 @@ class NowLinter {
   async fetch() {
     this.changes = {};
 
-    const response = await this.getLoader().fetchUpdateXMLByUpdateSetQuery(this._profile.options.query);
+    const response = await this.getLoader().fetchUpdateXMLByUpdateSetQuery(this._options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
@@ -86,7 +80,7 @@ class NowLinter {
           return;
         }
 
-        /* if (this._profile.options.skipInactive) {
+        /* if (this._options.skipInactive) {
           let active = NowLinter.getJSONFieldValue(change.payload, "active");
           if (active == null) {
             active = true;
@@ -130,10 +124,10 @@ class NowLinter {
     // TODO: process changes into a JSON
     const report = {
       config: {
-        "domain": this._profile.instance.domain,
-        "query": this._profile.options.query,
-        "title": this._profile.options.title,
-        "name": this._profile.options.name
+        "domain": this._profile.domain,
+        "query": this._options.query,
+        "title": this._options.title,
+        "name": this._options.name
       },
       stats: {
         createdOn: (
@@ -189,15 +183,6 @@ class NowLinter {
     });
 
     return report;
-  }
-
-  x_saveFile(path, data, force, verbose) {
-    if (!force && fs.existsSync(path)) {
-      verbose && console.log("Creating backup for '" + path + "'");
-      fs.renameSync(path, path + ".bak");
-    }
-    verbose && console.log("Saving data to '" + path + "'");
-    fs.writeFileSync(path, data);
   }
 
   async report() {

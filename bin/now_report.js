@@ -12,6 +12,7 @@ try {
 }
 
 const NowLinter = require("../src/NowLinter");
+const NowReportGenerator = require("../src/NowReportGenerator");
 
 // Check if current folder is initialized... fs works against cwd
 const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json");
@@ -34,8 +35,8 @@ const schema = {
     },
     filename: {
       description: "Enter the file name of your report (without an extension):",
-      pattern: /^[a-zA-Z0-9-_]+$/,
-      message: "File name must contain only lower case letters, numbers and  dash (-)",
+      pattern: /^[a-zA-Z0-9\-_]+$/,
+      message: "File name must contain only lower case letters, numbers and dash (-) or underscore (_)",
       required: true
     },
     query: {
@@ -64,15 +65,24 @@ prompt.get(schema, (err, result) => {
   const tables = require(process.cwd() + "/tables.json") || {};
 
   console.log(instance);
-  process.exit();
   return;
 
   config.query = result.query;
   config.title = result.title;
-  config.name = result.filename;
 
   const linter = new NowLinter(instance, config, tables);
   (async function() {
-    await linter.report(true);
+    const report = await linter.report();
+    const generator = new NowReportGenerator(report)
+
+    // always override
+    // read template file
+    const template = fs.readFileSync("./template.html");
+
+    const html = generator.toHTML(template);
+
+    // save
+    fs.writeFileSync(`./${result.filename}.html`, html);
+
   })();
 });
