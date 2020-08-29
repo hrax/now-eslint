@@ -1,44 +1,53 @@
 # NOW ESLint
-NodeJS CLI to lint script update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
+Library and CLI to lint code in Update Set changes
 
-Primary goal is to be utilized by user locally from their own PC, however option to generate JSON should allow this to be utilized in mid server as an extension to automate release processes using Service Now instance.
+## Repository setup
 
-Update sets need to be committed locally on the configured instance. Change in the committed update set is linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
 
-## Download
+## CLI
 
-- Download [latest development version](https://github.com/hrax/now-eslint/archive/master.zip) or check [releases](https://github.com/hrax/now-eslint/releases) for the latest available release
+### Installation
 
-## Installation
+If the primary usage of the package will be CLI, it is recommended to install the package globally using
 
-Execute `npm install --production` command to install all of the required dependencies.
+    npm i -g @hrax/now-eslint
 
-## Setup
+The global installation required to have eslint and all its required plugins installed globally as well.
 
-Execute `npm run setup` command to setup connection to the instance and to generate default linter configuration.
+### Setup
 
-After the setup has been completed you have an option to set additonal configuration in `conf/config.json`:
-- `template`: file name of the report template that should be used to generate a report; report template must be located in templates folder, be a html file and must be specified without the extension
-- `tables`: set of tables that should be additionally checked (extends the `conf/tables.json` file); optional can be removed from the configuration
-- `cliEngine`: options for the [ESLint CLIEngine](https://eslint.org/docs/developer-guide/nodejs-api#cliengine); optional can be removed from the configuration
+Setup for the CLI should be executed in the folder where you want your reports to be generated. Once you have selected the folder, execute command
 
-## Execution
+    now-eslint setup
+
+You will be guided through a series of questions to set up your connection to the instance, test it and have a possibility of a table structure to be generated directly from the configured instance.
+
+After the command has been completed, the folder you executed it in, should now contain 4 files: `.ENV`, `config.json`, `tables.json` and `template.ejs`.
+
+### Execution
 
 Execute `npm run report` command to run and generate your report. Report command will save generated HTML report as well as the report data in JSON format, so they can be processed later if necessary.
 
-## CLI Access
+### CLI Access
 
 CLI uses NOW REST API to read necessary information. Easiest setup would be to give the account `snc_read_only` and `admin` roles. If that is by any chance not possible, make sure account has read access to the following tables as well as access to the REST API.
 
-### report CLI
+#### report CLI
 
 - `sys_update_xml`
 - `sys_update_set`
 
-### setup CLI
+#### setup CLI
 
 - `sys_dictionary`
 - `sys_db_object`
+
+
+## Library
+
+### Installation
+
+### Examples
 
 ## TODO/Nice to have
 
