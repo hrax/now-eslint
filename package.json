@@ -46,6 +46,6 @@
     "npm": "^6.7.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/hrax"
+    "registry": "https://npm.pkg.github.com"
   }
 }
