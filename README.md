@@ -10,7 +10,9 @@ Update sets need to be committed locally on the configured instance. Change in t
 
 To be able to install or update packages from GitHub's NPM repository, you will need need to have following line added in the `.npmrc` file in your project or user profile directory
 
-    @hrax:registry=https://npm.pkg.github.com/
+```
+@hrax:registry=https://npm.pkg.github.com/
+```
 
 Please note that the setup above will only work for installation of packages under scope `@hrax`.
 
@@ -20,7 +22,9 @@ Please note that the setup above will only work for installation of packages und
 
 CLI is the primary usage of the package, and it is recommended to install the package globally using
 
-    npm i -g @hrax/now-eslint
+```
+npm i -g @hrax/now-eslint
+```
 
 The global installation required to have eslint and all its required plugins installed globally as well.
 
@@ -28,7 +32,9 @@ The global installation required to have eslint and all its required plugins ins
 
 Setup for the CLI should be executed in the folder where you want your reports to be generated. Once you have selected the folder, execute command
 
-    now-eslint setup
+```
+now-eslint setup
+```
 
 You will be guided through a series of questions to set up your connection to the instance, test it and have a possibility of a table structure to be generated directly from the configured instance.
 
@@ -47,7 +53,9 @@ To generate an update set report, you should execute following command in the sa
 
 Update set changes are linted against `.eslintrc` present in the configured folder or in user's profile directory. You can specify custom ESLint CLI config file by using `configFile` in the `config.json` `cliEngine` property.
 
-    now-eslint report
+```
+now-eslint report
+```
 
 You will be guided through a series of questions to provide name, filename and update set query for your report.
 
@@ -57,7 +65,45 @@ Note that linter currently does not allow reporting on custom XML serialized Ser
 
 ### Installation
 
+Library is the secondary usage of the package, and it is recommended to install the package into your project using
+
+```
+npm i @hrax/now-eslint
+```
+
+ESLint and its dependencies should be installed in your project as well.
+
 ### Examples
+
+```javascript
+// Load the linter
+const {NowLinter} = require("@hrax/now-eslit");
+
+// Configure connection object
+const connection = {
+  domain: "",
+  username: "",
+  password: ""
+};
+
+// Configuration of the linter, only title and query is mandatory
+const config = {
+  title: "",
+  query: "",
+  tables: {},
+  cliEngine: {}
+};
+
+// Tables to be linted, in format "table_name"; [field1, field2]
+const tables = {};
+
+// Must, until the top-level awaits is enabled
+(async () => {
+  const linter = new NowLinter(connection, config, tables);
+  // the JSON report on the updates in the update sets
+  const report = await linter.report();
+})();
+```
 
 ## Required Instance Access Rights
 
