@@ -86,7 +86,7 @@ class NowUpdateXML {
       this._payloadJSON = record[table];
 
       // If this table is set we initialize from JSON, skip the 2 below
-      if (this._table != null) {
+      if (this._table == null) {
         // Set up table value
         this._table = table;
         // We have initialized payload, mark as ready to scan
