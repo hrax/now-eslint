@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Load the linter
-const {NowLinter} = require("@hrax/now-eslit");
+const {NowLinter} = require("@hrax/now-eslint");
 
 // Configure connection object
 const connection = {
@@ -18,7 +18,9 @@ const config = {
 };
 
 // Tables to be linted, in format "table_name"; [field1, field2]
-const tables = {};
+const tables = {
+  "sys_script_include": ["script"]
+};
 
 // Must, until the top-level awaits is enabled
 (async () => {
