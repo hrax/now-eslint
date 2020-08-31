@@ -1,9 +1,4 @@
 *.sublime-project
 *.sublime-workspace
 *.ENV
-/conf/*.json
-/conf/*.bak
-/POC/config.json
 /node_modules
-/reports/*
-!/reports/.gitignore
