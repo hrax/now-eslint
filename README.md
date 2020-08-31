@@ -1,5 +1,7 @@
 # NOW ESLint
 
+![Build/Test Master](https://github.com/hrax/now-eslint/workflows/Build/Test%20Master/badge.svg) 
+
 NodeJS CLI/Library to lint scripts in update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
 
 Primary goal is to be utilized by user locally using CLI, however option to generate JSON should allow this to be utilized in mid server as an extension to automate release processes using Service Now instance.
