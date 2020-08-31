@@ -73,6 +73,7 @@ describe("NowUpdateXML", () => {
     expect(updateXML.payload["script"]).toBeDefined();
     expect(updateXML.payload["script"]._cdata).toBeDefined();
     expect(updateXML.payload["script"]._cdata).toMatch("TestGlass");
+    expect(updateXML.status).toBe(NowUpdateXMLStatus.SCAN);
   });
 
   it("sets field report", () => {
@@ -136,6 +137,7 @@ describe("NowUpdateXML", () => {
     expect(json.target_name).toBe(data.target_name);
     expect(json.update_set).toBe(data.update_set);
     expect(json.payload).toBe(data.payload);
+    expect(json.status).toBe(NowUpdateXMLStatus.SCAN);
   });
 
   it("will restore instance from JSON", () => {
@@ -161,6 +163,7 @@ describe("NowUpdateXML", () => {
 
     const fromJSON = NowUpdateXML.fromJSON(json, false);
 
+    expect(updateXML.status).toBe(NowUpdateXMLStatus.SKIPPED);
     expect(fromJSON.status).toBe(updateXML.status);
     expect(fromJSON.table).toBe(updateXML.table);
   });
