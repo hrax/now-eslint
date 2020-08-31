@@ -6,16 +6,6 @@ Primary goal is to be utilized by user locally using CLI, however option to gene
 
 Update sets need to be committed locally on the configured instance. Change in the committed update set is linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
 
-## Repository setup
-
-To be able to install or update packages from GitHub's NPM repository, you will need need to have following line added in the `.npmrc` file in your project or user profile directory
-
-```
-@hrax:registry=https://npm.pkg.github.com/
-```
-
-Please note that the setup above will only work for installation of packages under scope `@hrax`.
-
 ## CLI
 
 ### Installation
