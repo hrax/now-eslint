@@ -101,13 +101,15 @@ class NowLinter {
           }
           // TODO: Externalize to a method, needs to be mocked
           const report = this.getESLintCLI().executeOnText(data);
-          report.results[0].filePath = "<" + change.name + "@" + field + ">";
+          if (report.results.length) {
+            report.results[0].filePath = "<" + change.name + "@" + field + ">";
+          }
           change.setReport(field, report);
         });
       });
   }
 
-  changes() {
+  getChanges() {
     return Object.values(this.changes);
   }
 
@@ -116,7 +118,7 @@ class NowLinter {
 
     await this.lint();
 
-    return this.changes();
+    return this.getChanges();
   }
 
   toJSON() {

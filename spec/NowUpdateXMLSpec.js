@@ -24,7 +24,9 @@ describe("NowUpdateXML", () => {
     };
 
     const updateXML = new NowUpdateXML(data, true);
+
     expect(updateXML.isInitialized).toBe(false);
+    expect(updateXML.status).toBe(NowUpdateXMLStatus.IGNORE);
   });
 
   it("do not initialize on non-insert-update action", () => {
