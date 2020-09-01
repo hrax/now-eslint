@@ -122,26 +122,7 @@ SNOW_PASSWORD=${conn.password}`;
 
     console.log("Generating table configuration");
     if (result.generateTables) {
-      const fields = await loader.fetchTableFieldData();
-      const parents = await loader.fetchTableParentData();
-      const tables = {};
-      const getParentFields = function(table, fields, parents, toReturn) {
-        toReturn = toReturn || [];
-        if (fields[table] != null) {
-          toReturn = toReturn.concat(fields[table]);
-          if (parents[table]) {
-            return getParentFields(parents[table], fields, parents, toReturn);
-          }
-        }
-
-        // Return unique set as array
-        return [...new Set(toReturn)];
-      };
-
-      Object.keys(fields).forEach(table => {
-        tables[table] = getParentFields(table, fields, parents);
-      });
-
+      const tables = await loader.fetchTableAndParentFieldData();
       fs.writeFileSync("./tables.json", JSON.stringify(tables));
     } else {
       fs.copyFileSync(require.resolve("../resources/tables.json"), "./tables.json");

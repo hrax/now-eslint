@@ -11,6 +11,6 @@ switch (args[0]) {
     require("./now_report.js");
     break;
   default:
-    console.log(`Available areguments are "setup,report"`);
+    console.log(`Available arguments are "setup,report"`);
     break;
 }

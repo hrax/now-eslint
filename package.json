@@ -33,8 +33,6 @@
     "url": "git://github.com/hrax/now-eslint.git"
   },
   "scripts": {
-    "setup": "node ./bin/now_setup.js",
-    "report": "node ./bin/now_report.js",
     "test": "jasmine"
   },
   "dependencies": {
