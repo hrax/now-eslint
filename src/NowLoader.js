@@ -208,6 +208,7 @@ class NowLoader {
     });
 
     return tables;
+  }
 }
 
 module.exports = NowLoader;
