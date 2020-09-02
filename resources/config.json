@@ -2,9 +2,11 @@
   "tables": {
     "wf_workflow_version": null
   },
-  "cliEngine": {
-    "rules": {
-      "max-len": 0
+  "eslint": {
+    "overrideConfig": {
+      "rules": {
+        "max-len": 0
+      }
     }
   }
 }

@@ -38,7 +38,6 @@ describe("NowLinter", () => {
       "query": "name=Default"
     };
     const linter = _createLinter(options, {"sys_script_include": ["script"]});
-    linter.getLoader();
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
 
     await linter.fetch();
@@ -58,12 +57,10 @@ describe("NowLinter", () => {
     const linter = _createLinter(options, {"sys_script_include": ["script"]});
     
     // Not testing NowLoader
-    linter.getLoader();
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
 
     // Not testing ESLint
-    linter.getESLintCLI();
-    spyOn(linter.cli, "executeOnText").and.returnValue({results: [{
+    spyOn(linter.eslint, "lintText").and.returnValue({results: [{
       warningCount: 0,
       errorCount: 0
     }]});
@@ -73,7 +70,7 @@ describe("NowLinter", () => {
     const changes = linter.getChanges();
 
     expect(linter.loader.fetchUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
-    expect(linter.cli.executeOnText).toHaveBeenCalledTimes(1);
+    expect(linter.eslint.lintText).toHaveBeenCalledTimes(1);
     expect(changes.length).toBe(1);
     expect(changes[0].status).toBe(NowUpdateXMLStatus.OK);
     expect(changes[0].reportEntries[0][0]).toBe("script");
@@ -88,19 +85,17 @@ describe("NowLinter", () => {
     const linter = _createLinter(options, {"sys_script": ["script"]});
     
     // Not testing NowLoader
-    linter.getLoader();
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
 
      // Not testing ESLint
-    linter.getESLintCLI();
-    spyOn(linter.cli, "executeOnText").and.callThrough();
+    spyOn(linter.eslint, "lintText").and.callThrough();
 
     await linter.process();
 
     const changes = linter.getChanges();
 
     expect(linter.loader.fetchUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
-    expect(linter.cli.executeOnText).not.toHaveBeenCalled();
+    expect(linter.eslint.lintText).not.toHaveBeenCalled();
 
     expect(changes.length).toBe(1);
     expect(changes[0].status).toBe(NowUpdateXMLStatus.IGNORE);
@@ -119,19 +114,17 @@ describe("NowLinter", () => {
     const linter = _createLinter(options, {"sys_script_include": ["script"]});
     
     // Not testing NowLoader
-    linter.getLoader();
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
 
      // Not testing ESLint
-    linter.getESLintCLI();
-    spyOn(linter.cli, "executeOnText").and.callThrough();
+    spyOn(linter.eslint, "lintText").and.callThrough();
 
     await linter.process();
 
     const changes = linter.getChanges();
 
     expect(linter.loader.fetchUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
-    expect(linter.cli.executeOnText).not.toHaveBeenCalled();
+    expect(linter.eslint.lintText).not.toHaveBeenCalled();
 
     expect(changes.length).toBe(1);
     expect(changes[0].status).toBe(NowUpdateXMLStatus.SKIPPED);

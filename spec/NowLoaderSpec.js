@@ -93,7 +93,7 @@ describe("NowLoader", () => {
             "super_class.name": "task"
           }
         ]
-      }))
+      }));
 
       await expectAsync(loader.fetchTableParentData()).toBeResolvedTo({"incident": "task", "problem": "task"});
 
@@ -115,7 +115,7 @@ describe("NowLoader", () => {
             "element": "condition"
           }
         ]
-      }))
+      }));
 
       await expectAsync(loader.fetchTableFieldData()).toBeResolvedTo({"sys_script": ["script", "condition"]});
 

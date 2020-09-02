@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
-// eslint-disable-next-line no-unused-vars
-const {CLIEngine, Linter} = require("eslint");
+/* eslint-disable */
+const {ESLint, Linter} = require("eslint");
 
 const Assert = require("./Assert");
 const NowLoader = require("./NowLoader");
@@ -19,7 +18,10 @@ class NowLinter {
       "title": "Service Now ESLint Report",
       "skipInactive": false,
       "tables": {},
-      "cliEngine": {}
+      "eslint": {
+        "overrideConfig": null,
+        "overrideConfigFile": null,
+      }
     }, options || {});
 
     // TODO: validation
@@ -27,28 +29,15 @@ class NowLinter {
 
     this.changes = {};
     this.tables = Object.assign({}, tables || {}, this._options.tables || {});
-  }
 
-  /* Lazy init */
-  getLoader() {
-    if (!this.loader) {
-      this.loader = new NowLoader(this._profile.domain, this._profile.username, this._profile.password);
-    }
-    return this.loader;
-  }
-
-  /* Lazy init */
-  getESLintCLI() {
-    if (!this.cli) {
-      this.cli = new CLIEngine(this._options.cliEngine || {});
-    }
-    return this.cli;
+    this.loader = new NowLoader(this._profile.domain, this._profile.username, this._profile.password);
+    this.eslint = new ESLint(this._options.eslint);
   }
 
   async fetch() {
     this.changes = {};
 
-    const response = await this.getLoader().fetchUpdateXMLByUpdateSetQuery(this._options.query);
+    const response = await this.loader.fetchUpdateXMLByUpdateSetQuery(this._options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
@@ -93,14 +82,14 @@ class NowLinter {
         } */
 
         // For each configured field run lint
-        this.tables[change.table].forEach((field) => {
+        this.tables[change.table].forEach(async (field) => {
           const data = NowLinter.getJSONFieldValue(change.payload, field);
           if (data == null || data === "") {
             change.setSkippedReport();
             return;
           }
-          // TODO: Externalize to a method, needs to be mocked
-          const report = this.getESLintCLI().executeOnText(data);
+          
+          const report = await this.eslint.lintText(data);
           if (report.results.length) {
             report.results[0].filePath = "<" + change.name + "@" + field + ">";
           }
