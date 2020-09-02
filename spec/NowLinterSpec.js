@@ -60,10 +60,10 @@ describe("NowLinter", () => {
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
 
     // Not testing ESLint
-    spyOn(linter.eslint, "lintText").and.returnValue({results: [{
+    spyOn(linter.eslint, "lintText").and.returnValue([{
       warningCount: 0,
       errorCount: 0
-    }]});
+    }]);
 
     await linter.process();
 
