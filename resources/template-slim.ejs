@@ -194,7 +194,7 @@
                         
                         <% 
                             if (change.errorCount > 0 || change.warningCount > 0 ) {
-                            Object.entries(change.reports).forEach(([field, reportSet]) => { 
+                            Object.entries(change.reports).forEach(([field, report]) => { 
                         %>
                         <div>
                             <h6>Report for field '<%= field %>'</h6>
@@ -208,7 +208,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% reportSet.results[0].messages.forEach((message) => { %>
+                                    <% report.messages.forEach((message) => { %>
                                     <tr>
                                         <td><%= message.line %>:<%= message.column %></td>
                                         <td><% if (message.severity === 1) { %>Warning<% } %><% if (message.severity === 2) { %>Error<% } %></td>

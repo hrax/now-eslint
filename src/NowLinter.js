@@ -90,10 +90,10 @@ class NowLinter {
           }
           
           const report = await this.eslint.lintText(data);
-          if (report.results.length) {
-            report.results[0].filePath = "<" + change.name + "@" + field + ">";
+          if (report.length) {
+            report[0].filePath = "<" + change.name + "@" + field + ">";
+            change.setReport(field, report[0]);
           }
-          change.setReport(field, report);
         });
       });
   }
