@@ -136,8 +136,7 @@ class NowLoader {
         return true;
       }
     } catch (err) {
-      console.log("An error occured during testConnection.");
-      console.log(err);
+      throw new Error("An error occured during testConnection.");
     }
     return false;
   }
@@ -187,8 +186,8 @@ class NowLoader {
   }
 
   async fetchTableAndParentFieldData() {
-    const fields = await loader.fetchTableFieldData();
-    const parents = await loader.fetchTableParentData();
+    const fields = await this.fetchTableFieldData();
+    const parents = await this.fetchTableParentData();
     const tables = {};
     const getParentFields = function(table, fields, parents, toReturn) {
       toReturn = toReturn || [];

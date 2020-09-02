@@ -7,10 +7,6 @@ describe("NowLoader", () => {
   beforeEach(async() => {
     loader = new NowLoader("domain", "user", "password");
     loaderLoadSpy = spyOn(loader, "load").and.rejectWith("Received response body is empty");
-
-    // Spy on console
-    // eslint-disable-next-line no-global-assign
-    console = jasmine.createSpyObj("console", ["log"]);
   });
 
   describe("#fetch", () => {
@@ -47,10 +43,9 @@ describe("NowLoader", () => {
 
   describe("#testConnection", () => {
     it("returns false in case of error", async() => {
-      await expectAsync(loader.testConnection()).toBeResolvedTo(false);
+      await expectAsync(loader.testConnection()).toBeRejectedWithError(/An error/);
 
       expect(loader.load).toHaveBeenCalledWith(jasmine.anything());
-      expect(console.log).toHaveBeenCalledTimes(2);
     });
 
     it("returns false in case of bogus response", async() => {
@@ -59,7 +54,6 @@ describe("NowLoader", () => {
       await expectAsync(loader.testConnection()).toBeResolvedTo(false);
 
       expect(loader.load).toHaveBeenCalledWith(jasmine.anything());
-      expect(console.log).toHaveBeenCalledTimes(0);
     });
 
     it("returns true in case of correct response", async() => {
@@ -68,7 +62,6 @@ describe("NowLoader", () => {
       await expectAsync(loader.testConnection()).toBeResolvedTo(true);
 
       expect(loader.load).toHaveBeenCalledWith(jasmine.anything());
-      expect(console.log).toHaveBeenCalledTimes(0);
     });
   });
 
