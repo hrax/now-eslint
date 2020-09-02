@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const fs = require("fs");
+const os = require("os");
 
 const prompt = require("prompt");
 const colors = require("colors/safe");
@@ -118,7 +119,11 @@ SNOW_PASSWORD=${conn.password}`;
     fs.writeFileSync("./.ENV", DOTENV);
 
     console.log("Generating linter configuration");
-    fs.copyFileSync(require.resolve("../resources/config.json"), "./config.json");
+    const config = require("../resources/config.json");
+
+    // TODO: config.eslint.overrideConfigFile = `${os.homedir()}/.eslintrc`;
+
+    fs.writeFileSync("./config.json", JSON.stringify(config));
 
     console.log("Generating table configuration");
     if (result.generateTables) {
