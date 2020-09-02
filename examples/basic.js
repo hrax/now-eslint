@@ -14,7 +14,7 @@ const config = {
   title: "",
   query: "",
   tables: {},
-  cliEngine: {}
+  eslint: {}
 };
 
 // Tables to be linted, in format "table_name"; [field1, field2]
