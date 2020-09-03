@@ -1,6 +1,6 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 
-name: Build/Test Master
+name: Build Test
 
 on:
   push:

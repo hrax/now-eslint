@@ -1,6 +1,6 @@
 # This workflow will run tests using node and then publish a package to NPM when a release is created
 
-name: Release Publish Public to NPM
+name: Public Publish Release to NPM
 
 on:
   release:
