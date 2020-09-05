@@ -23,17 +23,21 @@ class NowLinter {
         "overrideConfigFile": null,
       }
     }, options || {});
+    
+    this.tables = Object.assign({}, tables || {}, this._options.tables || {});
 
     // TODO: validation
     // Assert.notEmpty("Query needs to be specified!");
 
     this.changes = {};
-    this.tables = Object.assign({}, tables || {}, this._options.tables || {});
-
     this.loader = new NowLoader(this._profile.domain, this._profile.username, this._profile.password);
     this.eslint = new ESLint(this._options.eslint);
   }
 
+  /**
+   * Fetch update set changes from the instance. Resets loaded changes on each call!
+   * @returns {void}
+   */
   async fetch() {
     this.changes = {};
 
@@ -52,7 +56,7 @@ class NowLinter {
   }
 
   /**
-   * Lint configured change records. Should be called after the change records
+   * Lint fetched change records. Should be called after the change records
    * have been loaded and processed
    *
    * @see #fetch()
@@ -98,10 +102,17 @@ class NowLinter {
       });
   }
 
+  /**
+   * Return changes fetched in this object
+   */
   getChanges() {
     return Object.values(this.changes);
   }
 
+  /**
+   * Shorthand function, for #fetch and #lint methods. Returns loaded changes.
+   * @returns {Object}
+   */
   async process() {
     await this.fetch();
 
@@ -110,6 +121,11 @@ class NowLinter {
     return this.getChanges();
   }
 
+  /**
+   * Serialize the current state of the report and its changes into a JSON object.
+   * TODO: Deep copy
+   * @returns {Object}
+   */
   toJSON() {
     const now = new Date();
     const slinceNo = -2;
@@ -152,25 +168,15 @@ class NowLinter {
       // Do the statistics count
       if (value.status === "IGNORE") {
         report.stats.type.ignoreCount++;
-      }
-
-      if (value.status === "WARNING") {
+      } else if (value.status === "WARNING") {
         report.stats.type.warningCount++;
-      }
-
-      if (value.status === "ERROR") {
+      } else if (value.status === "ERROR") {
         report.stats.type.errorCount++;
-      }
-
-      if (value.status === "OK") {
+      } else if (value.status === "OK") {
         report.stats.type.okCount++;
-      }
-
-      if (value.status === "SKIPPED") {
+      } else if (value.status === "SKIPPED") {
         report.stats.type.skippedCount++;
-      }
-
-      if (value.status === "SCAN") {
+      } else if (value.status === "SCAN") {
         report.stats.type.scanCount++;
       }
     });
@@ -183,6 +189,12 @@ class NowLinter {
     return this.toJSON();
   }
 
+  /**
+   * Retrieve field value from payload from either parsed CDATA or text or returns null
+   * @param {Object} payload The parsed payload JSON object
+   * @param {String} field The string to retrieve
+   * @returns {String} or null
+   */
   static getJSONFieldValue(payload, field) {
     return (payload[field] && (payload[field]._cdata || payload[field]._text)) || null;
   }

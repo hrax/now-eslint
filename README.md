@@ -41,7 +41,7 @@ Their usage is as follows
 
 To generate an update set report, you should execute following command in the same folder you have set up step earlier.
 
-Update set changes are linted against `.eslintrc` present in the configured folder or in user's profile directory. You can specify custom ESLint CLI config file by using `overrideConfigFile` in the `config.json` `eslint` property.
+Update set changes are linted against `.eslintrc` present in the configured folder or in user's profile directory. You can specify custom ESLint config file by using `overrideConfigFile` in the `config.json` `eslint` property.
 
 ```
 now-eslint report
