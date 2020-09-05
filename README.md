@@ -6,7 +6,7 @@ Primary goal is to be utilized by user locally using CLI, however option to gene
 
 Update sets need to be committed locally on the configured instance. Change in the committed update set is linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
 
-For latest changes see [Patch Notes](#patch-notes) .
+*For latest changes see [Patch Notes](#patch-notes).*
 
 ## CLI
 
