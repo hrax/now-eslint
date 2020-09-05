@@ -10,6 +10,8 @@ const connection = {
 };
 
 // Configuration of the linter, only title and query is mandatory
+// Tables property has the same format as const tables below
+// See https://eslint.org/docs/developer-guide/nodejs-api#eslint-class for available options for eslint property
 const config = {
   title: "",
   query: "",
