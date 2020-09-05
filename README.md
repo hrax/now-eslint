@@ -6,6 +6,8 @@ Primary goal is to be utilized by user locally using CLI, however option to gene
 
 Update sets need to be committed locally on the configured instance. Change in the committed update set is linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
 
+For latest changes see (Patch Notes)[#Patch Notes] .
+
 ## CLI
 
 ### Installation
@@ -141,3 +143,9 @@ fields:
 - Nice to have: option to generate report as PDF
 - Nice to have: generate table conditional field configuration based on dictionary dependent field?
 - Nice to have: custom parse complex changes (e.g. workflow) to be able to lint selected nested complex records
+
+## Patch Notes
+### v0.0.3
+
+- Removed use of deprecated ESLint CLI.  
+  This resulted in change of property `cliEngine` with `eslint`. Running `now-eslint setup` in new folder is recommended.
