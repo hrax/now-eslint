@@ -149,5 +149,6 @@ fields:
 ## Patch Notes
 ### v0.0.3
 
-- Removed use of deprecated ESLint CLI.  
-  This resulted in change of property `cliEngine` with `eslint`. Running `now-eslint setup` in new folder is recommended.
+- Updated ESLint to v7.8.1
+- Removed use of deprecated ESLint CLI as a preparation for ESLint v8.  
+  This resulted in change of property `cliEngine` with `eslint`. Running `now-eslint setup` in new folder is recommended; you can then copy the new generated `config.json` to the old folder or keep using the new one.

@@ -23,6 +23,12 @@ const DICTIONARY_SCRIPTS_BASE_URL = "api/now/table/sys_dictionary?sysparm_displa
 const DB_OBJECT_CHILDREN_BASE_URL = "api/now/table/sys_db_object?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_query=super_class.name!=sys_metadata^ORDERBYname&sysparm_fields=name,super_class.name";
 
 class NowLoader {
+  /**
+   * Create new instance of NowLoader to load the data from the Service Now instance
+   * @param {String} domain The domain to connect to
+   * @param {String} username The username to use to login
+   * @param {String} password The password to use to login
+   */
   constructor(domain, username, password) {
     Assert.notEmpty(domain, "Domain must be specified");
     Assert.notEmpty(username, "Username must be specified");
@@ -41,7 +47,7 @@ class NowLoader {
   /**
    * Load JSON data url from the domain using the username and password
    * @param  {String} url the URL to load
-   * @return {Promise} Promise
+   * @return {Promise} Promise The Promise will be rejected in case of: reponse status code is not 200, response is empty or response starts with "<" character
    */
   async load(url) {
     // Cleanup; remove starting slash
@@ -115,8 +121,9 @@ class NowLoader {
 
   /**
    * Fetch the data from the url as a JSON object
-   * @param  {[type]} url the URL to fetch
-   * @return {[type]} parsed JSON object
+   * @param  {String} url the URL to fetch w/o domain
+   * @return {Object} parsed JSON object
+   * @throws {Error} when fetched response cannot be parsed into JSON
    */
   async fetch(url) {
     const body = await this.load(url);
@@ -127,6 +134,12 @@ class NowLoader {
     }
   }
 
+  /**
+   * Test the connection to the configured instance by loading one update set with name=Default.
+   * Even per mutiple application scopes there should be at least one update set wiuth given name.
+   * @returns {boolean} true if connection was sucessfull and we managed to load the details, false if something above failed
+   * @throws {Error} if an error occurs during the connection
+   */
   async testConnection() {
     try {
       // Load one update set named default; every instance should have one
@@ -141,6 +154,11 @@ class NowLoader {
     return false;
   }
 
+  /**
+   * Fetches and returns update set changes, based on provided update set query
+   * @param {String} query The update set query to load changes by
+   * @returns {Object} parsed JSON response
+   */
   async fetchUpdateXMLByUpdateSetQuery(query) {
     const response = await this.fetch(UPDATE_SET_BASE_URL + query);
     const ids = [];
@@ -151,14 +169,32 @@ class NowLoader {
     return this.fetchUpdateXMLByUpdateSetIds(ids);
   }
 
+  /**
+   * Fetches and returns update set changes, based on provided update set id array
+   * @param {Array} ids The id array of update set changes to load
+   * @returns {Object} parsed JSON response
+   */
   async fetchUpdateXMLByUpdateSetIds(ids) {
     return this.fetch(UPDATE_XML_BASE_URL + "update_setIN" + ids.join(","));
   }
 
+  /**
+   * Fetches and returns update xml changes, based on provided id array
+   * @param {Array} ids The id array of update xmls to load
+   * @returns {Object} parsed JSON response
+   */
   async fetchUpdateXMLByUpdateXMLIds(ids) {
     return this.fetch(UPDATE_XML_BASE_URL + "sys_idIN" + ids.join(","));
   }
 
+  /**
+   * Fetch table parent data and returns it in following format:
+   * {
+   *  "table1": "table1parent",
+   *  "table2": "table2parent"
+   * }
+   * @returns {Object} table-parent JSON object
+   */
   async fetchTableParentData() {
     const response = await this.fetch(DB_OBJECT_CHILDREN_BASE_URL);
     const toReturn = {};
@@ -170,6 +206,14 @@ class NowLoader {
     return toReturn;
   }
 
+  /**
+   * Fetch table field data (all fields of type script for given table, no parents check) and returns it in following format:
+   * {
+   *  "table1": ["field1", "field2"],
+   *  "table2": ["field1", "field2"]
+   * }
+   * @returns {Object} table-parent JSON object
+   */
   async fetchTableFieldData() {
     const response = await this.fetch(DICTIONARY_SCRIPTS_BASE_URL);
     const toReturn = {};
@@ -185,6 +229,16 @@ class NowLoader {
     return toReturn;
   }
 
+  /**
+   * Fetched table-field data including the fields from the defined parent tables and returns an object in format:
+   * {
+   *  "table1": ["field1", "parentfield1"],
+   *  "table2": ["field1", "field2"]
+   * }
+   * @returns {Object} table-field JSON object
+   * @see fetchTableParentData
+   * @see fetchTableFieldData
+   */
   async fetchTableAndParentFieldData() {
     const fields = await this.fetchTableFieldData();
     const parents = await this.fetchTableParentData();
