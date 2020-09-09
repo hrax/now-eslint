@@ -27,11 +27,11 @@ class NowLinter {
     this.tables = Object.assign({}, tables || {}, this._options.tables || {});
 
     // TODO: validation
-    // Assert.notEmpty("Query needs to be specified!");
+    Assert.notEmpty(this._options.query, "Query in options needs to be specified!");
 
-    this.changes = {};
     this.loader = new NowLoader(this._profile.domain, this._profile.username, this._profile.password);
     this.eslint = new ESLint(this._options.eslint);
+    this.changes = {};
   }
 
   /**

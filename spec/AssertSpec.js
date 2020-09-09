@@ -31,6 +31,14 @@ describe("Assert", () => {
     expect(() => Assert.notUndefined(null, msg)).not.toThrow();
   });
 
+  it("#isTrue throws error on false condition", () => {
+    const msg = "A true condition must be defined!";
+
+    expect(() => Assert.isTrue(false, msg)).toThrow(new Error(msg));
+    expect(() => Assert.isTrue(false)).toThrowError(/Non-true value/);
+    expect(() => Assert.isTrue(true)).not.toThrow();
+  });
+
   it("#isString throws error on non-string value", () => {
     const msg = "A value must be type of String.";
 

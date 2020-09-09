@@ -62,6 +62,18 @@ class Assert {
   }
 
   /**
+   * Throws an Error if passed condition is not true
+   * @param {Boolean} condition The condition to verify
+   * @param {String} message The message to throw as an Error
+   */
+  static isTrue(condition, message) {
+    Assert.notNull(condition);
+    if (!condition) {
+      throw new Error(message || "Non-true value detected!");
+    }
+  }
+
+  /**
    * Throws an Error if passed value is not of type String
    * @param {Object} value The value to check
    * @param {String} message The message to throw as an Error
