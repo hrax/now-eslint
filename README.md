@@ -49,7 +49,7 @@ Update set changes are linted against `.eslintrc` present in the configured fold
 now-eslint report
 ```
 
-You will be guided through a series of questions to provide name, filename and update set query for your report.
+You will be guided through a series of questions to provide name, filename and update set query (for example "name=Default") for your report.
 
 Note that linter currently does not allow reporting on custom XML serialized Service Now records such as 'Workflows'. If you encounter such an error, you can specify the table to be skipped in the `config.json` `tables` property.
 
@@ -111,6 +111,7 @@ We use Service Now REST API to read necessary information from the instance. Eas
 fields:  
     - name
     - element
+    - default_value
 - `sys_db_object`  
 fields:  
     - name
@@ -147,6 +148,11 @@ fields:
 - Nice to have: custom parse complex changes (e.g. workflow) to be able to lint selected nested complex records
 
 ## Patch Notes
+### v0.0.4
+
+- Updated nodejs engine to support NodeJS v12
+- WIP: Allow to skip linting default values
+
 ### v0.0.3
 
 - Updated ESLint to v7.8.1
