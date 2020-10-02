@@ -108,19 +108,82 @@ describe("NowLoader", () => {
         "result": [
           {
             "name": "sys_script",
-            "element": "script"
+            "element": "script",
+            "default_value": `(function executeRule(current, previous /*null when async*/) {
+
+              // Add your code here
+            
+            })(current, previous);`
           },
           {
             "name": "sys_script",
-            "element": "condition"
+            "element": "condition",
+            "default_value": ""
           }
         ]
       }));
 
-      await expectAsync(loader.fetchTableFieldData()).toBeResolvedTo({"sys_script": ["script", "condition"]});
+      // Hash calculated manually for test
+      const expected = {
+        "sys_script": {
+          "fields": ["script", "condition"],
+          "defaults": {
+            "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+          }
+        }
+      }
+      
+      await expectAsync(loader.fetchTableFieldData()).toBeResolvedTo(expected);
 
       expect(loader.load).toHaveBeenCalledTimes(1);
       expect(loader.load).toHaveBeenCalledWith(jasmine.stringMatching("sys_dictionary"));
+    });
+  });
+
+  describe("#fetchTableAndParentFieldData", () => {
+    it("merges table and parent data", async() => {
+      loaderLoadSpy.and.returnValues(JSON.stringify({
+        "result": [
+          {
+            "name": "sys_script",
+            "element": "script",
+            "default_value": `(function executeRule(current, previous /*null when async*/) {
+
+              // Add your code here
+            
+            })(current, previous);`
+          },
+          {
+            "name": "sys_script_client",
+            "element": "condition",
+            "default_value": ""
+          }
+        ]
+      }), JSON.stringify({
+        "result": [
+          {
+            "name": "sys_script_client",
+            "super_class.name": "sys_script"
+          }
+        ]
+      }));
+
+      await expectAsync(loader.fetchTableAndParentFieldData()).toBeResolvedTo({
+        "sys_script": {
+          "fields": ["script"],
+          "defaults": {
+            "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+          }
+        },
+        "sys_script_client": {
+          "fields": ["condition", "script"],
+          "defaults": {
+            "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+          }
+        }
+      });
+      expect(loader.load).toHaveBeenCalledTimes(2);
+
     });
   });
 });

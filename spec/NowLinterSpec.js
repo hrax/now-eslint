@@ -37,7 +37,14 @@ describe("NowLinter", () => {
       "title": "Test Report",
       "query": "name=Default"
     };
-    const linter = _createLinter(options, {"sys_script_include": ["script"]});
+    const linter = _createLinter(options, {
+      "sys_script_include": {
+        "fields": ["script"],
+        "defaults": {
+          "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+        }
+      }
+    });
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
 
     await linter.fetch();
@@ -54,7 +61,14 @@ describe("NowLinter", () => {
       "title": "Test Report",
       "query": "name=Default"
     };
-    const linter = _createLinter(options, {"sys_script_include": ["script"]});
+    const linter = _createLinter(options, {
+      "sys_script_include": {
+        "fields": ["script"],
+        "defaults": {
+          "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+        }
+      }
+    });
     
     // Not testing NowLoader
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
@@ -82,7 +96,14 @@ describe("NowLinter", () => {
       "query": "name=Default"
     };
     
-    const linter = _createLinter(options, {"sys_script": ["script"]});
+    const linter = _createLinter(options, {
+      "sys_script": {
+        "fields": ["script"],
+        "defaults": {
+          "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+        }
+      }
+    });
     
     // Not testing NowLoader
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
@@ -111,7 +132,51 @@ describe("NowLinter", () => {
       "query": "name=Default"
     };
     
-    const linter = _createLinter(options, {"sys_script_include": ["script"]});
+    const linter = _createLinter(options, {
+      "sys_script_include": {
+        "fields": ["script"],
+        "defaults": {
+          "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+        }
+      }
+    });
+    
+    // Not testing NowLoader
+    spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
+
+     // Not testing ESLint
+    spyOn(linter.eslint, "lintText").and.callThrough();
+
+    await linter.process();
+
+    const changes = linter.getChanges();
+
+    expect(linter.loader.fetchUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
+    expect(linter.eslint.lintText).not.toHaveBeenCalled();
+
+    expect(changes.length).toBe(1);
+    expect(changes[0].status).toBe(NowUpdateXMLStatus.SKIPPED);
+    expect(changes[0].hasReports).toBe(false);
+  });
+
+  it("Skip on default value", async () => {
+    payload = fs.readFileSync("./spec/payloads/sys_script_include_default_script.xml", {encoding: "utf8"});
+    data.payload = payload;
+
+    const options = {
+      "title": "Test Report",
+      "query": "name=Default"
+    };
+    
+    // FIXME: why is the hash from xml calculated differently?
+    const linter = _createLinter(options, {
+      "sys_script_include": {
+        "fields": ["script"],
+        "defaults": {
+          "script": "ecba1e1635d91377085928e7bbe4ed97f51e4a2ab68ed105a5d4140df7a5d001"
+        }
+      }
+    });
     
     // Not testing NowLoader
     spyOn(linter.loader, "fetchUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});

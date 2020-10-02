@@ -1,6 +1,7 @@
 /* eslint-disable no-console, max-len */
 const http = require("https");
 const Assert = require("./Assert.js");
+const crypto = require("crypto");
 
 /**
  * Base URL to load the update set xml changes ordered descending by updated on field
@@ -15,7 +16,7 @@ const UPDATE_SET_BASE_URL = "api/now/table/sys_update_set?sysparm_display_value=
 /**
  * Base URL to load the fields of type script from the dictionary
  */
-const DICTIONARY_SCRIPTS_BASE_URL = "api/now/table/sys_dictionary?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_query=internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement&sysparm_fields=name,element";
+const DICTIONARY_SCRIPTS_BASE_URL = "api/now/table/sys_dictionary?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_query=internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement&sysparm_fields=name,element,default_value";
 
 /**
  * Base URL to load the tables that have parent which is not empty or not "Application File" order ascending by name
@@ -209,8 +210,17 @@ class NowLoader {
   /**
    * Fetch table field data (all fields of type script for given table, no parents check) and returns it in following format:
    * {
-   *  "table1": ["field1", "field2"],
-   *  "table2": ["field1", "field2"]
+   *  "table1": {
+   *    fields: ["field1", "field2"],
+   *    defaults: {
+   *      "field1": "default_value_hash"
+   *    }
+   *  },
+   *  "table2": {
+   *    fields: ["field1", "field2"],
+   *    defaults: {
+   *      "field2": "default_value_hash"
+   *    }
    * }
    * @returns {Object} table-parent JSON object
    */
@@ -220,9 +230,18 @@ class NowLoader {
 
     response.result.forEach((record) => {
       if (!toReturn[record.name]) {
-        toReturn[record.name] = [record.element];
-      } else {
-        toReturn[record.name].push(record.element);
+        toReturn[record.name] = {
+          fields: [],
+          defaults: {}
+        };
+      }
+      
+      toReturn[record.name].fields.push(record.element);
+      if (record.default_value && record.default_value.trim() !== "") {
+        const hash = crypto.createHash("sha256")
+          .update(record.default_value)
+          .digest("hex");
+        toReturn[record.name].defaults[record.element] = hash;
       }
     });
 
@@ -232,8 +251,19 @@ class NowLoader {
   /**
    * Fetched table-field data including the fields from the defined parent tables and returns an object in format:
    * {
-   *  "table1": ["field1", "parentfield1"],
-   *  "table2": ["field1", "field2"]
+   *  "table1": {
+   *    fields: ["field1", "parentfield1"],
+   *    defaults: {
+   *      "field1": "default_value_hash",
+   *      "parentfield1": "default_value_hash"
+   *    }
+   *  },
+   *  "table2": {
+   *    fields: ["field1", "field2"],
+   *    defaults: {
+   *      "field1": "default_value_hash"
+   *    }
+   *  }
    * }
    * @returns {Object} table-field JSON object
    * @see fetchTableParentData
@@ -243,17 +273,22 @@ class NowLoader {
     const fields = await this.fetchTableFieldData();
     const parents = await this.fetchTableParentData();
     const tables = {};
+    
     const getParentFields = function(table, fields, parents, toReturn) {
-      toReturn = toReturn || [];
+      toReturn = toReturn || {
+        "fields": [],
+        "defaults": {}
+      };
       if (fields[table] != null) {
-        toReturn = toReturn.concat(fields[table]);
+        toReturn.fields = toReturn.fields.concat(fields[table].fields);
+        toReturn.defaults = Object.assign(toReturn.defaults, fields[table].defaults);
         if (parents[table]) {
           return getParentFields(parents[table], fields, parents, toReturn);
         }
       }
 
       // Return unique set as array
-      return [...new Set(toReturn)];
+      return toReturn;
     };
 
     Object.keys(fields).forEach(table => {

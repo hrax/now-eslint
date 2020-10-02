@@ -1,5 +1,6 @@
 /* eslint-disable */
 const {ESLint, Linter} = require("eslint");
+const crypto = require("crypto");
 
 const Assert = require("./Assert");
 const NowLoader = require("./NowLoader");
@@ -86,9 +87,16 @@ class NowLinter {
         } */
 
         // For each configured field run lint
-        this.tables[change.table].forEach(async (field) => {
+        this.tables[change.table].fields.forEach(async (field) => {
           const data = NowLinter.getJSONFieldValue(change.payload, field);
           if (data == null || data === "") {
+            change.setSkippedReport();
+            return;
+          }
+          
+          // data is default value
+          const hash = crypto.createHash("sha256").update(data).digest("hex");
+          if (hash === this.tables[change.table].defaults[field]) {
             change.setSkippedReport();
             return;
           }
