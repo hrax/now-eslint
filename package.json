@@ -38,11 +38,17 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "ejs": "^3.0.2",
-    "eslint": "^7.8.1",
+    "https-proxy-agent": "^5.0.0",
     "prompt": "^1.0.0",
-    "xml-js": "^1.6.11"
+    "whatwg-url": "^8.5.0",
+    "xml-js": "^1.6.11",
+    "xmldoc": "^1.1.2",
+    "xpath": "0.0.32"
   },
   "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/eslint-parser": "^7.14.3",
+    "eslint": "^7.27.0",
     "eslint-plugin-jasmine": "^4.1.1",
     "jasmine": "^3.6.1"
   },

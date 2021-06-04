@@ -2,17 +2,19 @@
 const {ESLint, Linter} = require("eslint");
 const crypto = require("crypto");
 
+const helpers = require("./helpers");
 const Assert = require("./Assert");
-const NowLoader = require("./NowLoader");
+const NowInstance = require("./NowInstance");
 const {NowUpdateXML, NowUpdateXMLStatus} = require("./NowUpdateXML");
 
 class NowLinter {
-  constructor(instance, options, tables) {
+  constructor(conn, options, tables) {
     this._profile = Object.assign({
       "domain": null,
       "username": null,
-      "password": null
-    }, instance || {});
+      "password": null,
+      "proxy": null
+    }, conn || {});
 
     this._options = Object.assign({
       "query": "",
@@ -30,7 +32,7 @@ class NowLinter {
     // TODO: validation
     Assert.notEmpty(this._options.query, "Query in options needs to be specified!");
 
-    this.loader = new NowLoader(this._profile.domain, this._profile.username, this._profile.password);
+    this.instance = new NowInstance(this._profile);
     this.eslint = new ESLint(this._options.eslint);
     this.changes = {};
   }
@@ -42,16 +44,14 @@ class NowLinter {
   async fetch() {
     this.changes = {};
 
-    const response = await this.loader.fetchUpdateXMLByUpdateSetQuery(this._options.query);
+    const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this._options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
-      let change = new NowUpdateXML(record, true);
-      if (!this.changes[change.name]) {
-        change.initialize();
-        this.changes[change.name] = change;
-      } else {
-        this.changes[change.name].incrementUpdateCount();
+      const data = helpers.RESTHelper.transformUpdateXMLToData(record);
+      const scan = new NowUpdateXMLScan(new NowUpdateXML(data));
+      if (!this.changes[scan.name]) {
+        this.changes[scan.name] = scan;
       }
     });
   }
@@ -66,11 +66,11 @@ class NowLinter {
   async lint() {
     // Check the changes against configured lint tables
     Object.values(this.changes).filter((change) => {
-      return change.status === NowUpdateXMLStatus.SCAN;
+      return change.report.status === NowUpdateXMLStatus.SCAN;
     })
       .forEach((change) => {
-        if (!this.tables[change.table] || this.tables[change.table] == null) {
-          change.setIgnoreReport();
+        if (change.targetTable == null || !this.tables[change.targetTable] || this.tables[change.targetTable] == null) {
+          change.report.status = NowUpdateXMLStatus.IGNORE;
           return;
         }
 

@@ -16,17 +16,17 @@ class Assert {
    * "Hello {0}!" with value "world" will become Hello world!
    * 
    * @param {*} text The text to replace
-   * @param  {...any} args values to replace the placeholders with
+   * @param {...any} args values to replace the placeholders with
    */
   static _format(text, ...args) {
-    let s = text || "",
-        i = args.length || 0;
+    let s = text || "";
+    let i = args.length || 0;
 
     while (i--) {
-        s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), args[i]);
+      s = s.replace(new RegExp("\\{" + i + "\\}", "gm"), args[i]);
     }
     return s;
-};
+  }
 
   /**
    * Throws an Error if passed value is undefined, null or an empty String
@@ -183,6 +183,26 @@ class Assert {
     const keys = Object.keys(obj);
     if (!props.some((key) => keys.indexOf(key) !== -1)) {
       throw new Error(Assert._format(message  || "Object does not contain some properties!", props.join(",")));
+    }
+  }
+
+  static isOneOf(value, array, message) {
+    Assert.notNull(value);
+    Assert.isArray(array);
+
+    const found = array.find((item) => value.toLowerCase() === item.toLowerCase());
+    if (found === undefined) {
+      throw new Error(message || "Value is not present in the provided array!");
+    }
+  }
+
+  static isOneOfSensitive(value, array, message) {
+    Assert.notNull(value);
+    Assert.isArray(array);
+
+    const found = array.find((item) => value === item);
+    if (found === undefined) {
+      throw new Error(message || "Value is not present in the provided array!");
     }
   }
 }

@@ -1,5 +1,6 @@
-const {NowUpdateXML, NowUpdateXMLAction, NowUpdateXMLStatus} = require("../src/NowUpdateXML.js");
 const fs = require("fs");
+
+const {NowUpdateXML, NowUpdateXMLAction, NowUpdateXMLStatus} = require("../src/NowUpdateXML");
 
 describe("NowUpdateXML", () => {
   it("throws error on incorrect data config.", () => {
@@ -8,7 +9,7 @@ describe("NowUpdateXML", () => {
     expect(() => new NowUpdateXML({})).toThrowError(/Data object must contain all of the following properties/);
   });
 
-  it("dryRun object with basic configuration", () => {
+  xit("dryRun object with basic configuration", () => {
     const data = {
       "name": "",
       "sys_id": "",
@@ -29,53 +30,24 @@ describe("NowUpdateXML", () => {
     expect(updateXML.status).toBe(NowUpdateXMLStatus.IGNORE);
   });
 
-  it("do not initialize on non-insert-update action", () => {
+  it("ignore (report.status) on delete action", () => {
     const data = {
       "name": "",
-      "sys_id": "",
+      "sysId": "",
       "action": NowUpdateXMLAction.DELETE,
-      "sys_created_by": "",
-      "sys_created_on": "",
-      "sys_updated_by": "",
-      "sys_updated_on": "",
+      "createdBy": "",
+      "createdOn": "",
+      "updatedBy": "",
+      "updatedOn": "",
       "type": "",
-      "target_name": "",
-      "update_set": "",
+      "targetName": "",
+      "updateSet": "",
       "payload": ""
     };
 
-    const updateXML = new NowUpdateXML(data, false);
-
-    expect(updateXML.isInitialized).toBe(true);
-    expect(updateXML.payload).not.toBeDefined();
-    expect(updateXML.status).toBe(NowUpdateXMLStatus.IGNORE);
-  });
-
-  // Must be a XML with root element "record_update" and attribute table containing table name with child element having the same value
-  it("properly parses generic XML payload from the JSON", () => {
-    // Path expects the test to be executed from project root via npm test
-    const payload = fs.readFileSync("./spec/payloads/sys_script_include_50ba882f07d610108110f2ae7c1ed00d.xml", {encoding: "utf8"});
-    const data = {
-      "name": "sys_script_include_50ba882f07d610108110f2ae7c1ed00d",
-      "sys_id": "43ca802f07d610108110f2ae7c1ed05a",
-      "action": NowUpdateXMLAction.INSERT_OR_UPDATE,
-      "sys_created_by": "admin",
-      "sys_created_on": "1970-01-01 00:00:01",
-      "sys_updated_by": "admin",
-      "sys_updated_on": "1970-01-01 00:00:01",
-      "type": "Script Include",
-      "target_name": "sys_script_include_50ba882f07d610108110f2ae7c1ed00d",
-      "update_set": "1234",
-      "payload": payload
-    };
-
-    const updateXML = new NowUpdateXML(data, false);
-
-    expect(updateXML.payload).toBeDefined();
-    expect(updateXML.payload["script"]).toBeDefined();
-    expect(updateXML.payload["script"]._cdata).toBeDefined();
-    expect(updateXML.payload["script"]._cdata).toMatch("TestGlass");
-    expect(updateXML.status).toBe(NowUpdateXMLStatus.SCAN);
+    const updateXML = new NowUpdateXML(data);
+    
+    expect(updateXML.report.status).toBe(NowUpdateXMLStatus.IGNORE);
   });
 
   it("sets field report", () => {
