@@ -1,16 +1,21 @@
 /* eslint-disable no-console, max-len */
 const http = require("https");
 const HttpsProxyAgent = require("https-proxy-agent");
-const Assert = require("./Assert.js");
+const Assert = require("../util/Assert");
 
-const PATH_SEPARATOR = "/";
+const URL_PATH_SEPARATOR = "/";
 
 /**
  * Base URL to load the update sets ordered descending by created on field
  */
 const TEST_CONNECTION_PATH = "/api/now/table/sys_update_set?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_fields=sys_id&sysparm_query=ORDERBYDESCsys_created_on^name=Default&sysparm_limit=1";
 
-const RESPONSE_STATUS_OK = 200;
+const RESPONSE_STATUS = {
+  OK: 200,
+  NOT_FOUND: 400,
+  UNAUTHORIZED: 401,
+  ERROR: 500
+};
 
 /**
  * See https://support.servicenow.com/kb?id=kb_article_view&sysparm_article=KB0534905
@@ -23,13 +28,14 @@ class NowRequest {
    * Create new instance of NowRequest to load the data from the Service Now instance
    */
   constructor(options) {
-    this.options = Object.assign({
+    const extended = Object.assign({
       proxy: null,
       domain: "",
       username: "",
       password: "",
       encoding: "utf8",
       timeout: 10000,
+      rejectEmptyResponse: true,
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -37,24 +43,35 @@ class NowRequest {
       }
     }, options || {});
 
-    Assert.notEmpty(this.options.domain, "Service Now domain cannot be empty!");
-    Assert.notEmpty(this.options.username, "Service Now username cannot be empty!");
-    Assert.notEmpty(this.options.password, "Service Now password cannot be empty!");
+    Assert.notEmpty(extended.domain, "Service Now domain cannot be empty!");
+    Assert.notEmpty(extended.username, "Service Now username cannot be empty!");
+    Assert.notEmpty(extended.password, "Service Now password cannot be empty!");
 
     // Cleanup domain; remove ending SEPARATOR
-    if (this.options.domain.endsWith(PATH_SEPARATOR)) {
-      this.options.domain = this.options.domain.slice(0, -1);
+    if (extended.domain.endsWith(URL_PATH_SEPARATOR)) {
+      extended.domain = extended.domain.slice(0, -1);
     }
+
+    Object.freeze(extended);
+    Object.freeze(extended.headers);
+
+    Object.defineProperty(this, "options", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: extended
+    });
   }
 
   request(path, method, headers, body) {
     Assert.notEmpty(path, "Provided path to fetch cannot be empty!");
     Assert.notEmpty(method, "Provided method cannot be empty!");
-    // TODO: Check method is one of GET, POST, PATCH, DELETE, PUT?
+    // TODO: Check method is one of ?
+    Assert.isOneOf(method, ["GET", "POST", "PATCH", "DELETE", "PUT"], "Provided method '{0}' needs to be one of '{1}'!");
 
     // Cleanup path; add starting SEPARATOR
-    if (path && !path.startsWith("/")) {
-      path = PATH_SEPARATOR + path;
+    if (path && !path.startsWith(URL_PATH_SEPARATOR)) {
+      path = URL_PATH_SEPARATOR + path;
     }
 
     const options = {
@@ -65,7 +82,7 @@ class NowRequest {
       "timeout": this.options.timeout
     };
 
-    if (this.options.proxy != null) {
+    if (this.options.proxy != null && this.options.proxy !== "") {
       options.agent = new HttpsProxyAgent(this.options.proxy);
     }
 
@@ -79,7 +96,7 @@ class NowRequest {
 
           response.on("data", (chunk) => {
             // If response status code is not 200 we are not processing any data from the response body
-            if (response.statusCode !== RESPONSE_STATUS_OK) {
+            if (response.statusCode !== RESPONSE_STATUS.OK) {
               return;
             }
             data += chunk;
@@ -87,15 +104,14 @@ class NowRequest {
 
           response.on("end", () => {
             // If response status code is not 200 resolve reject promise with an error
-            if (response.statusCode !== RESPONSE_STATUS_OK) {
-              reject(new Error("Received response status code is '" + response.statusCode + "' expected '" + RESPONSE_STATUS_OK + "'"));
+            if (response.statusCode !== RESPONSE_STATUS.OK) {
+              reject(new Error("Received response status code is '" + response.statusCode + "' expected '" + RESPONSE_STATUS.OK + "'"), response);
               return;
             }
 
-            // TODO: rejectEmptyResponse as an option per request
             // If response body is empty resolve reject promise with an error
-            if (data == null || data === "") {
-              reject(new Error("Received response body is empty"));
+            if (this.options.rejectEmptyResponse && (data == null || data === "")) {
+              reject(new Error("Received response body is empty"), response);
               return;
             }
 
@@ -149,11 +165,11 @@ class NowRequest {
    * @throws {Error} when fetched response cannot be parsed into JSON
    */
   async json(path) {
-    const body = await this.get(path);
+    const data = await this.get(path);
     try {
-      return JSON.parse(body);
+      return JSON.parse(data);
     } catch (e) {
-      throw new Error("Unable to parse JSON in provided format.");
+      throw new Error("Unable to parse response data to JSON.");
     }
   }
 

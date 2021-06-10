@@ -1,3 +1,4 @@
+const NowUpdateXML = require("./now/NowUpdateXML");
 
 const NowUpdateXMLScanStatus = {
   // Do not lint (action delete or not configured table)
@@ -17,33 +18,142 @@ const NowUpdateXMLScanStatus = {
 };
 Object.freeze(NowUpdateXMLScanStatus);
 
-class NowUpdateXMLScan {
-  constructor(update) {
-    Object.defineProperty(this, "update", {
-      value: update,
+class NowUpdateXMLScan extends NowUpdateXML {
+  constructor(data) {
+    super(data);
+    const propertyConfig = {
       configurable: false,
-      writable: false,
       enumerable: true
-    });
-    Object.defineProperty(this, "name", {
-      configurable: false,
-      enumerable: true,
-      get() {
-        return this.update.name;
-      }
-    });
-    Object.defineProperty(this, "payload", {
-      configurable: false,
-      enumerable: true,
-      get() {
-        return this.update.payload;
-      }
-    });
-    this.status = update.action === "DELETE" ? NowUpdateXMLScanStatus.IGNORE : NowUpdateXMLScanStatus.SCAN;
-    this.warningCount = 0;
-    this.errorCount = 0;
+    };
+
+    this.updates = 1;
+    // Map[field, report]
     this.reports = new Map();
+    Object.defineProperty(this, "ignored", Object.assign({}, propertyConfig, {
+      writable: true,
+      enumerable: false,
+      value: false
+    }));
+
+    Object.defineProperty(this, "skipped", Object.assign({}, propertyConfig, {
+      writable: true,
+      enumerable: false,
+      value: false
+    }));
+
+    Object.defineProperty(this, "warningCount", Object.assign({}, propertyConfig, {
+      get() {
+        if (this.reports.size === 0) {
+          return 0;
+        }
+        let count = 0;
+        this.reports.forEach((value, key) => {
+          count = count + value.warningCount;
+        });
+        return count;
+      }
+    }));
+
+    Object.defineProperty(this, "errorCount", Object.assign({}, propertyConfig, {
+      get() {
+        if (this.reports.size === 0) {
+          return 0;
+        }
+        let count = 0;
+        this.reports.forEach((value) => {
+          count = count + value.errorCount;
+        });
+        return count;
+      }
+    }));
+
+    Object.defineProperty(this, "hasWarning", Object.assign({}, propertyConfig, {
+      get() {
+        if (this.reports.size === 0) {
+          return false;
+        }
+        const it = this.reports.values();
+        for (let value of it) {
+          if (value.warningCount > 0) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }));
+
+    Object.defineProperty(this, "hasError", Object.assign({}, propertyConfig, {
+      get() {
+        if (this.reports.size === 0) {
+          return false;
+        }
+        const it = this.reports.values();
+        for (let value of it) {
+          if (value.errorCount > 0) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }));
+
+    Object.defineProperty(this, "status", Object.assign({}, propertyConfig, {
+      get() {
+        if (this.ignored) {
+          return NowUpdateXMLScanStatus.IGNORE;
+        }
+        
+        if (this.skipped) {
+          return NowUpdateXMLScanStatus.SKIPPED;
+        }
+
+        if (this.hasError) {
+          return NowUpdateXMLScanStatus.ERROR;
+        }
+
+        if (this.hasWarning) {
+          return NowUpdateXMLScanStatus.WARNING;
+        }
+
+        if (this.reports.size > 0) {
+          return NowUpdateXMLScanStatus.OK;
+        }
+
+        return this.action.toLowerCase() === "delete" ? NowUpdateXMLScanStatus.IGNORE : NowUpdateXMLScanStatus.SCAN;
+      }
+    }));
+  }
+
+  ignore() {
+    this.ignored = true;
+  }
+
+  skip() {
+    this.skipped = true;
+  }
+
+  incrementUpdateCount() {
+    this.updates++;
+  }
+
+  toJSON() {
+    return Object.assign({}, super.toJSON(), {
+      warningCount: this.warningCount,
+      errorCount: this.errorCount,
+      hasWarning: this.hasWarning,
+      hasError: this.hasError,
+      status: this.status,
+      updates: this.updates,
+      reports: Object.fromEntries(this.reports.entries())
+    });
   }
 }
+
+Object.defineProperty(NowUpdateXMLScan, "STATUS", {
+  enumerable: true,
+  configurable: false,
+  writable: false,
+  value: NowUpdateXMLScanStatus
+});
 
 module.exports = NowUpdateXMLScan;

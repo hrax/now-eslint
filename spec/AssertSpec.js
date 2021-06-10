@@ -1,4 +1,4 @@
-const Assert = require("../src/Assert.js");
+const Assert = require("../src/util/Assert");
 
 describe("Assert", () => {
   it("#_format formats text with proper values", () => {

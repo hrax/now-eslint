@@ -1,4 +1,4 @@
-const Assert = require("./Assert");
+const Assert = require("../util/Assert");
 
 const NowUpdateXMLAction = {
   INSERT_OR_UPDATE: "INSERT_OR_UPDATE",
@@ -37,8 +37,20 @@ class NowUpdateXML {
   }
 
   toJSON() {
-    // Lazy, deep copy of all enumerable properties
-    return JSON.parse(JSON.stringify(this));
+    return {
+      name: this.name,
+      id: this.id,
+      action: this.action,
+      type: this.type,
+      targetName: this.targetName,
+      targetTable: this.targetTable,
+      targetId: this.targetId,
+      updateSet: this.updateSet,
+      createdBy: this.createdBy,
+      createdOn: this.createdOn,
+      updatedBy: this.updatedBy,
+      updatedOn: this.updatedOn
+    };
   }
 }
 

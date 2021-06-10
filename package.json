@@ -39,6 +39,7 @@
     "dotenv": "^8.2.0",
     "ejs": "^3.0.2",
     "https-proxy-agent": "^5.0.0",
+    "pdfmake": "^0.1.71",
     "prompt": "^1.0.0",
     "whatwg-url": "^8.5.0",
     "xml-js": "^1.6.11",
@@ -50,7 +51,7 @@
     "@babel/eslint-parser": "^7.14.3",
     "eslint": "^7.27.0",
     "eslint-plugin-jasmine": "^4.1.1",
-    "jasmine": "^3.6.1"
+    "jasmine": "^3.7.0"
   },
   "engines": {
     "node": ">=11.13.0",

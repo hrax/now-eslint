@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 const crypto = require("crypto");
 
-const Assert = require("./Assert");
+const Assert = require("../util/Assert");
+const NowRequest = require("./NowRequest");
 
 /**
  * Base URL to load the update set xml changes ordered descending by updated on field
@@ -27,13 +28,21 @@ class NowInstance {
   /**
    * Create new instance of NowInstance to load the data from the Service Now instance
    *
-   * @param {NowProfile} profile The instance profile
+   * @param {String} domain The Service Now domain url starting with https://
+   * @param {String} username The name of the user used to autheticate
+   * @param {String} password The password of the user used
    * @param {String} proxy The proxy connection string
    */
-  constructor(profile, proxy) {
-    Assert.notNull(profile);
-    this.profile = profile;
-    this.request = profile.createRequest(proxy);
+  constructor(domain, username, password, proxy) {
+    Assert.notEmpty(domain);
+    Assert.notEmpty(username);
+    Assert.notEmpty(password);
+    this.request = new NowRequest({
+      domain: this.domain,
+      username: this.username,
+      password: this.password,
+      proxy: proxy || null
+    });
   }
 
   /**

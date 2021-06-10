@@ -1,4 +1,4 @@
-const NowRequest = require("../src/NowRequest.js");
+const NowRequest = require("../src/now/NowRequest");
 
 describe("NowRequest", () => {
   const options = {

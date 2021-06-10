@@ -32,6 +32,13 @@ class RESTHelper {
   }
 }
 
-module.exports = {
-  RESTHelper
+class XPathHelper {
+  static parseFieldValue(table, field, payload) {
+    return null;
+  }
 }
+
+module.exports = {
+  RESTHelper,
+  XPathHelper
+};

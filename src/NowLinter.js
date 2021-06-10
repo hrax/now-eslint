@@ -2,39 +2,35 @@
 const {ESLint, Linter} = require("eslint");
 const crypto = require("crypto");
 
-const helpers = require("./helpers");
-const Assert = require("./Assert");
-const NowInstance = require("./NowInstance");
-const {NowUpdateXML, NowUpdateXMLStatus} = require("./NowUpdateXML");
+const Assert = require("./util/Assert");
+const helpers = require("./util/helpers");
+const NOW = require("./now/now");
 
 class NowLinter {
-  constructor(conn, options, tables) {
-    this._profile = Object.assign({
-      "domain": null,
-      "username": null,
-      "password": null,
-      "proxy": null
-    }, conn || {});
-
+  /**
+   * 
+   * @param {NowProfile} profile 
+   * @param {Object} options 
+   */
+  constructor(profile, options) {
     this._options = Object.assign({
+      "proxy": null,
       "query": "",
       "title": "Service Now ESLint Report",
       "skipInactive": false,
-      "tables": {},
       "eslint": {
         "overrideConfig": null,
         "overrideConfigFile": null,
       }
     }, options || {});
-    
-    this.tables = Object.assign({}, tables || {}, this._options.tables || {});
 
     // TODO: validation
     Assert.notEmpty(this._options.query, "Query in options needs to be specified!");
 
-    this.instance = new NowInstance(this._profile);
+    this.profile = profile;
+    this.instance = this.profile.createInstance(this._options.proxy);
     this.eslint = new ESLint(this._options.eslint);
-    this.changes = {};
+    this.changes = new Map();
   }
 
   /**
@@ -42,16 +38,18 @@ class NowLinter {
    * @returns {void}
    */
   async fetch() {
-    this.changes = {};
+    this.changes = new Map();
 
     const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this._options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
       const data = helpers.RESTHelper.transformUpdateXMLToData(record);
-      const scan = new NowUpdateXMLScan(new NowUpdateXML(data));
-      if (!this.changes[scan.name]) {
-        this.changes[scan.name] = scan;
+      const scan = new NowUpdateXMLScan(data);
+      if (!this.changes.has(scan.name)) {
+        this.changes.set(scan.name, scan);
+      } else {
+        this.changes.get(scan.name).incrementUpdateCount();
       }
     });
   }
@@ -65,14 +63,17 @@ class NowLinter {
    */
   async lint() {
     // Check the changes against configured lint tables
-    Object.values(this.changes).filter((change) => {
-      return change.report.status === NowUpdateXMLStatus.SCAN;
-    })
-      .forEach((change) => {
-        if (change.targetTable == null || !this.tables[change.targetTable] || this.tables[change.targetTable] == null) {
-          change.report.status = NowUpdateXMLStatus.IGNORE;
-          return;
-        }
+    this.changes.forEach((scan, name) => {
+      if (scan.status !== "SCAN") {
+        return;
+      }
+      
+      const table = scan.targetTable;
+      const fields = this.profile.getTableFields(table);
+      if (fields.length === 0) {
+        scan.ignore();
+        return;
+      }
 
         /* if (this._options.skipInactive) {
           let active = NowLinter.getJSONFieldValue(change.payload, "active");
@@ -87,24 +88,24 @@ class NowLinter {
         } */
 
         // For each configured field run lint
-        this.tables[change.table].fields.forEach(async (field) => {
-          const data = NowLinter.getJSONFieldValue(change.payload, field);
+        fields.forEach(async (field) => {
+          const data = helpers.XPathHelper.parseFieldValue(table, field, scan.payload);
           if (data == null || data === "") {
-            change.setSkippedReport();
+            scan.skip();
             return;
           }
           
-          // data is default value
+          /* // data is default value
           const hash = crypto.createHash("sha256").update(data).digest("hex");
-          if (hash === this.tables[change.table].defaults[field]) {
-            change.setSkippedReport();
+          if (hash === this.tables[scan.table].defaults[field]) {
+            scan.setSkippedReport();
             return;
-          }
+          } */
           
           const report = await this.eslint.lintText(data);
           if (report.length) {
-            report[0].filePath = "<" + change.name + "@" + field + ">";
-            change.setReport(field, report[0]);
+            report[0].filePath = "<" + scan.name + "@" + field + ">";
+            scan.reports.set(field, report[0]);
           }
         });
       });
@@ -114,12 +115,12 @@ class NowLinter {
    * Return changes fetched in this object
    */
   getChanges() {
-    return Object.values(this.changes);
+    return this.changes;
   }
 
   /**
    * Shorthand function, for #fetch and #lint methods. Returns loaded changes.
-   * @returns {Object}
+   * @returns {Map}
    */
   async process() {
     await this.fetch();

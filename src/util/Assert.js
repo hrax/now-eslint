@@ -192,7 +192,7 @@ class Assert {
 
     const found = array.find((item) => value.toLowerCase() === item.toLowerCase());
     if (found === undefined) {
-      throw new Error(message || "Value is not present in the provided array!");
+      throw new Error(Assert._format(message || "Value '{0}' is not present in the provided array '{1}'!", value, array.join(", ")));
     }
   }
 
@@ -202,7 +202,7 @@ class Assert {
 
     const found = array.find((item) => value === item);
     if (found === undefined) {
-      throw new Error(message || "Value is not present in the provided array!");
+      throw new Error(Assert._format(message || "Value '{0}' is not present in the provided array '{1}'!", value, array.join(", ")));
     }
   }
 }

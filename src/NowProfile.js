@@ -1,5 +1,5 @@
-const Assert = require("./Assert");
-const NowRequest = require("./NowRequest");
+const Assert = require("./util/Assert");
+const NowInstance = require("./now/NowInstance");
 
 class NowProfile {
   constructor(options) {
@@ -21,13 +21,8 @@ class NowProfile {
     // Object.defineProperty(this, "tables", Object.assign({}, propertyConfig, {value: Object.assign({}, options.tables || {})}));
   }
 
-  createRequest(proxy) {
-    return new NowRequest({
-      domain: this.domain,
-      username: this.username,
-      password: this.password,
-      proxy: proxy || null
-    });
+  createInstance(proxy) {
+    return new NowInstance(this.domain, this.username, this.password, proxy || null);
   }
 
   setTables() {}
@@ -39,10 +34,6 @@ class NowProfile {
   getTableFields(table) {}
 
   getTableFieldDefault(table, field) {}
-
-  toJSON() {
-    return JSON.parse(JSON.stringify(this));
-  }
 }
 
 module.exports = NowProfile;
