@@ -20,7 +20,7 @@ describe("NowRequest", () => {
       const path = "/path";
       requestGetSpy.and.resolveTo("{'result': ['test']}");
 
-      await expectAsync(request.json(path)).toBeRejectedWith(new Error("Unable to parse JSON in provided format."));
+      await expectAsync(request.json(path)).toBeRejectedWith(new Error("Unable to parse response data to JSON."));
 
       expect(request.get).toHaveBeenCalledWith(path);
       expect(request.get).toHaveBeenCalledTimes(1);

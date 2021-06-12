@@ -1,5 +1,6 @@
 const Assert = require("./util/Assert");
 const NowInstance = require("./now/NowInstance");
+const NowReportGenerator = require("./NowReportGenerator");
 
 class NowProfile {
   constructor(options) {
@@ -17,7 +18,8 @@ class NowProfile {
     Object.defineProperty(this, "name", Object.assign({}, propertyConfig, {value: options.name}));
     Object.defineProperty(this, "domain", Object.assign({}, propertyConfig, {value: options.domain}));
     Object.defineProperty(this, "username", Object.assign({}, propertyConfig, {value: options.username}));
-    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {value: options.profile}));
+    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {value: options.password}));
+    Object.defineProperty(this, "generatorClassName", Object.assign({}, propertyConfig, {value: options.generatorClassName || null}));
     // Object.defineProperty(this, "tables", Object.assign({}, propertyConfig, {value: Object.assign({}, options.tables || {})}));
   }
 
@@ -25,15 +27,40 @@ class NowProfile {
     return new NowInstance(this.domain, this.username, this.password, proxy || null);
   }
 
-  setTables() {}
+  createGenerator(docDef) {
+    if (this.generatorClassName != null) {
+      // require from current working directory or profile main directory
+      require(`./${this.generatorClassName}`);
+      return new this.generatorClassName(docDef);
+    }
+    return new NowReportGenerator(docDef);
+  }
 
-  addTable() {}
-  
-  hasTable(table) {}
+  setTables(tables) {
+    this.tables = tables;
+  }
 
-  getTableFields(table) {}
+  hasTable(table) {
+    if (this.tables[table] != null) {
+      return true;
+    }
+    return false;
+  }
 
-  getTableFieldDefault(table, field) {}
+  getTableFields(table) {
+    if (!this.hasTable(table)) {
+      return [];
+    }
+    return this.tables[table];
+  }
+
+  static loadProfile(profileName) {
+    throw new Error("TODO:");
+  }
+
+  static saveProfile(profile) {
+    throw new Error("TODO:");
+  }
 }
 
 module.exports = NowProfile;

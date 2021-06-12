@@ -38,9 +38,9 @@ class NowInstance {
     Assert.notEmpty(username);
     Assert.notEmpty(password);
     this.request = new NowRequest({
-      domain: this.domain,
-      username: this.username,
-      password: this.password,
+      domain: domain,
+      username: username,
+      password: password,
       proxy: proxy || null
     });
   }

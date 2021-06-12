@@ -138,19 +138,21 @@ fields:
 
 ## TODO/Nice to have
 
-- TODO: HTTPs Proxy; unauthorized requests should not be rejected anymore
 - TODO: Optimalize generated reports to minimize the file size
 - TODO: Allow to mark and skip changes that have field "active" = false
 - TODO: Allow to conditionally lint fields (e.g. if other_field is true/false or if other_field is empty/not empty)
 - TODO: setup to run against specific eslint config not the project one!
-- Nice to have: option to generate report as PDF
-- Nice to have: generate table conditional field configuration based on dictionary dependent field?
 - Nice to have: custom parse complex changes (e.g. workflow) to be able to lint selected nested complex records
 
 ## Patch Notes
 ### v0.0.4
 
 - Updated nodejs engine to support NodeJS v12
+- Major refactoring and package separation
+- Replaced xml-js with xmldom and xpath parsing of update xml payload as it is more precise
+- Added proxy connection url, that can be used in case proxy connection is required
+- Replaced HTML report with PDF
+- Added NowProfile class that will be later used per-instance profile separation
 - WIP: Allow to skip linting default values
 
 ### v0.0.3

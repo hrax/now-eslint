@@ -10,9 +10,9 @@
     "es6": true,
     "node": true
   },
-  "plugins": [
+  /*"plugins": [
     "@hrax/now-best-practices"
-  ],
+  ],*/
   "extends": "eslint:recommended",
   "rules": {
     /* Stylistic Rules */

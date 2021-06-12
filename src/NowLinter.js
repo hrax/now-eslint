@@ -4,7 +4,7 @@ const crypto = require("crypto");
 
 const Assert = require("./util/Assert");
 const helpers = require("./util/helpers");
-const NOW = require("./now/now");
+const NowUpdateXMLScan = require("./NowUpdateXMLScan");
 
 class NowLinter {
   /**
@@ -70,7 +70,7 @@ class NowLinter {
       
       const table = scan.targetTable;
       const fields = this.profile.getTableFields(table);
-      if (fields.length === 0) {
+      if (fields == null || fields.length === 0) {
         scan.ignore();
         return;
       }
@@ -193,9 +193,22 @@ class NowLinter {
     return report;
   }
 
-  async report() {
-    await this.process();
-    return this.toJSON();
+  report(path, setup) {
+    const generator = this.profile.createGenerator(setup.docDef);
+    generator.setFonts(setup.fonts);
+    if (setup.tableLayouts) {
+      generator.setTableLayouts(setup.tableLayouts);
+    }
+
+    generator.generateReportTitle(this._options.title);
+
+    generator.generateToc();
+
+    // generator.generateLegalNotice();
+    generator.generateReportSummary(this);
+    generator.generateReportFindings(this);
+
+    generator.generate(path);
   }
 
   /**

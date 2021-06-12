@@ -37,13 +37,11 @@
   },
   "dependencies": {
     "dotenv": "^8.2.0",
-    "ejs": "^3.0.2",
     "https-proxy-agent": "^5.0.0",
     "pdfmake": "^0.1.71",
     "prompt": "^1.0.0",
     "whatwg-url": "^8.5.0",
-    "xml-js": "^1.6.11",
-    "xmldoc": "^1.1.2",
+    "xmldom": "^0.6.0",
     "xpath": "0.0.32"
   },
   "devDependencies": {

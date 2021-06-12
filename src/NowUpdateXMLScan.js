@@ -96,6 +96,12 @@ class NowUpdateXMLScan extends NowUpdateXML {
         return false;
       }
     }));
+    
+    Object.defineProperty(this, "hasReports", Object.assign({}, propertyConfig, {
+      get() {
+        return this.reports.size > 0;
+      }
+    }));
 
     Object.defineProperty(this, "status", Object.assign({}, propertyConfig, {
       get() {

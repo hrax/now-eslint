@@ -155,5 +155,21 @@ describe("Assert", () => {
 
     expect(() => Assert.objectContainsSomeProperties(obj, ["e","f","g"], msg)).toThrow(new Error(msg));
     expect(() => Assert.objectContainsSomeProperties(obj, ["a","e","f"], msg)).not.toThrow();
-  })
+  });
+
+  it("#isOneOf", () => {
+    const msg = "Value 'e' is not present in the provided array 'a, B, c, D'!"
+    const oneOf = ["a", "B", "c", "D"];
+
+    expect(() => Assert.isOneOf("e", oneOf)).toThrow(new Error(msg));
+    expect(() => Assert.isOneOf("d", oneOf)).not.toThrow();
+  });
+
+  it("#isOneOfSensitive", () => {
+    const msg = "Value 'd' is not present in the provided array 'a, B, c, D'!"
+    const oneOf = ["a", "B", "c", "D"];
+
+    expect(() => Assert.isOneOfSensitive("d", oneOf)).toThrow(new Error(msg));
+    expect(() => Assert.isOneOfSensitive("D", oneOf)).not.toThrow();
+  });
 });

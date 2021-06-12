@@ -34,7 +34,12 @@ class RESTHelper {
 
 class XPathHelper {
   static parseFieldValue(table, field, payload) {
-    return null;
+    const doc = new dom().parseFromString(payload);
+    const data = xpath.select1(`//record_update/${table}/${field}/text()`, doc);
+    if (data == null) {
+      return null;
+    }
+    return data.nodeValue;
   }
 }
 
