@@ -50,12 +50,16 @@ class NowReportGenerator {
     ]);
   }
 
-  addHeading(heading) {
+  addHeading(heading, toc) {
+    if (toc === undefined) {
+      toc = true;
+    }
+
     this.addContent([
       {
         text: heading,
         style: "heading1",
-        tocItem: true
+        tocItem: toc
       },
       {
         margin: [0, -5, 0, 10],
@@ -65,9 +69,24 @@ class NowReportGenerator {
             x1: 0, y1: 0,
             x2: 515.28, y2: 0,
             lineWidth: 0.5,
-            lineColor: "#dee2e6"
+            lineColor: "#80b3a0"
           }
         ]
+      }
+    ]);
+  }
+
+  addHeading2(heading, toc) {
+    if (toc === undefined) {
+      toc = true;
+    }
+    
+    this.addContent([
+      {
+        text: heading,
+        style: "heading2",
+        tocItem: toc,
+        tocMargin: [10, 0, 0, 0]
       }
     ]);
   }
@@ -96,7 +115,7 @@ class NowReportGenerator {
           y1: 0,
           y2: 0,
           lineWidth: 0.5,
-          lineColor: "#dee2e6"
+          lineColor: "#80b3a0"
         }
       ]
     });
@@ -115,20 +134,15 @@ class NowReportGenerator {
   }
 
   generateToc() {
-    this.addContent([
-      {
-        toc: {
-          title: {text: "Table of Contents", style: "heading1"}
-        }
-      }
-    ]);
+    this.addHeading("Table of Contents", false);
+    this.addContent([{toc: {}}]);
     this.addPageBreak();
   }
 
-  generateLegalNotice() {
+  generateOverview(data) {
     const pkg = require("../package.json");
-    this.addHeading("Legal Disclaimer / Confidentiality Notice");
-
+    
+    this.addHeading("Report overview");
     this.addParagraph([
       "The information in this document is generated from a ",
       {
@@ -136,21 +150,113 @@ class NowReportGenerator {
         link: pkg.homepage,
         style: "link"
       },
-      " (further known as tool) that evaluates code in customer's environment against a defined set of ESLint standards for the implementation of ServiceNow product. You may duplicate this document; and if you do so, you must duplicate it in its entirety."
+      " that evaluates code in ServiceNow update sets against a defined set of ESLint standards for the implementation of ServiceNow product."
     ]);
-    this.addParagraph("Author of the tool (further known as author) does not assume any liability arising out of the content in this document or your use of the information in this document. Author provides this document \"as is\" and assumes no responsibility for any inaccuracies in this document.");
-    this.addParagraph("AUTHOR HEREBY DISCLAIMS ALL WARRANTIES, WHETHER WRITTEN OR ORAL, EXPRESS OR IMPLIED BY LAW OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, ACCURACY, TITLE, NONINFRINGEMENT OR FITNESS FOR ANY PARTICULAR PURPOSE. IN NO EVENT WILL AUTHOR BE LIABLE FOR LOST PROFITS (WHETHER DIRECT OR INDIRECT), FOR INCIDENTAL, CONSEQUENTIAL, PUNITIVE, SPECIAL OR EXEMPLARY DAMAGES (INCLUDING DAMAGE TO BUSINESS, REPUTATION OR GOODWILL), OR INDIRECT DAMAGES OF ANY TYPE HOWEVER CAUSED EVEN IF AUTHOR HAS BEEN ADVISED OF SUCH DAMAGES IN ADVANCE OR IF SUCH DAMAGES WERE FORESEEABLE.");
-    this.addParagraph("\n");
-    this.addParagraph("The content of this document is for informational purposes only and the list of issues scanned in the customer's environment may not be complete or exhaustive. The solution for the identified issue may be outside of the scope of your statement of work for the ServiceNow implementation");
+    this.addParagraph("The content of this document is for informational purposes only and the list of issues scanned in the ServiceNow update sets may not be complete or exhaustive. The solution for the identified issue may be outside of the scope for the ServiceNow implementation.");
+    
+    this.addHeading2("Confidentiality Notice", false);
     this.addParagraph("The content of this document may contain confidential information about the ServiceNow implementation, it is recommended to treat the document as such when considering of sharing it with the 3rd party.");
-    // The automation tool does not collect or store any information except those that are needed to connect to the instance (such as 'domain', 'username' and 'password') to perform the scan (such as 'table' and 'field' configuration).
+
+    if (data.status) {
+      this.addHeading2("Status description", false);
+      const table = {
+        margin: [0, 0, 0, 10],
+        table: {
+          headerRows: 1,
+          widths: ["auto", "*"],
+          body: [
+            [
+              {
+                text: "Status",
+                style: "tableHeaderLight"
+              },
+              {
+                text: "Description",
+                style: "tableHeaderLight"
+              }
+            ]
+          ]
+        },
+        layout: {
+          hLineWidth: function(i, node) {
+            return 0.5;
+          },
+          vLineWidth: function(i, node) {
+            return 0.5;
+          },
+          hLineColor: function(i, node) {
+            return "black";
+          },
+          vLineColor: function(i, node) {
+            return "black";
+          }
+          // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+          // vLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+          // paddingLeft: function(i, node) { return 4; },
+          // paddingRight: function(i, node) { return 4; },
+          // paddingTop: function(i, node) { return 2; },
+          // paddingBottom: function(i, node) { return 2; },
+          // fillColor: function (rowIndex, node, columnIndex) { return null; }
+        }
+      };
+
+      data.status.forEach((item) => {
+        table.table.body.push([
+          {
+            text: `${item.label}`,
+            style: "tableCell"
+          },
+          {
+            text: `${item.description}`,
+            style: "tableCell"
+          }
+        ]);
+      });
+
+      this.addContent([table]);
+    }
+
+
+    /*
+    this.addHeading("Report details");
+    this.addParagraph("The Summary is divided into two sections. First section contains the details about the ServiceNow environment and scan details. Second section contains a list of all definitions that were identified with an error against configured ESLint practices.");
+    */
+
+    this.addHeading("Resources");
+    this.addParagraph([
+      "For an overview of ServiceNow technical best practices, visit the ",
+      {
+        text: "Technical Best Practices",
+        link: "https://developer.servicenow.com/dev.do#!/guides/quebec/now-platform/tpb-guide/scripting_technical_best_practices",
+        style: "link"
+      },
+      " guide (Quebec)."
+    ]);
+
+    if (data.resources) {
+      const ul = [];
+      data.resources.forEach((item) => {
+        ul.push({
+          margin: [0, 0, 0, 3],
+          text: item.label,
+          link: item.link,
+          style: "link"
+        });
+      });
+
+      this.addParagraph("For an ovewview of ESLint rules and practices for this report, visit one of the following:");
+      this.addContent([
+        {
+          margin: [10, 0, 0, 10],
+          ul: ul
+        }
+      ]);
+    }
+
     this.addPageBreak();
   }
 
-  generateReportSummary(linter) {
-    this.addHeading("ESLint Report");
-    this.addParagraph("Lorem ipsum...");
-
+  generateReportSummary(data) {
     this.addHeading("Summary");
     this.addParagraph([
       {
@@ -159,8 +265,8 @@ class NowReportGenerator {
         bold: true
       },
       {
-        text: `${linter.profile.domain}`,
-        link: `${linter.profile.domain}`,
+        text: `${data.domain}`,
+        link: `${data.domain}`,
         style: "link"
       }
     ]);
@@ -171,7 +277,7 @@ class NowReportGenerator {
         bold: true
       },
       {
-        text: `${linter._options.query}`
+        text: `${data.query}`
       }
     ]);
     this.addParagraph([
@@ -181,25 +287,101 @@ class NowReportGenerator {
         bold: true
       },
       {
-        text: `${linter.changes.size}`
+        text: `${data.changes.size}`
       }
     ]);
-    
-    /*this.addHeading("References");
-    this.addParagraph("Lorem ipsum...");*/
+
+    if (data.changes) {
+      this.addParagraph(["\n", "Following table lists all changes that were identified to contain an error and should be reviewed:"]);
+      let table = {
+        table: {
+          headerRows: 1,
+          widths: ["auto", "*", "auto"],
+          body: [
+            [
+              // {
+              //   text: "Number",
+              //   style: "tableHeaderLight"
+              // },
+              {
+                text: "Type",
+                style: "tableHeaderLight"
+              },
+              {
+                text: "Name",
+                style: "tableHeaderLight"
+              },
+              {
+                text: "Errors",
+                style: "tableHeaderLight"
+              }
+            ]
+          ]
+        },
+        layout: {
+          hLineWidth: function(i, node) {
+            return 0.5;
+          },
+          vLineWidth: function(i, node) {
+            return 0.5;
+          },
+          hLineColor: function(i, node) {
+            return "black";
+          },
+          vLineColor: function(i, node) {
+            return "black";
+          }
+          // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+          // vLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+          // paddingLeft: function(i, node) { return 4; },
+          // paddingRight: function(i, node) { return 4; },
+          // paddingTop: function(i, node) { return 2; },
+          // paddingBottom: function(i, node) { return 2; },
+          // fillColor: function (rowIndex, node, columnIndex) { return null; }
+        }
+      };
+
+      data.changes.forEach((scan) => {
+        if (scan.status !== "ERROR") {
+          return;
+        }
+
+        table.table.body.push([
+          {
+            text: scan.type,
+            style: "tableCell"
+          },
+          {
+            text: scan.targetName,
+            linkToDestination: `scan-${scan.id}`,
+            style: ["tableCell", "link"]
+          },
+          {
+            text: `${scan.errorCount}`,
+            style: "tableCell"
+          }
+        ]);
+      });
+
+      this.addContent([table]);
+    }
+
     this.addPageBreak();
   }
 
-  generateReportFindings(linter) {
+  generateReportFindings(data) {
     this.addHeading("Findings");
 
     const results = [];
 
-    linter.changes.forEach((scan, key) => {
+    data.changes.forEach((scan, key) => {
       // Change type and target
       results.push({
-        text: `${scan.type} (${scan.targetName})`,
-        style: "heading2"
+        text: `${scan.targetName} (${scan.type})`,
+        style: "heading2",
+        id: `scan-${scan.id}`,
+        tocItem: true,
+        tocMargin: [10, 0, 0, 0]
       });
 
       // Change details
@@ -304,40 +486,39 @@ class NowReportGenerator {
       });
 
       const links = {
-        margin: [0, 5, 0, 0],
-        columns: [],
+        margin: [0, 0, 0, 10],
+        columns: [
+          {
+            width: "*",
+            text: [
+              {
+                text: "LINKS ",
+                style: "small",
+                bold: true
+              }
+            ]
+          }
+        ],
         columnGap: 5
       };
-      links.columns.push({
-        width: "auto",
-        text: [
-          {
-            text: "Update Set",
-            style: ["small", "link"],
-            link: `${linter.profile.domain}/sys_update_set.do?sys_id=${scan.updateSet}`
-          }
-        ]
-      });
-      links.columns.push({
-        width: "auto",
-        text: [
-          {
-            text: "Change",
-            style: ["small", "link"],
-            link: `${linter.profile.domain}/sys_update_xml.do?sys_id=${scan.id}`
-          }
-        ]
-      });
+      links.columns[0].text.push(
+        {
+          text: "Update Set",
+          style: ["link"],
+          link: `${data.domain}/sys_update_set.do?sys_id=${scan.updateSet}`
+        },
+        "  ",
+        {
+          text: "Change",
+          style: ["link"],
+          link: `${data.domain}/sys_update_xml.do?sys_id=${scan.id}`
+        }
+      );
       if (scan.action !== "DELETE" && scan.targetTable && scan.targetId) {
-        links.columns.push({
-          width: "auto",
-          text: [
-            {
-              text: "Record",
-              style: ["small", "link"],
-              link: `${linter.profile.domain}/${scan.targetTable}.do?sys_id=${scan.targetId}`
-            }
-          ]
+        links.columns[0].text.push("  ", {
+          text: "Record",
+          style: ["link"],
+          link: `${data.domain}/${scan.targetTable}.do?sys_id=${scan.targetId}`
         });
       }
 
@@ -349,44 +530,45 @@ class NowReportGenerator {
             text: `Report for field '${field}'`,
             bold: true,
             style: "heading5",
-            margin: [0, 10, 0, 5]
+            margin: [0, 0, 0, 5]
           });
 
           let table = {
+            margin: [0, 0, 0, 10],
             table: {
               headerRows: 1,
               widths: ["auto", "auto", "auto", "*"],
               body: [
                 [{
                   text: "Line",
-                  style: "tableHeader"
+                  style: "tableHeaderLight"
                 },
                 {
                   text: "Severity",
-                  style: "tableHeader"
+                  style: "tableHeaderLight"
                 },
                 {
                   text: "Rule",
-                  style: "tableHeader"
+                  style: "tableHeaderLight"
                 },
                 {
                   text: "Message",
-                  style: "tableHeader"
+                  style: "tableHeaderLight"
                 }
                 ]
               ]
             },
             layout: {
-              hLineWidth: function (i, node) {
+              hLineWidth: function(i, node) {
                 return 0.5;
               },
-              vLineWidth: function (i, node) {
+              vLineWidth: function(i, node) {
                 return 0.5;
               },
-              hLineColor: function (i, node) {
+              hLineColor: function(i, node) {
                 return "black";
               },
-              vLineColor: function (i, node) {
+              vLineColor: function(i, node) {
                 return "black";
               }
               // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
@@ -425,20 +607,20 @@ class NowReportGenerator {
       }
 
       // Change separator
-      results.push({
-        margin: [0, 15, 0, 15],
-        canvas: [
-          {
-            type: "line",
-            x1: 0,
-            x2: 515.28,
-            y1: 0,
-            y2: 0,
-            lineWidth: 0.5,
-            lineColor: "#dee2e6"
-          }
-        ]
-      });
+      // results.push({
+      //   margin: [0, 15, 0, 15],
+      //   canvas: [
+      //     {
+      //       type: "line",
+      //       x1: 0,
+      //       x2: 515.28,
+      //       y1: 0,
+      //       y2: 0,
+      //       lineWidth: 0.5,
+      //       lineColor: "#80b3a0"
+      //     }
+      //   ]
+      // });
     });
 
     this.addContent(results);

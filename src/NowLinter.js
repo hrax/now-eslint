@@ -13,23 +13,27 @@ class NowLinter {
    * @param {Object} options 
    */
   constructor(profile, options) {
-    this._options = Object.assign({
-      "proxy": null,
-      "query": "",
-      "title": "Service Now ESLint Report",
-      "skipInactive": false,
-      "eslint": {
-        "overrideConfig": null,
-        "overrideConfigFile": null,
-      }
-    }, options || {});
-
     // TODO: validation
-    Assert.notEmpty(this._options.query, "Query in options needs to be specified!");
+    Assert.notEmpty(options.query, "Query in options needs to be specified!");
 
+    Object.defineProperty(this, "options", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: Object.assign({
+        "query": "",
+        "title": "Service Now ESLint Report",
+        "skipInactive": false,
+        "eslint": {
+          "overrideConfig": null,
+          "overrideConfigFile": null,
+        }
+      }, options || {})
+    });
+    
     this.profile = profile;
-    this.instance = this.profile.createInstance(this._options.proxy);
-    this.eslint = new ESLint(this._options.eslint);
+    this.instance = this.profile.createInstance();
+    this.eslint = new ESLint(this.options.eslint);
     this.changes = new Map();
   }
 
@@ -40,7 +44,7 @@ class NowLinter {
   async fetch() {
     this.changes = new Map();
 
-    const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this._options.query);
+    const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this.options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
@@ -75,7 +79,7 @@ class NowLinter {
         return;
       }
 
-        /* if (this._options.skipInactive) {
+        /* if (this.options.skipInactive) {
           let active = NowLinter.getJSONFieldValue(change.payload, "active");
           if (active == null) {
             active = true;
@@ -143,9 +147,9 @@ class NowLinter {
     const report = {
       config: {
         "domain": this._profile.domain,
-        "query": this._options.query,
-        "title": this._options.title,
-        "name": this._options.name
+        "query": this.options.query,
+        "title": this.options.title,
+        "name": this.options.name
       },
       stats: {
         createdOn: (
@@ -194,19 +198,60 @@ class NowLinter {
   }
 
   report(path, setup) {
-    const generator = this.profile.createGenerator(setup.docDef);
+    const data = {
+      domain: this.profile.domain,
+      username: this.profile.username,
+      title: this.options.title,
+      query: this.options.query,
+      changes: this.changes,
+      status: [
+        {
+          label: "OK",
+          description: "Linted, no warnings or erros found"
+        },
+        {
+          label: "ERROR",
+          description: "Linted, at least one error found"
+        },
+        {
+          label: "WARNING",
+          description: "Linted, at least one warning found"
+        },
+        {
+          label: "SKIPPED",
+          description: "Should be linted but does not contain anything to lint"
+        },
+        {
+          label: "IGNORE",
+          description: "Do not lint (action delete or not configured table)"
+        }
+      ],
+      resources: [
+        {
+          label: "aaa",
+          link: "http://example.com"
+        },
+        {
+          label: "bbb",
+          link: "http://example.com"
+        }
+      ]
+    };
+
+    const generator = this.profile.createReportGenerator(setup.docDef);
     generator.setFonts(setup.fonts);
     if (setup.tableLayouts) {
       generator.setTableLayouts(setup.tableLayouts);
     }
 
-    generator.generateReportTitle(this._options.title);
+    generator.generateReportTitle(data.title);
 
     generator.generateToc();
 
     // generator.generateLegalNotice();
-    generator.generateReportSummary(this);
-    generator.generateReportFindings(this);
+    generator.generateOverview(data);
+    generator.generateReportSummary(data);
+    generator.generateReportFindings(data);
 
     generator.generate(path);
   }

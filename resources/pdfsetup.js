@@ -80,17 +80,18 @@ module.exports = function(title) {
       },
       "styles": {
         "title": {
-          "color": "#dc3545",
+          "color": "#293e41",
           "fontSize": 30,
           "alignment": "center",
           "margin": [0, 0, 0, 10]
         },
         "heading1": {
-          "color": "#dc3545",
+          "color": "#293e41",
           "fontSize": 18,
           "margin": [0, 5, 0, 10]
         },
         "heading2": {
+          "color": "#80b3a0",
           "fontSize": 16,
           "margin": [0, 5, 0, 10]
         },
@@ -111,14 +112,21 @@ module.exports = function(title) {
         "tableHeader": {
           "fillColor": "#343a40",
           "color": "#fff",
-          "margin": [3, 2]
+          "margin": [3, 5, 3, 2],
+          "bold": true
+        },
+        "tableHeaderLight": {
+          "fillColor": "#6c757d",
+          "color": "#fff",
+          "margin": [3, 5, 3, 2],
+          "bold": true
         },
         "link": {
           "color": "#0d6efd",
           "decoration": "underline"
         },
         "paragraph": {
-          "margin": [0, 0, 0, 5]
+          "margin": [0, 0, 0, 10]
         }
       }
     }

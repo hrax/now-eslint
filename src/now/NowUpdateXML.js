@@ -1,3 +1,4 @@
+const { customAlphabet } = require("nanoid");
 const Assert = require("../util/Assert");
 
 const NowUpdateXMLAction = {
@@ -21,6 +22,11 @@ class NowUpdateXML {
     // Immutable properties
     Object.defineProperty(this, "name", Object.assign({}, propertyConfig, {value: data.name}));
     Object.defineProperty(this, "id", Object.assign({}, propertyConfig, {value: data.sysId}));
+    // Object.defineProperty(this, "number", Object.assign({}, propertyConfig, {
+    //   value: (() => {
+    //     return customAlphabet("1234567890ABCDEF", 6)();
+    //   })()
+    // }));
     Object.defineProperty(this, "action", Object.assign({}, propertyConfig, {value: data.action}));
     Object.defineProperty(this, "type", Object.assign({}, propertyConfig, {value: data.type}));
     Object.defineProperty(this, "targetName", Object.assign({}, propertyConfig, {value: data.targetName}));
