@@ -2,6 +2,7 @@ const fs = require("fs");
 
 const Assert = require("./util/Assert");
 const NowInstance = require("./now/NowInstance");
+const NowRequest = require("./now/NowRequest");
 const NowReportGenerator = require("./NowReportGenerator");
 
 class NowProfile {
@@ -31,9 +32,22 @@ class NowProfile {
     Object.defineProperty(this, "name", Object.assign({}, propertyConfig, {value: options.name}));
     Object.defineProperty(this, "domain", Object.assign({}, propertyConfig, {value: options.domain}));
     Object.defineProperty(this, "username", Object.assign({}, propertyConfig, {value: options.username}));
-    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {value: options.password}));
-    Object.defineProperty(this, "proxy", Object.assign({}, propertyConfig, {value: options.proxy}));
+    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {
+      value: options.password.startsWith("$$$") ? Buffer.from(options.password.substring(3), "base64").toString("utf8") : options.password
+    }));
+    Object.defineProperty(this, "proxy", Object.assign({}, propertyConfig, {
+      value: options.proxy != null && options.proxy.startsWith("$$$") ? Buffer.from(options.proxy.substring(3), "base64").toString("utf8") : options.proxy || null
+    }));
     Object.defineProperty(this, "customGeneratorClassPath", Object.assign({}, propertyConfig, {value: options.customGeneratorClassPath || null}));
+  }
+
+  createRequest() {
+    return new NowRequest({
+      domain: this.domain,
+      username: this.username,
+      password: this.password,
+      proxy: this.proxy || null
+    });
   }
 
   createInstance() {
@@ -72,10 +86,8 @@ class NowProfile {
       "name": this.name,
       "domain": this.domain,
       "username": this.username,
-      // TODO: crypto this
-      "password": this.password,
-      // TODO: crypto this
-      "proxy": this.proxy,
+      "password": "$$$" + Buffer.from(this.password, "utf8").toString("base64"),
+      "proxy": this.proxy == null ? null : "$$$" + Buffer.from(this.proxy, "utf8").toString("base64"),
       "customGeneratorClassPath": this.customGeneratorClassPath,
       "tables": this.tables
     };

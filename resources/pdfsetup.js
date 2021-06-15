@@ -2,10 +2,10 @@ module.exports = function(title) {
   return {
     fonts: {
       Calibri: {
-        normal: "resources/fonts/Calibri/Calibri.ttf",
-        bold: "resources/fonts/Calibri/CALIBRIB.TTF",
-        italics: "resources/fonts/Calibri/CALIBRII.TTF",
-        bolditalics: "resources/fonts/Calibri/CALIBRIZ.TTF"
+        normal: require.resolve("./fonts/Calibri/Calibri.ttf"),
+        bold: require.resolve("./fonts/Calibri/CALIBRIB.TTF"),
+        italics: require.resolve("./fonts/Calibri/CALIBRII.TTF"),
+        bolditalics: require.resolve("./fonts/Calibri/CALIBRIZ.TTF")
       }
     },
     docDef: {

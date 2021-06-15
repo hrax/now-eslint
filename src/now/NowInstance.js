@@ -16,6 +16,7 @@ const UPDATE_SET_API_PATH = "/api/now/table/sys_update_set?sysparm_display_value
 
 /**
  * Base URL to load the fields of type script from the dictionary
+ * TODO: skip wf_workflow_version table for now
  */
 const DICTIONARY_SCRIPTS_API_PATH = "/api/now/table/sys_dictionary?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_query=internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement&sysparm_fields=name,element,default_value";
 
@@ -172,6 +173,10 @@ class NowInstance {
     });
 
     return tables;
+  }
+
+  async testConnection() {
+    return await this.request.testConnection();
   }
 }
 
