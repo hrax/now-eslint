@@ -7,20 +7,33 @@ const fs = require("fs");
 const prompt = require("prompt");
 const colors = require("colors/safe");
 
+const NowProfile = require("../src/NowProfile");
 const NowLinter = require("../src/NowLinter");
-const NowReportGenerator = require("../src/NowReportGenerator");
 
-// Check if current folder is initialized... fs works against cwd
-const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json") && fs.existsSync("./template.ejs");
-if (!INITIALIZED) {
-  console.log(colors.red(`Folder '${process.cwd()}' is not initialized. Run "now-eslint setup" first.`));
-  return;
+// // Check if current folder is initialized... fs works against cwd
+// const INITIALIZED = fs.existsSync("./.ENV") && fs.existsSync("./config.json") && fs.existsSync("./tables.json") && fs.existsSync("./template.ejs");
+// if (!INITIALIZED) {
+//   console.log(colors.red(`Folder '${process.cwd()}' is not initialized. Run "now-eslint setup" first.`));
+//   return;
+// }
+
+// TODO: check that the setup has been configured
+/*
+Current folder needs to have following files:
+- profile.json (profile setup + tables to scan + TODO: eslint additional properties)
+- pdfsetup.js (es6 module with PDF generator basic configuration and content)
+- test custom generator class
+- test fonts!
+*/
+
+let data = null;
+try {
+  data = require(`${process.cwd()}/profile.json`);
+} catch (e) {
+  console.log(colors.red(`Unable to load profile data from  '${process.cwd()}/profile.json'. Error: ${e.message || e}`));
+  return; 
 }
-
-console.log(colors.yellow(`Using following configuration:
-DOMAIN: ${process.env.SNOW_DOMAIN}
-USERNAME: ${process.env.SNOW_USERNAME}
-CWD: ${process.cwd()}\n`));
+const profile = new NowProfile(data);
 
 prompt.message = "";
 prompt.delimiter = "";
@@ -44,28 +57,18 @@ const schema = {
   }
 };
 
-// TODO: check that the setup has been configured
-
 prompt.start();
 
 prompt.get(schema, (err, result) => {
   if (err) {
     return;
   }
-  console.log("");
   
-  const instance = {
-    domain: process.env.SNOW_DOMAIN,
-    username: process.env.SNOW_USERNAME,
-    password: process.env.SNOW_PASSWORD
-  };
-  const config = require(process.cwd() + "/config.json") || {};
-  const tables = require(process.cwd() + "/tables.json") || {};
+  const options = {};
+  options.query = result.query;
+  options.title = result.title;
 
-  config.query = result.query;
-  config.title = result.title;
-
-  const linter = new NowLinter(instance, config, tables);
+  const linter = new NowLinter(profile, options);
   (async function() {
     console.log(colors.yellow(`Fetching data from the instance`));
     await linter.fetch();
@@ -73,19 +76,9 @@ prompt.get(schema, (err, result) => {
     console.log(colors.yellow(`Linting fetched data`));
     await linter.lint();
     
-
-    console.log(colors.yellow(`Generating report '${config.title}'`));
-    const generator = new NowReportGenerator(linter.toJSON());
-
-    // always override
-    // read template file
-    const template = fs.readFileSync(process.cwd() + "/template.ejs", "utf8");
-
-    const html = generator.toHTML(template);
-
-    console.log(colors.yellow(`Saving report '${result.filename}.html'`));
-    // save
-    fs.writeFileSync(process.cwd() + `/${result.filename}.html`, html);
-
+    console.log(colors.yellow(`Generating report '${options.title}'`));
+    const setup = require("../resources/pdfsetup")(options.title);
+    console.log(colors.yellow(`Saving report '${result.filename}.pdf'`));
+    linter.report(`${process.cwd()}/${result.filename}.pdf`, setup)
   })();
 });

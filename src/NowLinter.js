@@ -1,37 +1,40 @@
 /* eslint-disable */
 const {ESLint, Linter} = require("eslint");
+const crypto = require("crypto");
 
-const Assert = require("./Assert");
-const NowLoader = require("./NowLoader");
-const {NowUpdateXML, NowUpdateXMLStatus} = require("./NowUpdateXML");
+const Assert = require("./util/Assert");
+const helpers = require("./util/helpers");
+const NowUpdateXMLScan = require("./NowUpdateXMLScan");
 
 class NowLinter {
-  constructor(instance, options, tables) {
-    this._profile = Object.assign({
-      "domain": null,
-      "username": null,
-      "password": null
-    }, instance || {});
-
-    this._options = Object.assign({
-      "query": "",
-      "title": "Service Now ESLint Report",
-      "skipInactive": false,
-      "tables": {},
-      "eslint": {
-        "overrideConfig": null,
-        "overrideConfigFile": null,
-      }
-    }, options || {});
-    
-    this.tables = Object.assign({}, tables || {}, this._options.tables || {});
-
+  /**
+   * 
+   * @param {NowProfile} profile 
+   * @param {Object} options 
+   */
+  constructor(profile, options) {
     // TODO: validation
-    Assert.notEmpty(this._options.query, "Query in options needs to be specified!");
+    Assert.notEmpty(options.query, "Query in options needs to be specified!");
 
-    this.loader = new NowLoader(this._profile.domain, this._profile.username, this._profile.password);
-    this.eslint = new ESLint(this._options.eslint);
-    this.changes = {};
+    Object.defineProperty(this, "options", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: Object.assign({
+        "query": "",
+        "title": "Service Now ESLint Report",
+        "skipInactive": false,
+        "eslint": {
+          "overrideConfig": null,
+          "overrideConfigFile": null,
+        }
+      }, options || {})
+    });
+    
+    this.profile = profile;
+    this.instance = this.profile.createInstance();
+    this.eslint = new ESLint(this.options.eslint);
+    this.changes = new Map();
   }
 
   /**
@@ -39,18 +42,18 @@ class NowLinter {
    * @returns {void}
    */
   async fetch() {
-    this.changes = {};
+    this.changes.clear();
 
-    const response = await this.loader.fetchUpdateXMLByUpdateSetQuery(this._options.query);
+    const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this.options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
-      let change = new NowUpdateXML(record, true);
-      if (!this.changes[change.name]) {
-        change.initialize();
-        this.changes[change.name] = change;
+      const data = helpers.RESTHelper.transformUpdateXMLToData(record);
+      const scan = new NowUpdateXMLScan(data);
+      if (!this.changes.has(scan.name)) {
+        this.changes.set(scan.name, scan);
       } else {
-        this.changes[change.name].incrementUpdateCount();
+        this.changes.get(scan.name).incrementUpdateCount();
       }
     });
   }
@@ -64,16 +67,19 @@ class NowLinter {
    */
   async lint() {
     // Check the changes against configured lint tables
-    Object.values(this.changes).filter((change) => {
-      return change.status === NowUpdateXMLStatus.SCAN;
-    })
-      .forEach((change) => {
-        if (!this.tables[change.table] || this.tables[change.table] == null) {
-          change.setIgnoreReport();
-          return;
-        }
+    this.changes.forEach((scan, name) => {
+      if (scan.status !== "SCAN") {
+        return;
+      }
+      
+      const table = scan.targetTable;
+      const fields = this.profile.getTableFields(table);
+      if (fields == null || fields.length === 0) {
+        scan.ignore();
+        return;
+      }
 
-        /* if (this._options.skipInactive) {
+        /* if (this.options.skipInactive) {
           let active = NowLinter.getJSONFieldValue(change.payload, "active");
           if (active == null) {
             active = true;
@@ -86,17 +92,24 @@ class NowLinter {
         } */
 
         // For each configured field run lint
-        this.tables[change.table].forEach(async (field) => {
-          const data = NowLinter.getJSONFieldValue(change.payload, field);
+        fields.forEach(async (field) => {
+          const data = helpers.XPathHelper.parseFieldValue(table, field, scan.payload);
           if (data == null || data === "") {
-            change.setSkippedReport();
+            scan.skip();
             return;
           }
           
+          /* // data is default value
+          const hash = crypto.createHash("sha256").update(data).digest("hex");
+          if (hash === this.tables[scan.table].defaults[field]) {
+            scan.setSkippedReport();
+            return;
+          } */
+          
           const report = await this.eslint.lintText(data);
           if (report.length) {
-            report[0].filePath = "<" + change.name + "@" + field + ">";
-            change.setReport(field, report[0]);
+            report[0].filePath = "<" + scan.name + "@" + field + ">";
+            scan.reports.set(field, report[0]);
           }
         });
       });
@@ -106,19 +119,17 @@ class NowLinter {
    * Return changes fetched in this object
    */
   getChanges() {
-    return Object.values(this.changes);
+    return this.changes;
   }
 
   /**
    * Shorthand function, for #fetch and #lint methods. Returns loaded changes.
-   * @returns {Object}
+   * @returns {Map}
    */
   async process() {
     await this.fetch();
 
     await this.lint();
-
-    return this.getChanges();
   }
 
   /**
@@ -134,9 +145,9 @@ class NowLinter {
     const report = {
       config: {
         "domain": this._profile.domain,
-        "query": this._options.query,
-        "title": this._options.title,
-        "name": this._options.name
+        "query": this.options.query,
+        "title": this.options.title,
+        "name": this.options.name
       },
       stats: {
         createdOn: (
@@ -184,9 +195,63 @@ class NowLinter {
     return report;
   }
 
-  async report() {
-    await this.process();
-    return this.toJSON();
+  report(path, setup) {
+    const data = {
+      domain: this.profile.domain,
+      username: this.profile.username,
+      title: this.options.title,
+      query: this.options.query,
+      changes: this.changes,
+      status: [
+        {
+          label: "OK",
+          description: "Linted, no warnings or erros found"
+        },
+        {
+          label: "ERROR",
+          description: "Linted, at least one error found"
+        },
+        {
+          label: "WARNING",
+          description: "Linted, at least one warning found"
+        },
+        {
+          label: "SKIPPED",
+          description: "Should be linted but does not contain anything to lint"
+        },
+        {
+          label: "IGNORE",
+          description: "Do not lint (action delete or not configured table)"
+        }
+      ],
+      resources: [
+        {
+          label: "aaa",
+          link: "http://example.com"
+        },
+        {
+          label: "bbb",
+          link: "http://example.com"
+        }
+      ]
+    };
+
+    const generator = this.profile.createReportGenerator(setup.docDef);
+    generator.setFonts(setup.fonts);
+    if (setup.tableLayouts) {
+      generator.setTableLayouts(setup.tableLayouts);
+    }
+
+    generator.generateReportTitle(data.title);
+
+    generator.generateToc();
+
+    // generator.generateLegalNotice();
+    generator.generateOverview(data);
+    generator.generateReportSummary(data);
+    generator.generateReportFindings(data);
+
+    generator.generate(path);
   }
 
   /**

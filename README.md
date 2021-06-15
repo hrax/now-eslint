@@ -68,36 +68,56 @@ ESLint and its dependencies should be installed in your project as well.
 ### Examples
 
 ```javascript
-// Load the linter
-const {NowLinter} = require("@hrax/now-eslint");
+// Deconstruct necessary objects
+const {Profile, Linter, pdfsetup} = require("@hrax/now-eslint");
 
-// Configure connection object
-const connection = {
-  domain: "",
+/*
+ * Configure profile object or load it from JSON using Profile.loadProfile
+ * Other optional properties for profile data json:
+ * - proxy; proxy connection string, should be in format http[s]://[username:password@]proxy.domain[:port]
+ * - customGeneratorClassPath; full path to JS implementation of custom PDF Generator (WIP)
+ * - version; used internally to prevent old serialzed profiles to be initialized against incorrect version
+ * - tables; list of configured tables with fields that should be scanned; see NowInstance#requestTableFieldData or NowInstance#requestTableAndParentFieldData
+ */
+const data = {
+  // Profile must have a name!
+  name: "script",
+  // Can use any address available, including vanity/custom URLs
+  domain: "https://exampleinstance.service-now.com",
+  // Self explanatory
   username: "",
   password: ""
 };
 
+
 // Configuration of the linter, only query is mandatory
-// Tables property has the same format as const tables below
-// See https://eslint.org/docs/developer-guide/nodejs-api#eslint-class for available options for eslint property
+// See https://eslint.org/docs/developer-guide/nodejs-api#eslint-class for available options for eslint property (WIP to be moved to the profile)
 const config = {
   query: "",
   title: "",
-  tables: {},
   eslint: {}
 };
 
-// Tables to be linted, in format "table_name"; [field1, field2]
+// Tables to be linted, in format "table_name": {fields: [field1, field2]}
 const tables = {
-  "sys_script_include": ["script"]
+  "sys_script_include": {fields: ["script"]}
 };
 
 // Must, until the top-level awaits is enabled
 (async () => {
-  const linter = new NowLinter(connection, config, tables);
-  // the JSON report on the updates in the update sets
-  const report = await linter.report();
+  // Create necessary object instances
+  const profile = new Profile(data);
+  // If tables are not set in JSON data, we can set them later by using
+  profile.setTables(tables);
+
+  // PDF Generator setup
+  const setup = pdfsetup(config.title);
+
+  const linter = new NowLinter(profile, config);
+  // Fetch configured changes and perform lint
+  await linter.process();
+  // Generate PDF report
+  linter.report("./myreport.pdf", setup);
 })();
 ```
 
@@ -138,20 +158,23 @@ fields:
 
 ## TODO/Nice to have
 
-- TODO: HTTPs Proxy; unauthorized requests should not be rejected anymore
-- TODO: Optimalize generated reports to minimize the file size
+- TODO: Allow to skip linting default values
 - TODO: Allow to mark and skip changes that have field "active" = false
 - TODO: Allow to conditionally lint fields (e.g. if other_field is true/false or if other_field is empty/not empty)
 - TODO: setup to run against specific eslint config not the project one!
-- Nice to have: option to generate report as PDF
-- Nice to have: generate table conditional field configuration based on dictionary dependent field?
 - Nice to have: custom parse complex changes (e.g. workflow) to be able to lint selected nested complex records
 
 ## Patch Notes
 ### v0.0.4
 
 - Updated nodejs engine to support NodeJS v12
-- WIP: Allow to skip linting default values
+- Major refactoring and package separation (common ServiceNow objects v Linter specific)
+- Replaced xml-js with xmldom and xpath parsing of update xml payload as it is more precise
+- Added proxy connection url, that can be used in case proxy connection is required (proxy setting per profile)
+- Replaced HTML report with PDF (which decreased the report size as well)
+- Added NowProfile class that will be later used per-instance profile separation
+- Updated current cli to work for CWD profile setup (will be refactored to profile separation)
+
 
 ### v0.0.3
 
