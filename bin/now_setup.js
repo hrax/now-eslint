@@ -15,6 +15,7 @@ prompt.delimiter = "";
 
 console.log(colors.green(`Will initialize folder on current path '${process.cwd()}'`) + "\n");
 
+// TODO: force testConnection and force table generation!
 const schema = {
   properties: {
     // override: {
@@ -116,13 +117,10 @@ prompt.get(schema, (err, result) => {
     // TODO: config.eslint.overrideConfigFile = `${os.homedir()}/.eslintrc`;
 
     console.log("Generating table configuration");
-    if (result.generateTables) {
-      const tables = await instance.fetchTableAndParentFieldData();
-      profile.setTables(tables);
-    } else {
-      const tables = require("../resources/tables.json");
-      profile.setTables(tables);
-    }
+    const tables = await instance.fetchTableAndParentFieldData();
+    // Force skip workflow version parsing, until we have custom XML parsin setup
+    tables["wf_workflow_version"] = null;
+    profile.setTables(tables);
 
     /// TODO: NowProfile.saveProfile(profile);
     const json = JSON.stringify(profile);

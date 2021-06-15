@@ -42,7 +42,7 @@ class NowLinter {
    * @returns {void}
    */
   async fetch() {
-    this.changes = new Map();
+    this.changes.clear();
 
     const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this.options.query);
 
@@ -130,8 +130,6 @@ class NowLinter {
     await this.fetch();
 
     await this.lint();
-
-    return this.getChanges();
   }
 
   /**

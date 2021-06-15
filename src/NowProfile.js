@@ -20,6 +20,7 @@ class NowProfile {
       options.domain = options.domain.slice(0, -1);
     }
 
+    const version = require("../package.json").version;
     const propertyConfig = {
       configurable: false,
       writable: false,
@@ -39,6 +40,8 @@ class NowProfile {
       value: options.proxy != null && options.proxy.startsWith("$$$") ? Buffer.from(options.proxy.substring(3), "base64").toString("utf8") : options.proxy || null
     }));
     Object.defineProperty(this, "customGeneratorClassPath", Object.assign({}, propertyConfig, {value: options.customGeneratorClassPath || null}));
+    Object.defineProperty(this, "version", Object.assign({}, propertyConfig, {value: options.version || version}));
+    // TODO: Profile properties, that can be extended in ESLint, which should include ESLint configuration, maybe move generatorclasspath into these properties as well
   }
 
   createRequest() {
@@ -78,7 +81,7 @@ class NowProfile {
     if (!this.hasTable(table)) {
       return [];
     }
-    return this.tables[table];
+    return this.tables[table].fields;
   }
 
   toJSON() {
