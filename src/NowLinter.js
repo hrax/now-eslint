@@ -22,19 +22,20 @@ class NowLinter {
       enumerable: true,
       value: Object.assign({
         "query": "",
-        "title": "Service Now ESLint Report",
-        "skipInactive": false,
-        "eslint": {
-          "overrideConfig": null,
-          "overrideConfigFile": null,
-        }
+        "title": "Service Now ESLint Report"
       }, options || {})
+    });
+
+    Object.defineProperty(this, "changes", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: new Map()
     });
     
     this.profile = profile;
     this.instance = this.profile.createInstance();
-    this.eslint = new ESLint(this.options.eslint);
-    this.changes = new Map();
+    this.eslint = new ESLint(this.profile.properties.get("eslint") || {});
   }
 
   /**
@@ -116,15 +117,7 @@ class NowLinter {
   }
 
   /**
-   * Return changes fetched in this object
-   */
-  getChanges() {
-    return this.changes;
-  }
-
-  /**
-   * Shorthand function, for #fetch and #lint methods. Returns loaded changes.
-   * @returns {Map}
+   * Shorthand function, for #fetch and #lint methods.
    */
   async process() {
     await this.fetch();
@@ -134,69 +127,25 @@ class NowLinter {
 
   /**
    * Serialize the current state of the report and its changes into a JSON object.
-   * TODO: Deep copy
    * @returns {Object}
    */
   toJSON() {
-    const now = new Date();
-    const slinceNo = -2;
-
-    // TODO: process changes into a JSON
-    const report = {
-      config: {
-        "domain": this._profile.domain,
-        "query": this.options.query,
-        "title": this.options.title,
-        "name": this.options.name
-      },
-      stats: {
-        createdOn: (
-          now.getFullYear() + "-" +
-          ("0" + now.getMonth()).slice(slinceNo) + "-" +
-          ("0" + now.getDate()).slice(slinceNo) + " " +
-          ("0" + now.getHours()).slice(slinceNo) + ":" +
-          ("0" + now.getMinutes()).slice(slinceNo) + ":" +
-          ("0" + now.getSeconds()).slice(slinceNo)
-        ),
-        type: {
-          ignoreCount: 0,
-          warningCount: 0,
-          errorCount: 0,
-          okCount: 0,
-          skippedCount: 0,
-          scanCount: 0
-        },
-        uniqueChanges: 0
-      },
-      changes: []
+    const data = {
+      "domain": this.profile.domain,
+      "title": this.options.title,
+      "query": this.options.query,
+      "changes": Object.fromEntries(this.changes)
     };
 
-    // TODO: redo this to a id order and separate map
-    Object.entries(this.changes).forEach(([key, value]) => {
-      ++report.stats.uniqueChanges;
-      report.changes.push([key, value.toJSON()]);
-
-      // Do the statistics count
-      if (value.status === "IGNORE") {
-        report.stats.type.ignoreCount++;
-      } else if (value.status === "WARNING") {
-        report.stats.type.warningCount++;
-      } else if (value.status === "ERROR") {
-        report.stats.type.errorCount++;
-      } else if (value.status === "OK") {
-        report.stats.type.okCount++;
-      } else if (value.status === "SKIPPED") {
-        report.stats.type.skippedCount++;
-      } else if (value.status === "SCAN") {
-        report.stats.type.scanCount++;
-      }
-    });
-
-    return report;
+    // Lazy deep copy
+    return JSON.parse(JSON.stringify(data));
   }
 
-  report(path, setup) {
-    const data = {
+  report(path, pdfsetup) {
+    Assert.notEmpty(path, "path cannot be empty.");
+    Assert.notNull(pdfsetup, "pdfsetup cannot be null.");
+    Assert.isFunction(pdfsetup, "pdfsetup must be a function.");
+    const data = Object.assign({}, {
       domain: this.profile.domain,
       username: this.profile.username,
       title: this.options.title,
@@ -223,18 +172,12 @@ class NowLinter {
           label: "IGNORE",
           description: "Do not lint (action delete or not configured table)"
         }
-      ],
-      resources: [
-        {
-          label: "aaa",
-          link: "http://example.com"
-        },
-        {
-          label: "bbb",
-          link: "http://example.com"
-        }
       ]
-    };
+    }, {
+      resources: this.profile.properties.has("resources") ? this.profile.properties.get("resources") : []
+    });
+
+    const setup = pdfsetup(data);
 
     const generator = this.profile.createReportGenerator(setup.docDef);
     generator.setFonts(setup.fonts);

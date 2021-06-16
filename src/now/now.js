@@ -1,5 +1,5 @@
 module.exports = {
-  Request: require("./NowRequest"),
-  Instance: require("./NowInstance"),
-  UpdateXML: require("./NowUpdateXML")
+  NowRequest: require("./NowRequest"),
+  NowInstance: require("./NowInstance"),
+  NowUpdateXML: require("./NowUpdateXML")
 };

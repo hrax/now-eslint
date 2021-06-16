@@ -30,14 +30,7 @@ now-eslint setup
 
 You will be guided through a series of questions to set up your connection to the instance, test it and have a possibility of a table structure to be generated directly from the configured instance.
 
-After the command has been completed, the folder you executed it in, should now contain 4 files: `.ENV`, `config.json`, `tables.json` and `template.ejs`.
-
-Their usage is as follows
-
- * `.ENV` - This is where the connection information to your instance is saved
- * `config.json` - Tables and ESLint CLI configuration; tables in this file, override tables configured in `tables.json`
- * `tables.json` - Tables and field configuration, usually generated from the instance
- * `template.ejs` - HTML template used to generate the HTML Report. You can update this file as you wish to change the visual or functionality of the generated report
+After the command has been completed, the folder you executed it in, should now contain 1 file: `profile.json`.
 
 ### Execution
 
@@ -67,59 +60,7 @@ ESLint and its dependencies should be installed in your project as well.
 
 ### Examples
 
-```javascript
-// Deconstruct necessary objects
-const {Profile, Linter, pdfsetup} = require("@hrax/now-eslint");
-
-/*
- * Configure profile object or load it from JSON using Profile.loadProfile
- * Other optional properties for profile data json:
- * - proxy; proxy connection string, should be in format http[s]://[username:password@]proxy.domain[:port]
- * - customGeneratorClassPath; full path to JS implementation of custom PDF Generator (WIP)
- * - version; used internally to prevent old serialzed profiles to be initialized against incorrect version
- * - tables; list of configured tables with fields that should be scanned; see NowInstance#requestTableFieldData or NowInstance#requestTableAndParentFieldData
- */
-const data = {
-  // Profile must have a name!
-  name: "script",
-  // Can use any address available, including vanity/custom URLs
-  domain: "https://exampleinstance.service-now.com",
-  // Self explanatory
-  username: "",
-  password: ""
-};
-
-
-// Configuration of the linter, only query is mandatory
-// See https://eslint.org/docs/developer-guide/nodejs-api#eslint-class for available options for eslint property (WIP to be moved to the profile)
-const config = {
-  query: "",
-  title: "",
-  eslint: {}
-};
-
-// Tables to be linted, in format "table_name": {fields: [field1, field2]}
-const tables = {
-  "sys_script_include": {fields: ["script"]}
-};
-
-// Must, until the top-level awaits is enabled
-(async () => {
-  // Create necessary object instances
-  const profile = new Profile(data);
-  // If tables are not set in JSON data, we can set them later by using
-  profile.setTables(tables);
-
-  // PDF Generator setup
-  const setup = pdfsetup(config.title);
-
-  const linter = new NowLinter(profile, config);
-  // Fetch configured changes and perform lint
-  await linter.process();
-  // Generate PDF report
-  linter.report("./myreport.pdf", setup);
-})();
-```
+see Examples folder
 
 ## Required Instance Access Rights
 

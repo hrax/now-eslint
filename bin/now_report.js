@@ -77,7 +77,7 @@ prompt.get(schema, (err, result) => {
     await linter.lint();
     
     console.log(colors.yellow(`Generating report '${options.title}'`));
-    const setup = require("../resources/pdfsetup")(options.title);
+    const setup = require("../resources/pdfsetup");
     console.log(colors.yellow(`Saving report '${result.filename}.pdf'`));
     linter.report(`${process.cwd()}/${result.filename}.pdf`, setup)
   })();

@@ -216,12 +216,6 @@ class NowReportGenerator {
       this.addContent([table]);
     }
 
-
-    /*
-    this.addHeading("Report details");
-    this.addParagraph("The Summary is divided into two sections. First section contains the details about the ServiceNow environment and scan details. Second section contains a list of all definitions that were identified with an error against configured ESLint practices.");
-    */
-
     this.addHeading("Resources");
     this.addParagraph([
       "For an overview of ServiceNow technical best practices, visit the ",
@@ -233,7 +227,7 @@ class NowReportGenerator {
       " guide (Quebec)."
     ]);
 
-    if (data.resources) {
+    if (data.resources && data.resources.length > 0) {
       const ul = [];
       data.resources.forEach((item) => {
         ul.push({

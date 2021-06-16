@@ -28,20 +28,33 @@ class NowProfile {
     };
 
     this.tables = Object.assign({}, options.tables || {});
+
+    // helper
+    const decode = function(value) {
+      if (value == null || value === "" || !value.startsWith)  {
+        return null;
+      }
+
+      if (!value.startsWith("$$$")) {
+        return value;
+      }
+      return Buffer.from(value.substring(3), "base64").toString("utf8");
+    };
     
     // Immutable properties
     Object.defineProperty(this, "name", Object.assign({}, propertyConfig, {value: options.name}));
     Object.defineProperty(this, "domain", Object.assign({}, propertyConfig, {value: options.domain}));
     Object.defineProperty(this, "username", Object.assign({}, propertyConfig, {value: options.username}));
-    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {
-      value: options.password.startsWith("$$$") ? Buffer.from(options.password.substring(3), "base64").toString("utf8") : options.password
-    }));
-    Object.defineProperty(this, "proxy", Object.assign({}, propertyConfig, {
-      value: options.proxy != null && options.proxy.startsWith("$$$") ? Buffer.from(options.proxy.substring(3), "base64").toString("utf8") : options.proxy || null
-    }));
-    Object.defineProperty(this, "customGeneratorClassPath", Object.assign({}, propertyConfig, {value: options.customGeneratorClassPath || null}));
+    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {value: decode(options.password)}));
+    Object.defineProperty(this, "proxy", Object.assign({}, propertyConfig, {value: decode(options.proxy) || null}));
+    Object.defineProperty(this, "properties", Object.assign({}, propertyConfig, {value: options.properties ? new Map(Object.entries(options.properties)) : new Map()}));
+    // Internal!
     Object.defineProperty(this, "version", Object.assign({}, propertyConfig, {value: options.version || version}));
-    // TODO: Profile properties, that can be extended in ESLint, which should include ESLint configuration, maybe move generatorclasspath into these properties as well
+
+    // Utilize version checker if necessary; prevent using old and potentially incompatible profiles
+    if (this.version !== version) {
+      throw new Error(`Unable to initialize profile version ${this.version} against version ${version}!`);
+    }
   }
 
   createRequest() {
@@ -58,11 +71,11 @@ class NowProfile {
   }
 
   createReportGenerator(docDef) {
-    if (this.customGeneratorClassPath != null) {
-      // require from current working directory or profile main directory
-      const generator = require(`${this.customGeneratorClassPath}`);
-      return new generator(docDef);
-    }
+    // if (this.customGeneratorClassPath != null) {
+    //   // require from current working directory or profile main directory
+    //   const generator = require(`${this.customGeneratorClassPath}`);
+    //   return new generator(docDef);
+    // }
     return new NowReportGenerator(docDef);
   }
 
@@ -85,13 +98,22 @@ class NowProfile {
   }
 
   toJSON() {
+    const encode = (value) => {
+      if (value == null || value === "") {
+        return null;
+      }
+
+      return ["$$$", Buffer.from(value, "utf8").toString("base64")].join("");
+    };
+
     return {
       "name": this.name,
       "domain": this.domain,
       "username": this.username,
-      "password": "$$$" + Buffer.from(this.password, "utf8").toString("base64"),
-      "proxy": this.proxy == null ? null : "$$$" + Buffer.from(this.proxy, "utf8").toString("base64"),
-      "customGeneratorClassPath": this.customGeneratorClassPath,
+      "password": encode(this.password),
+      "proxy": encode(this.proxy),
+      "version": this.version,
+      "properties": Object.fromEntries(this.properties.entries()),
       "tables": this.tables
     };
   }

@@ -7,6 +7,7 @@ const NowProfile = require("../src/NowProfile");
 describe("NowLinter", () => {
   const _createLinter = (options, tables) => {
     const profile = new NowProfile({
+      "name": "testprofile",
       "domain": "???",
       "username": "???",
       "password": "???"
@@ -51,7 +52,7 @@ describe("NowLinter", () => {
     spyOn(linter.instance, "requestUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
 
     await linter.fetch();
-    const changes = linter.getChanges();
+    const changes = linter.changes;
 
     expect(linter.instance.requestUpdateXMLByUpdateSetQuery).toHaveBeenCalledWith(options.query);
     expect(linter.instance.requestUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
@@ -84,7 +85,7 @@ describe("NowLinter", () => {
 
     await linter.process();
 
-    const changes = linter.getChanges();
+    const changes = linter.changes;
 
     expect(linter.instance.requestUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
     expect(linter.eslint.lintText).toHaveBeenCalledTimes(1);
@@ -117,7 +118,7 @@ describe("NowLinter", () => {
 
     await linter.process();
 
-    const changes = linter.getChanges();
+    const changes = linter.changes;
 
     expect(linter.instance.requestUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
     expect(linter.eslint.lintText).not.toHaveBeenCalled();
@@ -153,7 +154,7 @@ describe("NowLinter", () => {
 
     await linter.process();
 
-    const changes = linter.getChanges();
+    const changes = linter.changes;
 
     expect(linter.instance.requestUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
     expect(linter.eslint.lintText).not.toHaveBeenCalled();

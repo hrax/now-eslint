@@ -1,4 +1,4 @@
-module.exports = function(title) {
+module.exports = function(data) {
   return {
     fonts: {
       Calibri: {
@@ -26,7 +26,7 @@ module.exports = function(title) {
               },
               {
                 width: "auto",
-                text: `${title}`,
+                text: `${data.title}`,
                 alignment: "right",
                 style: "small"
               }
