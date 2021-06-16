@@ -39,11 +39,10 @@ describe("NowInstance", () => {
         ]
       }));
 
-      // Github test fails on this
-      // await expectAsync(instance.requestTableParentData()).toBeResolvedTo({"incident": "task", "problem": "task"});
+      await expectAsync(instance.requestTableParentData()).toBeResolvedTo({"incident": "task", "problem": "task"});
 
-      // expect(instance.request.get).toHaveBeenCalledTimes(1);
-      // expect(instance.request.get).toHaveBeenCalledWith(jasmine.stringMatching("sys_db_object"));
+      expect(instance.request.get).toHaveBeenCalledTimes(1);
+      expect(instance.request.get).toHaveBeenCalledWith(jasmine.stringMatching("sys_db_object"));
     });
   });
 
@@ -71,7 +70,10 @@ describe("NowInstance", () => {
       // Hash calculated manually for test
       const expected = {
         "sys_script": {
-          "fields": ["script", "condition"]
+          "fields": ["script", "condition"],
+          "defaults": {
+            "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
+          }
         }
       };
 
@@ -110,19 +112,15 @@ describe("NowInstance", () => {
         ]
       }));
 
-      const tables = await instance.requestTableAndParentFieldData();
-      console.log("tables");
-      console.log(tables);
-
-      // Github test fails on this
-      // await expectAsync(instance.requestTableAndParentFieldData()).toBeResolvedTo({
-      //   "sys_script": {
-      //     "fields": ["script"]
-      //   },
-      //   "sys_script_client": {
-      //     "fields": ["condition", "script"]
-      //   }
-      // });
+      await expectAsync(instance.requestTableAndParentFieldData()).toBeResolvedTo({
+        "sys_script": {
+          "fields": ["script"]
+        },
+        "sys_script_client": {
+          "fields": ["condition", "script"]
+        }
+      });
+      
       expect(instance.request.get).toHaveBeenCalledTimes(2);
     });
   });
