@@ -112,20 +112,19 @@ class NowInstance {
     response.result.forEach((record) => {
       if (!toReturn[record.name]) {
         toReturn[record.name] = {
-          fields: [],
-          defaults: {}
+          fields: []
         };
       }
 
       toReturn[record.name].fields.push(record.element);
-      if (record.default_value && record.default_value.trim() !== "") {
-        // FIXME: issues with newlines, hashes are not properly detecting defaults
-        // Strip all whitespaces
-        const hash = crypto.createHash("sha256")
-          .update(record.default_value)
-          .digest("hex");
-        toReturn[record.name].defaults[record.element] = hash;
-      }
+      // if (record.default_value && record.default_value.trim() !== "") {
+      //   // FIXME: issues with newlines, hashes are not properly detecting defaults
+      //   // Strip all whitespaces
+      //   const hash = crypto.createHash("sha256")
+      //     .update(record.default_value)
+      //     .digest("hex");
+      //   toReturn[record.name].defaults[record.element] = hash;
+      // }
     });
 
     return toReturn;
@@ -153,12 +152,11 @@ class NowInstance {
 
     const getParentFields = function(table, fields, parents, toReturn) {
       toReturn = toReturn || {
-        "fields": [],
-        "defaults": {}
+        "fields": []
       };
       if (fields[table] != null) {
         toReturn.fields = toReturn.fields.concat(fields[table].fields);
-        toReturn.defaults = Object.assign(toReturn.defaults, fields[table].defaults);
+        // toReturn.defaults = Object.assign(toReturn.defaults, fields[table].defaults);
         if (parents[table]) {
           return getParentFields(parents[table], fields, parents, toReturn);
         }

@@ -70,10 +70,7 @@ describe("NowInstance", () => {
       // Hash calculated manually for test
       const expected = {
         "sys_script": {
-          "fields": ["script", "condition"],
-          "defaults": {
-            "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
-          }
+          "fields": ["script", "condition"]
         }
       };
 
@@ -114,16 +111,10 @@ describe("NowInstance", () => {
 
       await expectAsync(instance.requestTableAndParentFieldData()).toBeResolvedTo({
         "sys_script": {
-          "fields": ["script"],
-          "defaults": {
-            "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
-          }
+          "fields": ["script"]
         },
         "sys_script_client": {
-          "fields": ["condition", "script"],
-          "defaults": {
-            "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
-          }
+          "fields": ["condition", "script"]
         }
       });
       expect(instance.request.get).toHaveBeenCalledTimes(2);
