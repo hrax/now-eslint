@@ -1,3 +1,6 @@
+/**
+ * Profiles are saved in the user's home folder
+ */
 const profile = {
   "name": "profile",
   "domain": "https://exampleinstance.service-now.com",
