@@ -42,6 +42,9 @@ const config = {
   const linter = new NowLinter(profile, config);
   // Fetch configured changes and perform lint
   await linter.process();
-  // Generate PDF report
-  linter.report("./myreport.pdf", pdfsetup);
+  
+  // Generate JSON
+  let json = JSON.stringify(linter);
+  json = JSON.stringify(linter.toJSON());
+
 })();

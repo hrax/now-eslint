@@ -8,7 +8,6 @@ const {NowProfile, NowLinter, pdfsetup} = require("../index");
  * Configure profile object or load it from JSON using Profile.loadProfile
  * Other optional properties for profile data json:
  * - proxy; proxy connection string, should be in format http[s]://[username:password@]proxy.domain[:port]
- * - customGeneratorClassPath; full path to JS implementation of custom PDF Generator (WIP)
  * - version; used internally to prevent old serialzed profiles to be initialized against incorrect (older/newer) version
  * - tables; list of configured tables with fields that should be scanned; see NowInstance#requestTableFieldData or NowInstance#requestTableAndParentFieldData
  */
@@ -56,7 +55,16 @@ const config = {
   // Generate PDF report
   linter.report("./myreport.pdf", (data) => {
     const setup = pdfsetup(data);
-    // modify setup
+    /**
+     * Modify setup object;
+     * setup = {
+     *  fonts: {},
+     *  tableLayouts: {},
+     *  docDef: {}
+     * }
+     * 
+     * For modification of these properties see https://pdfmake.github.io/docs/0.1/
+     */
     return setup;
   });
 })();

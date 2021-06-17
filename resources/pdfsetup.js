@@ -1,3 +1,13 @@
+/**
+ * Modify setup object;
+ * setup = {
+ *  fonts: {},
+ *  tableLayouts: {},
+ *  docDef: {}
+ * }
+ * 
+ * For modification of these properties see https://pdfmake.github.io/docs/0.1/
+ */
 module.exports = function(data) {
   return {
     fonts: {
@@ -8,6 +18,7 @@ module.exports = function(data) {
         bolditalics: require.resolve("./fonts/Calibri/CALIBRIZ.TTF")
       }
     },
+    tableLayouts: {},
     docDef: {
       "pageSize": "A4",
       "pageOrientation": "portrait",

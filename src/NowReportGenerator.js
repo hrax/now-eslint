@@ -622,7 +622,7 @@ class NowReportGenerator {
 
   generate(path) {
     const printer = new pdfmake(this.fonts);
-    const pdfDoc = printer.createPdfKitDocument(this.docDef, this.tableLayouts);
+    const pdfDoc = printer.createPdfKitDocument(this.docDef, {tableLayouts: this.tableLayouts});
     pdfDoc.pipe(fs.createWriteStream(path));
     pdfDoc.end();
   }

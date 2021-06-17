@@ -65,7 +65,7 @@ prompt.get(schema, (err, result) => {
     console.log(colors.green(`Linting fetched data`));
     await linter.lint();
     
-    console.log(colors.green(`Generating report '${options.title}'`));
+    console.log(colors.green(`Generating report '${result.filename}'`));
     const setup = require("../resources/pdfsetup");
     
     console.log(colors.green(`Saving report '${result.filename}.pdf'`));

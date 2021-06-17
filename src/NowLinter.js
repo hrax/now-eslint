@@ -196,16 +196,6 @@ class NowLinter {
 
     generator.generate(path);
   }
-
-  /**
-   * Retrieve field value from payload from either parsed CDATA or text or returns null
-   * @param {Object} payload The parsed payload JSON object
-   * @param {String} field The string to retrieve
-   * @returns {String} or null
-   */
-  static getJSONFieldValue(payload, field) {
-    return (payload[field] && (payload[field]._cdata || payload[field]._text)) || null;
-  }
 }
 
 module.exports = NowLinter;
