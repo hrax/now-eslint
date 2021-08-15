@@ -97,6 +97,14 @@ class NowProfile {
     return this.tables[table].fields;
   }
 
+  setESLint(props) {
+    this.properties.set("eslint", props);
+  }
+
+  getESLint() {
+    return this.properties.get("eslint");
+  }
+
   toJSON() {
     const encode = (value) => {
       if (value == null || value === "") {

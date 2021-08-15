@@ -8,6 +8,10 @@ Update sets need to be committed locally on the configured instance. Change in t
 
 *For latest changes see [Patch Notes](#patch-notes).*
 
+#### 3rd Party Resources
+- Calibri; a sans-serif typeface household developed by Luc(as) de Groot in 2002-2004 and introduced on the general general public in 2007\
+ [Download from Downloadfonts](https://www.downloadfonts.io/calibri-font-family-free/)
+
 ## CLI
 
 Please note that, NodeJS v12 is required to run the CLI.

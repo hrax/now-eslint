@@ -46,6 +46,7 @@ const config = {
     "overrideConfig": null,
     "overrideConfigFile": null,
   });
+  // or use shorthand profile.setESLint({});
 
   const linter = new NowLinter(profile, config);
   // Fetch configured changes and perform lint
