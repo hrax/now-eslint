@@ -4,6 +4,11 @@ const colors = require("colors/safe");
 
 const argv = Array.prototype.slice.call(process.argv, 2);
 
+// No arguments provided...
+if (argv.length === 0) {
+
+}
+
 // args
 switch (argv[0]) {
   case "version":

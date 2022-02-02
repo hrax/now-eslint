@@ -1,16 +1,16 @@
 /* eslint-disable no-console */
 const fs = require("fs");
-const os = require("os");
 
 const prompt = require("prompt");
 const colors = require("colors/safe");
 
 const NowProfile = require("../src/NowProfile");
+const NowInstance = require("../src/now/NowInstance");
 
 prompt.message = "";
 prompt.delimiter = "";
 
-const profileHome = `${os.homedir()}/.now-eslint-profiles`;
+const profileHome = NowProfile.HOME_DIR;
 
 console.log(colors.green(`Will initialize profile in your homefolder on path '${profileHome}'`) + "\n");
 
@@ -69,6 +69,12 @@ const schema = {
     }
   }
 };
+
+/*
+TODO:
+ - Prompt: Ask if the user wants to have plugins loaded from global NPM install folder
+ - Prompt: Ask if user wants to use .eslintrc file loaded from the profile's folder
+*/
 
 prompt.start();
 

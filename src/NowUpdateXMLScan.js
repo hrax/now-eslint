@@ -9,6 +9,8 @@ const NowUpdateXMLScanStatus = {
   ERROR: "ERROR",
   // Linted, no warnings or erros found
   OK: "OK",
+  // Not linted, should be checked manually
+  MANUAL: "MANUAL",
   // Should be linted but does not contain anything to lint
   SKIPPED: "SKIPPED",
   // JSON payload initialized can be scanned based on configuration

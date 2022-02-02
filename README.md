@@ -9,12 +9,11 @@ Update sets need to be committed locally on the configured instance. Change in t
 *For latest changes see [Patch Notes](#patch-notes).*
 
 #### 3rd Party Resources
-- Calibri; a sans-serif typeface household developed by Luc(as) de Groot in 2002-2004 and introduced on the general general public in 2007\
- [Download from Downloadfonts](https://www.downloadfonts.io/calibri-font-family-free/)
+- **Calibri**; a sans-serif typeface household developed by Luc(as) de Groot in 2002-2004 and introduced to the general public in 2007 \([download](https://www.downloadfonts.io/calibri-font-family-free/)\)
+
+> Minimum required NodeJS version to run `now-eslint` is 12.18
 
 ## CLI
-
-Please note that, NodeJS v12 is required to run the CLI.
 
 ### Installation
 
@@ -24,21 +23,21 @@ CLI is the primary usage of the package, and it is recommended to install the pa
 npm i -g @hrax/now-eslint
 ```
 
-The global installation requires to have eslint and all its required plugins installed globally as well.
+**The global installation requires to have ESLint and all its required plugins installed globally as well.**
 
 ### Setup
 
-Setup for the CLI can be executed anywhere as the resulting profile will be saved in your home directory.
+Setup for the CLI can be executed anywhere as the resulting profile will be saved in your home directory. Execute:
 
 ```
 now-eslint setup
 ```
 
-You will be guided through a series of questions to set up your profile, connection to the instance and proxy if neede.
+You will be guided through a series of questions to set up your profile, connection to the instance and proxy if needed.
 
-After the command has been completed, your home directory should contain folder `.now-eslint-profiles` with folder `profile_[yourprofilename]` which should contain 1 file: `profile.json`.
+After the command has succesfully completed, your home directory should contain folder `.now-eslint-profiles` with folder `profile_[yourprofilename]` which should contain 1 file: `profile.json`.
 
-### Execution
+### Report
 
 To generate an update set report, you should execute following command in the any folder where you have write rights to and want your report to be generated.
 
@@ -53,6 +52,9 @@ now-eslint report
 You will be guided through a series of questions to provide name, filename and update set query (for example "name=Default") for your report.
 
 Note that linter currently does not allow reporting on custom XML serialized Service Now records such as 'Workflows'. If you encounter such an error, you can specify the table to be skipped in the `profile.json` `tables` property.
+
+### Profile Customization
+
 
 ## Library
 
@@ -118,7 +120,7 @@ fields:
 ## Patch Notes
 ### v0.0.4
 
-- Updated nodejs engine to support NodeJS v12
+- **Updated `nodejs` engine to minimum supported NodeJS version 12.18**
 - Major refactoring and package separation (common ServiceNow objects vs Linter specific)
 - Replaced xml-js with xmldom and xpath parsing of update xml payload as it is more precise
 - Added proxy connection url, that can be used in case proxy connection is required (proxy setting per profile)

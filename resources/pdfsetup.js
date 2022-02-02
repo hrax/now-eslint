@@ -57,7 +57,7 @@ module.exports = function(data) {
                 width: "40%",
                 text: [
                   {
-                    text: "PROPRIETARY AND CONFIDENTIAL",
+                    text: "FOR INTERNAL USE",
                     style: "small",
                     italics: true
                   }

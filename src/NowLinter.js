@@ -165,6 +165,10 @@ class NowLinter {
           description: "Linted, at least one warning found"
         },
         {
+          label: "MANUAL",
+          description: "Not linted, should be checked manually"
+        },
+        {
           label: "SKIPPED",
           description: "Should be linted but does not contain anything to lint"
         },
@@ -185,14 +189,26 @@ class NowLinter {
       generator.setTableLayouts(setup.tableLayouts);
     }
 
+    /* PAGE 1; Report title */
     generator.generateReportTitle(data.title);
 
+    /* PAGE 2; Table Of Contents */
     generator.generateToc();
+    
+    // generator.generateLegalNotice(data);
 
-    // generator.generateLegalNotice();
+    /* PAGE 3; Report overview */
     generator.generateOverview(data);
+
+    /* PAGE 4; Report summary, quick error list */
     generator.generateReportSummary(data);
+
+    // generator.generateAdditionalInformation(data);
+
+    /* PAGE 5-X; Report findings */
     generator.generateReportFindings(data);
+
+    // generator.generateAppendix(data);
 
     generator.generate(path);
   }

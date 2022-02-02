@@ -1,4 +1,5 @@
 const fs = require("fs");
+const os = require("os");
 
 const Assert = require("./util/Assert");
 const NowInstance = require("./now/NowInstance");
@@ -138,5 +139,7 @@ class NowProfile {
     throw new Error("TODO:");
   }
 }
+
+NowProfile.HOME_DIR = `${os.homedir()}/.now-eslint-profiles`;
 
 module.exports = NowProfile;
