@@ -154,12 +154,14 @@ class NowInstance {
       toReturn = toReturn || {
         "fields": []
       };
+      
       if (fields[table] != null) {
         toReturn.fields = toReturn.fields.concat(fields[table].fields);
         // toReturn.defaults = Object.assign(toReturn.defaults, fields[table].defaults);
-        if (parents[table]) {
-          return getParentFields(parents[table], fields, parents, toReturn);
-        }
+      }
+
+      if (parents[table]) {
+        return getParentFields(parents[table], fields, parents, toReturn);
       }
 
       // Return unique set as array

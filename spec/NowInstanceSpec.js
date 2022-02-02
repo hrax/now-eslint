@@ -82,11 +82,12 @@ describe("NowInstance", () => {
   });
 
   describe("#requestTableAndParentFieldData", () => {
-    it("merges table and parent data", async() => {
+    // B -> A
+    it("merges table and direct parent data", async() => {
       requestGetSpy.and.returnValues(JSON.stringify({
         "result": [
           {
-            "name": "sys_script",
+            "name": "A",
             "element": "script",
             "default_value": `(function executeRule(current, previous /*null when async*/) {
 
@@ -95,7 +96,7 @@ describe("NowInstance", () => {
             })(current, previous);`
           },
           {
-            "name": "sys_script_client",
+            "name": "B",
             "element": "condition",
             "default_value": ""
           }
@@ -103,17 +104,57 @@ describe("NowInstance", () => {
       }), JSON.stringify({
         "result": [
           {
-            "name": "sys_script_client",
-            "super_class.name": "sys_script"
+            "name": "B",
+            "super_class.name": "A"
           }
         ]
       }));
 
       await expectAsync(instance.requestTableAndParentFieldData()).toBeResolvedTo({
-        "sys_script": {
+        "A": {
           "fields": ["script"]
         },
-        "sys_script_client": {
+        "B": {
+          "fields": ["condition", "script"]
+        }
+      });
+      
+      expect(instance.request.get).toHaveBeenCalledTimes(2);
+    });
+
+    // C -> [B] -> A
+    it("merges table and non-direct parent data", async() => {
+      requestGetSpy.and.returnValues(JSON.stringify({
+        "result": [
+          {
+            "name": "A",
+            "element": "script",
+            "default_value": ""
+          },
+          {
+            "name": "C",
+            "element": "condition",
+            "default_value": ""
+          }
+        ]
+      }), JSON.stringify({
+        "result": [
+          {
+            "name": "C",
+            "super_class.name": "B"
+          },
+          {
+            "name": "B",
+            "super_class.name": "A"
+          }
+        ]
+      }));
+
+      await expectAsync(instance.requestTableAndParentFieldData()).toBeResolvedTo({
+        "A": {
+          "fields": ["script"]
+        },
+        "C": {
           "fields": ["condition", "script"]
         }
       });
