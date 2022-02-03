@@ -15,10 +15,12 @@ const NowReportGenerator = require("./NowReportGenerator");
  *  username: null, // Username used to connect to the instance
  *  password: null, // Password for the given username
  *  proxy: null, // Optional; proxy connection URL
- *  properties: null, // Optional; object containing additional available report properties
  *  tables: null, // Optional; object containing table information
+ *  properties: null, // Optional; object containing additional available report properties
  *  colors: null, // Not implemented;
  *  language: null, // Not implemented;
+ *  eslint: null,
+ *  eslintrc: null
  * }
  */
 class NowProfile {
@@ -104,14 +106,19 @@ class NowProfile {
 
       return [NowProfile.ENCODE_PREFIX, Buffer.from(value, "utf8").toString("base64")].join("");
     };
-
-    return {
+    
+    const toReturn = {
       "name": this.name,
       "domain": this.domain,
       "username": this.username,
-      "password": encode(this.password),
-      "proxy": encode(this.proxy)
+      "password": encode(this.password)
     };
+
+    if (this.proxy != null) {
+      toReturn["proxy"] = encode(this.proxy);
+    }
+
+    return toReturn;
   }
 
   static profilesHomeDirPath() {
@@ -120,7 +127,7 @@ class NowProfile {
 
   static load(profileName) {
     const home = NowProfile.profilesHomeDirPath();
-    const profileHome = `${home}/${NowProfile.PROFILE_PREFIX}${profileName}`;
+    const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profileName}`);
 
     if (!NowProfile.exists(profileName)) {
       throw new Error(`Profile home at ${profileHome} does not exists!`);
@@ -166,51 +173,55 @@ class NowProfile {
     return profile;
   }
 
-  static save(profile) {
+  static save(profile, cleanup = false) {
     Assert.notNull(profile);
     Assert.isInstance(profile, NowProfile, "Provided profile is not instance of NowProfile");
 
     const home = NowProfile.profilesHomeDirPath();
-    const profileHome = `${home}/${NowProfile.PROFILE_PREFIX}${profile.name}`;
+    const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profile.name}`);
 
-    // Check if profiles home directory exists; if not create
-    if (!fs.existsSync(`${home}`)) {
-      fs.mkdirSync(`${home}`);
+    if (cleanup === true) {
+      // Check if profile home directory exists and delete it (cleanup)
+      if (!fs.existsSync(`${profileHome}`)) {
+        fs.rmSync(`${profileHome}`, {recursive: true, force: true});
+      }
     }
 
-    // Check if profile home directory exists and delete (always override)
-    if (!fs.existsSync(`${profileHome}`)) {
-      fs.rmSync(`${profileHome}`, {recursive: true, force: true});
-    }
-
-    // always create clean profile home directory
-    fs.mkdirSync(`${profileHome}`);
+    // Check if directories exist otherwise create
+    [home, profileHome].forEach(item => {
+      if (!fs.existsSync(item)) {
+        fs.mkdirSync(item);
+      }
+    });
 
     const saveFile = function(filename, data) {
-      fs.writeFileSync(`${profileHome}/${filename}`, data);
+      const filepath = path.normalize(`${profileHome}/${filename}`);
+      // Delete old file before we save a new one
+      fs.rmSync(filepath, {recursive: true, force: true});
+      fs.writeFileSync(filepath, JSON.stringify(data));
     };
 
     // We always save profile in multiple files; easier manual maintenance
-    saveFile(NowProfile.PROFILE_CONFIG_NAME, JSON.stringify(profile));
+    saveFile(NowProfile.PROFILE_CONFIG_NAME, profile);
     
     if (profile.tables && Object.keys(profile.tables).length) {
-      saveFile(NowProfile.PROFILE_TABLES_NAME, JSON.stringify(profile.tables));
+      saveFile(NowProfile.PROFILE_TABLES_NAME, profile.tables);
     }
     
     if (profile.properties && Object.keys(profile.properties).length) {
-      saveFile(NowProfile.PROFILE_PROPERTIES_NAME, JSON.stringify(profile.properties));
+      saveFile(NowProfile.PROFILE_PROPERTIES_NAME, profile.properties);
     }
     
     if (profile.colors && Object.keys(profile.colors).length) {
-      saveFile(NowProfile.PROFILE_COLORS_NAME, JSON.stringify(profile.colors));
+      saveFile(NowProfile.PROFILE_COLORS_NAME, profile.colors);
     }
 
     if (profile.eslint && Object.keys(profile.eslint).length) {
-      saveFile(NowProfile.PROFILE_ESLINT_NAME, JSON.stringify(profile.eslint));
+      saveFile(NowProfile.PROFILE_ESLINT_NAME, profile.eslint);
     }
 
     if (profile.eslintrc && Object.keys(profile.eslintrc).length) {
-      saveFile(NowProfile.PROFILE_ESLINTRC_NAME, JSON.stringify(profile.eslintrc));
+      saveFile(NowProfile.PROFILE_ESLINTRC_NAME, profile.eslintrc);
     }
   }
 
@@ -234,6 +245,10 @@ class NowProfile {
 
     return false;
   }
+
+  static isProfileNameValid(profileName) {
+    return NowProfile.PROFILE_NAME_REGEXP.test(profileName);
+  }
 }
 
 NowProfile.PROFILES_HOME_DIR_PATH = path.normalize(`${os.homedir()}/.now-eslint-profiles`);
@@ -247,5 +262,7 @@ NowProfile.PROFILE_ESLINT_NAME = "eslint.json";
 NowProfile.PROFILE_ESLINTRC_NAME = ".eslintrc.json";
 
 NowProfile.ENCODE_PREFIX = "$$$";
+
+NowProfile.PROFILE_NAME_REGEXP = /^[a-zA-Z0-9_\-]+$/;
 
 module.exports = NowProfile;
