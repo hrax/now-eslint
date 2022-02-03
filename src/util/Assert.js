@@ -205,6 +205,12 @@ class Assert {
       throw new Error(Assert._format(message || "Value '{0}' is not present in the provided array '{1}'!", value, array.join(", ")));
     }
   }
+
+  static isInstance(value, clazz, message) {
+    if (!(value instanceof clazz)) {
+      throw new Error(Assert._format(message || "Value '{0}' is not instance of '{1}'!", value.name || value, clazz.name || clazz));
+    }
+  }
 }
 
 module.exports = Assert;
