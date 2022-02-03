@@ -16,7 +16,7 @@ const NowReportGenerator = require("./NowReportGenerator");
  *  password: null, // Password for the given username
  *  proxy: null, // Optional; proxy connection URL
  *  tables: null, // Optional; object containing table information
- *  properties: null, // Optional; object containing additional available report properties
+ *  resources: null, // Optional; object containing additional available report resources
  *  colors: null, // Not implemented;
  *  language: null, // Not implemented;
  *  eslint: null,
@@ -38,14 +38,12 @@ class NowProfile {
       options.domain = options.domain.slice(0, -1);
     }
 
-    // const version = require("../package.json").version;
     const propertyConfig = {
       configurable: false,
-      writable: false,
       enumerable: true
     };
 
-    // helper
+    // decode helper
     const decode = function(value) {
       if (value == null || value === "" || !value.startsWith)  {
         return null;
@@ -56,17 +54,82 @@ class NowProfile {
       }
       return Buffer.from(value.substring(NowProfile.ENCODE_PREFIX.length), "base64").toString("utf8");
     };
+
+    // Mutable privates Map; giggity
+    const privates = new Map();
+    const privatesSafeGet = (key) => {
+      // In case we try to access the property before it was set
+      if (!privates.has(key)) {
+        privates.set(key, new Map());
+      }
+      return privates.get(key);
+    };
+    const privatesSafeSet = (key, value) => {
+      if (value != null && value instanceof Map) {
+        privates.set(key, value);
+      } else if (value != null && typeof value === "object") {
+        // Expecting object notation object
+        privates.set(key, new Map(Object.entries(value)));
+      } else {
+        // Anything else, set empty map
+        privates.set(key, new Map());
+      }
+    };
     
     // Immutable properties; must create new instance if you want to modify them
-    Object.defineProperty(this, "name", Object.assign({}, propertyConfig, {value: options.name}));
-    Object.defineProperty(this, "domain", Object.assign({}, propertyConfig, {value: options.domain}));
-    Object.defineProperty(this, "username", Object.assign({}, propertyConfig, {value: options.username}));
-    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {value: decode(options.password)}));
-    Object.defineProperty(this, "proxy", Object.assign({}, propertyConfig, {value: decode(options.proxy) || null}));
+    Object.defineProperty(this, "name", Object.assign({}, propertyConfig, {writable: false, value: options.name}));
+    Object.defineProperty(this, "domain", Object.assign({}, propertyConfig, {writable: false, value: options.domain}));
+    Object.defineProperty(this, "username", Object.assign({}, propertyConfig, {writable: false, value: options.username}));
+    Object.defineProperty(this, "password", Object.assign({}, propertyConfig, {writable: false, value: decode(options.password)}));
+    Object.defineProperty(this, "proxy", Object.assign({}, propertyConfig, {writable: false, value: decode(options.proxy) || null}));
 
-    // Options have any tables configured
+    // Mutable properties
+    Object.defineProperty(this, "tables", Object.assign({}, propertyConfig, {
+      get() {
+        return privatesSafeGet("tables");
+      },
+      set(newValue) {
+        privatesSafeSet("tables", newValue);
+      }
+    }));
+    Object.defineProperty(this, "resources", Object.assign({}, propertyConfig, {
+      get() {
+        return privatesSafeGet("resources");
+      },
+      set(newValue) {
+        privatesSafeSet("resources", newValue);
+      }
+    }));
+    Object.defineProperty(this, "colors", Object.assign({}, propertyConfig, {
+      get() {
+        return privatesSafeGet("colors");
+      },
+      set(newValue) {
+        privatesSafeSet("colors", newValue);
+      }
+    }));
+    // Keep this 2 as object notation or force map? Map for now
+    Object.defineProperty(this, "eslint", Object.assign({}, propertyConfig, {
+      get() {
+        return privatesSafeGet("eslint");
+      },
+      set(newValue) {
+        privatesSafeSet("eslint", newValue);
+      }
+    }));
+    Object.defineProperty(this, "eslintrc", Object.assign({}, propertyConfig, {
+      get() {
+        return privatesSafeGet("eslintrc");
+      },
+      set(newValue) {
+        privatesSafeSet("eslintrc", newValue);
+      }
+    }));
+
+    
+    // Set mutable properties
     this.tables = Object.assign({}, options.tables || {});
-    this.properties = Object.assign({}, options.properties || {});
+    this.resources = Object.assign({}, options.resources || {});
     this.colors = Object.assign({}, options.colors || {});
     this.eslint = Object.assign({}, options.eslint || {});
     this.eslintrc = Object.assign({}, options.eslintrc || {});
@@ -154,8 +217,8 @@ class NowProfile {
       profile.tables = loadFile(NowProfile.PROFILE_TABLES_NAME);
     }
 
-    if (fileExists(NowProfile.PROFILE_PROPERTIES_NAME)) {
-      profile.properties = loadFile(NowProfile.PROFILE_PROPERTIES_NAME);
+    if (fileExists(NowProfile.PROFILE_RESOURCES_NAME)) {
+      profile.resources = loadFile(NowProfile.PROFILE_RESOURCES_NAME);
     }
 
     if (fileExists(NowProfile.PROFILE_COLORS_NAME)) {
@@ -181,10 +244,7 @@ class NowProfile {
     const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profile.name}`);
 
     if (cleanup === true) {
-      // Check if profile home directory exists and delete it (cleanup)
-      if (!fs.existsSync(`${profileHome}`)) {
-        fs.rmSync(`${profileHome}`, {recursive: true, force: true});
-      }
+      NowProfile.purge(profile.name);
     }
 
     // Check if directories exist otherwise create
@@ -204,24 +264,24 @@ class NowProfile {
     // We always save profile in multiple files; easier manual maintenance
     saveFile(NowProfile.PROFILE_CONFIG_NAME, profile);
     
-    if (profile.tables && Object.keys(profile.tables).length) {
-      saveFile(NowProfile.PROFILE_TABLES_NAME, profile.tables);
+    if (profile.tables.size) {
+      saveFile(NowProfile.PROFILE_TABLES_NAME, Object.fromEntries(profile.tables.entries()));
     }
     
-    if (profile.properties && Object.keys(profile.properties).length) {
-      saveFile(NowProfile.PROFILE_PROPERTIES_NAME, profile.properties);
+    if (profile.resources.size) {
+      saveFile(NowProfile.PROFILE_RESOURCES_NAME, Object.fromEntries(profile.resources.entries()));
     }
     
-    if (profile.colors && Object.keys(profile.colors).length) {
-      saveFile(NowProfile.PROFILE_COLORS_NAME, profile.colors);
+    if (profile.colors.size) {
+      saveFile(NowProfile.PROFILE_COLORS_NAME, Object.fromEntries(profile.colors.entries()));
     }
 
-    if (profile.eslint && Object.keys(profile.eslint).length) {
-      saveFile(NowProfile.PROFILE_ESLINT_NAME, profile.eslint);
+    if (profile.eslint.size) {
+      saveFile(NowProfile.PROFILE_ESLINT_NAME, Object.fromEntries(profile.eslint.entries()));
     }
 
-    if (profile.eslintrc && Object.keys(profile.eslintrc).length) {
-      saveFile(NowProfile.PROFILE_ESLINTRC_NAME, profile.eslintrc);
+    if (profile.eslintrc.size) {
+      saveFile(NowProfile.PROFILE_ESLINTRC_NAME, Object.fromEntries(profile.eslintrc.entries()));
     }
   }
 
@@ -246,6 +306,23 @@ class NowProfile {
     return false;
   }
 
+  static purge(profileName) {
+    const home = NowProfile.profilesHomeDirPath();
+    const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profileName}`);
+    
+    if (fs.existsSync(`${profileHome}`)) {
+      fs.rmSync(`${profileHome}`, {recursive: true, force: true});
+    }
+  }
+
+  static purgeHome() {
+    const home = NowProfile.profilesHomeDirPath();
+
+    if (fs.existsSync(`${home}`)) {
+      fs.rmSync(`${home}`, {recursive: true, force: true});
+    }
+  }
+
   static isProfileNameValid(profileName) {
     return NowProfile.PROFILE_NAME_REGEXP.test(profileName);
   }
@@ -256,7 +333,7 @@ NowProfile.PROFILE_PREFIX = "profile_";
 
 NowProfile.PROFILE_CONFIG_NAME = "profile.json";
 NowProfile.PROFILE_TABLES_NAME = "tables.json";
-NowProfile.PROFILE_PROPERTIES_NAME = "properties.json";
+NowProfile.PROFILE_RESOURCES_NAME = "resources.json";
 NowProfile.PROFILE_COLORS_NAME = "colors.json";
 NowProfile.PROFILE_ESLINT_NAME = "eslint.json";
 NowProfile.PROFILE_ESLINTRC_NAME = ".eslintrc.json";

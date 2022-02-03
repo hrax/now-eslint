@@ -1,68 +1,85 @@
 const NowProfile = require("../src/NowProfile");
 
 describe("NowProfile", () => {
-  it("profile init", () => {
-    const data = {
-      name: "testprofile",
-      domain: "https://example.com/",
-      username: "admin",
-      password: "password12345"
-    };
-    const profile = new NowProfile(data);
+  describe("initialization", () => {
+    it("should initialize basic configuration with empty extended configuration", () => {
+      const data = {
+        name: "testprofile",
+        domain: "https://example.com/",
+        username: "admin",
+        password: "password12345",
+        proxy: "http://user:password@domain:port"
+      };
+      const profile = new NowProfile(data);
+  
+      expect(profile.name).toBe(data.name);
+      expect(profile.domain).toBe(data.domain);
+      expect(profile.username).toBe(data.username);
+      expect(profile.password).toBe(data.password);
+      expect(profile.proxy).toBe(data.proxy);
 
-    expect(profile.name).toBe(data.name);
-    expect(profile.domain).toBe(data.domain);
-    expect(profile.username).toBe(data.username);
-    expect(profile.password).toBe(data.password);
-  });
+      expect(profile.tables.size).toEqual(0);
+      expect(profile.resources.size).toEqual(0);
+      expect(profile.colors.size).toEqual(0);
+      expect(profile.eslint.size).toEqual(0);
+      expect(profile.eslintrc.size).toEqual(0);
+    });
 
-  it("fails to init on non-matching package version", () => {
-    const data = {
-      name: "testprofile",
-      domain: "https://example.com/",
-      username: "admin",
-      password: "password12345",
-      version: "0.0.1"
-    };
-
-    expect(() => new NowProfile(data)).toThrowError();
-  });
-
-  it("properly sets properties map", () => {
-    const data = {
-      name: "testprofile",
-      domain: "https://example.com/",
-      username: "admin",
-      password: "password12345",
-      properties: {
-        eslint: {
-          "custom1": "a",
-          "custom2": "b"
+    it("should initialize with extended configuration if provided", () => {
+      const data = {
+        name: "testprofile",
+        domain: "https://example.com/",
+        username: "admin",
+        password: "password12345",
+        proxy: "http://user:password@domain:port",
+        tables: {
+          "wf_workflow_version": null
         },
-        resources: [
-          {
-            label: "aaa",
-            link: "http://example.com"
-          },
-          {
-            label: "bbb",
-            link: "http://example.com"
-          }
-        ]
-      }
-    };
+        resources: {
+          "links": "N/A"
+        },
+        colors: null,
+        eslint: {
+          "root": true
+        },
+        eslintrc: {
+          "no-console": 1
+        }
+      };
+      const profile = new NowProfile(data);
+  
+      expect(profile.tables.size).toEqual(1);
+      expect(profile.tables.get("wf_workflow_version")).toBeNull();
 
-    const profile = new NowProfile(data);
-    
-    expect(profile.properties.has("eslint")).toBeTrue();
-    expect(profile.properties.has("resources")).toBeTrue();
-    
-    const eslint = profile.properties.get("eslint");
+      expect(profile.resources.size).toEqual(1);
+      expect(profile.resources.get("links")).toBe("N/A");
 
-    expect(eslint.custom1).toBe("a");
+      expect(profile.colors).not.toBeNull();
+      expect(profile.colors.size).toEqual(0);
 
-    const resources = profile.properties.get("resources");
+      expect(profile.eslint.size).toEqual(1);
+      expect(profile.eslint.get("root")).toBeTrue();
 
-    expect(resources[0].label).toBe("aaa");
+      expect(profile.eslintrc.size).toEqual(1);
+      expect(profile.eslintrc.get("no-console")).toEqual(1);
+    });
+  });
+
+  describe("json", () => {
+    it("serialization encodes password and proxy", () => {
+      const data = {
+        name: "testprofile",
+        domain: "https://example.com/",
+        username: "admin",
+        password: "password12345",
+        proxy: "http://user:password@domain:port"
+      };
+      const profile = new NowProfile(data);
+      // serialize to JSON and deserialze to check
+      const json = JSON.parse(JSON.stringify(profile));
+  
+      expect(json.password).toMatch(/^\$\$\$/)
+      expect(json.proxy).toMatch(/^\$\$\$/);
+    });
   });
 });

@@ -95,7 +95,7 @@ program.command("create", {isDefault: true})
     
     prompt.start();
 
-    prompt.get(schema, async(err, result) => {
+    prompt.get(schema, async function(err, result) {
       if (err) {
         program.error(err);
       }
@@ -111,7 +111,7 @@ program.command("create", {isDefault: true})
       const profile = new NowProfile(data);
       const instance = profile.createInstance();
 
-      console.debug(colors.green(`Testing connection to the instance at '${profile.domain}' using username '${profile.username}'...`));
+      console.info(colors.green(`Testing connection to the instance at '${profile.domain}' using username '${profile.username}'...`));
       const message = "Unable to connect to the instance, please verify the instance url, username and password.";
       try {
         const connected = await instance.testConnection();
@@ -125,21 +125,22 @@ program.command("create", {isDefault: true})
         program.error(err, {exitCode: 1});
       }
 
-      console.log(colors.green("Generating table configuration...\n"));
+      console.info(colors.green("Generating table configuration...\n"));
       const tables = await instance.requestTableAndParentFieldData();
       // Force skip workflow version parsing; TODO: custom XML parsing setup
       tables["wf_workflow_version"] = null;
       profile.tables = tables;
 
-      console.log(colors.green("Saving the profile...\n"));
+      console.info(colors.green("Saving the profile...\n"));
       NowProfile.save(profile, options.force === true);
 
-      console.log(colors.green("Setup completed.\n"));
+      console.info(colors.green("Setup completed.\n"));
     });
   });
 
+// subcommand to debug configuration of saved profile
 program.command("debug")
-  .description("debug existing profile")
+  .description("debug existing profile by printing out saved configuration")
   .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", validateProfileName)
   .option("-t, --test-connection", "test connection to the instance")
   .action(async function(name, options) {
@@ -170,17 +171,33 @@ program.command("debug")
       }
     }
     
-    console.debug(colors.green(`Profile has tables: ${Object.keys(profile.tables).length !== 0}`));
-    console.debug(colors.green(`Profile has properties: ${Object.keys(profile.properties).length !== 0}`));
-    console.debug(colors.green(`Profile has colors: ${Object.keys(profile.colors).length !== 0}`));
-    console.debug(colors.green(`Profile has eslint config: ${Object.keys(profile.eslint).length !== 0}`));
-    console.debug(colors.green(`Profile has eslintrc: ${Object.keys(profile.eslintrc).length !== 0}`));
+    console.debug(colors.green(`Profile has tables: ${profile.tables.size !== 0}`));
+    console.debug(colors.green(`Profile has resources: ${profile.resources.size !== 0}`));
+    console.debug(colors.green(`Profile has colors: ${profile.colors.size !== 0}`));
+    console.debug(colors.green(`Profile has eslint config: ${profile.eslint.size !== 0}`));
+    console.debug(colors.green(`Profile has eslintrc: ${profile.eslintrc.size !== 0}`));
   });
 
-program.command("update")
-  .description("update existing profile of the ServiceNow instance")
+// subcommand to update configuration of saved profile
+// program.command("update")
+//   .description("update existing profile of the ServiceNow instance")
+//   .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", validateProfileName)
+//   .option("-f, --force", "force update")
+//   .action(async function(name, options) {
+//     debugWorkingDir();
+
+//     if (!NowProfile.exists(name)) {
+//       program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
+//     }
+
+//     program.error("NOT IMPLEMENTED", {exitCode: 1});
+//   });
+
+// subcommand to purge configuration of saved profile
+program.command("purge")
+  .description("purge single existing ServiceNow instance profile")
   .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", validateProfileName)
-  .option("-f, --force", "force update")
+  .option("-f, --force", "force purge")
   .action(async function(name, options) {
     debugWorkingDir();
 
@@ -188,28 +205,69 @@ program.command("update")
       program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
     }
 
-    program.error("NOT IMPLEMENTED", {exitCode: 1});
+    const schema = {
+      properties: {
+        confirm: {
+          description: colors.yellow(`Are you sure you want to purge profile named '${name}'? Type 'PURGE' in uppercase to confirm.`),
+          required: true,
+          ask: () => {
+            return options.force !== true;
+          }
+        }
+      }
+    };
+    
+    prompt.start();
+
+    prompt.get(schema, async function(err, result) {
+      if (err) {
+        program.error(err);
+      }
+
+      // force = false & confirm != PURGE
+      if (options.force !== true && result.confirm !== "PURGE") {
+        program.error(`Purge of profile '${name}' not confirmed.`, {exitCode: 1});
+      }
+
+      NowProfile.purge(name);
+      console.info(colors.green(`Profile named '${name}' succesfully purged.`));
+    });
   });
 
-program.command("purge")
-  .description("purge existing ServiceNow instance profile(s)")
-  .option("-n, --name <name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash); exclusive with --all", validateProfileName)
-  .option("-a, --all", "purge all profiles; exclusive with --name")
-  .option("-f, --force", "force purge")
+// subcommand to purge configuration of ALL profile
+program.command("purge-all")
+  .description("purge all existing ServiceNow instance profiles")
+  .option("-f, --force", "force purge all")
   .action(async function(options) {
-    if (options.name && options.all === true) {
-      program.error("Options --all and --name are mutually exlusive, use one or the other");
-    }
+    debugWorkingDir();
 
-    if (!options.name && options.all !== true) {
-      program.error("One of the options --all or --name must be specified");
-    }
+    const schema = {
+      properties: {
+        confirm: {
+          description: colors.yellow("Are you sure you want to purge ALL saved profiles'? Type 'PURGE' in uppercase to confirm."),
+          required: true,
+          ask: () => {
+            return options.force !== true;
+          }
+        }
+      }
+    };
+    
+    prompt.start();
 
-    console.debug(`All: ${options.all}`);
-    console.debug(`Name: ${options.name}`);
-    console.debug(`Force: ${options.force}`);
+    prompt.get(schema, async function(err, result) {
+      if (err) {
+        program.error(err);
+      }
 
-    program.error("NOT IMPLEMENTED", {exitCode: 1});
+      // force = false & confirm != PURGE
+      if (options.force !== true && result.confirm !== "PURGE") {
+        program.error("Purge of all profiles not confirmed.", {exitCode: 1});
+      }
+
+      NowProfile.purgeHome();
+      console.info(colors.green("All profiles succesfully purged."));
+    });
   });
 
 program.parseAsync(process.argv);
