@@ -11,7 +11,7 @@ Update sets need to be committed locally on the configured instance. Change in t
 #### 3rd Party Resources
 - **Calibri**; a sans-serif typeface household developed by Luc(as) de Groot in 2002-2004 and introduced to the general public in 2007 \([download](https://www.downloadfonts.io/calibri-font-family-free/)\)
 
-> Minimum required NodeJS version to run `now-eslint` is 12.18
+> Minimum required NodeJS version to run `now-eslint` is 12.22
 
 ## CLI
 
@@ -119,7 +119,7 @@ fields:
 ## Patch Notes
 ### v0.0.4
 
-- **Updated `nodejs` engine to minimum supported NodeJS version 12.18**
+- **Updated `nodejs` engine to minimum supported NodeJS version 12.22**
 - Major refactoring and package separation (common ServiceNow objects vs Linter specific)
 - better CLI using commander (see CLI section)
 - Replaced xml-js with xmldom and xpath parsing of update xml payload as it is more precise

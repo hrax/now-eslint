@@ -3,5 +3,5 @@ module.exports = {
   PDFReportGenerator: require("./src/OldNowReportGenerator"),
   Profile: require("./src/Profile"),
   NowLinter: require("./src/NowLinter"),
-  UpdateXMLScan: require("./src/UpdateXMLScan") 
+  UpdateXMLScan: require("./src/UpdateXMLScan")
 };
