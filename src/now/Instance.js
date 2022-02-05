@@ -25,7 +25,7 @@ const DICTIONARY_SCRIPTS_API_PATH = "/api/now/table/sys_dictionary?sysparm_displ
  */
 const DB_OBJECT_CHILDREN_API_PATH = "/api/now/table/sys_db_object?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_query=super_class.name!=sys_metadata^ORDERBYname&sysparm_fields=name,super_class.name";
 
-class NowInstance {
+class Instance {
   /**
    * Create new instance of NowInstance to load the data from the Service Now instance
    *
@@ -180,4 +180,4 @@ class NowInstance {
   }
 }
 
-module.exports = NowInstance;
+module.exports = Instance;

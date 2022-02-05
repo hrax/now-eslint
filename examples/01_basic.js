@@ -1,11 +1,10 @@
 /* eslint-disable */
 // Deconstruct necessary objects
-const {NowProfile, NowLinter, pdfsetup} = require("../index");
-// In production
-// const {NowProfile, NowLinter, pdfsetup} = require("@hrax/now-eslint");
+const {Profile, NowLinter} = require("../index");
+// const {Profile, NowLinter} = require("@hrax/now-eslint");
 
 /*
- * Configure profile object or load it from JSON using Profile.loadProfile
+ * Configure profile object or load it from JSON using Profile.load
  * Other optional properties for profile data json:
  * - proxy; proxy connection string, should be in format http[s]://[username:password@]proxy.domain[:port]
  * - version; used internally to prevent old serialzed profiles to be initialized against incorrect (older/newer) version
@@ -26,22 +25,25 @@ const tables = {
   "sys_script_include": {fields: ["script"]}
 };
 
-// Configuration of the linter, only query is mandatory
+// Configuration of the linter
 const config = {
-  query: "",
-  title: ""
+  title: "",
+  query: ""
 };
 
 // Must, until the top-level awaits is enabled
 (async () => {
   // Create necessary object instances
-  const profile = new NowProfile(data);
+  const profile = new Profile(data);
   // If tables are not set in JSON data, we can set them later by using
-  profile.setTables(tables);
+  profile.tables = tables;
 
+  // Create NowLinter instance with profile and config; instance is stateful 
   const linter = new NowLinter(profile, config);
-  // Fetch configured changes and perform lint
+
+  // Fetch configured changes and perform lint; each execution will clear previously linted changes
   await linter.process();
+  
   // Generate PDF report
-  linter.report("./myreport.pdf", pdfsetup);
+  linter.report(`${process.cwd()}/myreport.pdf`);
 })();

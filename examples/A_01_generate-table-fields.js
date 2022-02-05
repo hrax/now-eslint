@@ -18,10 +18,12 @@ const data = {
 (async() => {
   const profile = new Profile(data);
   const instance = profile.createInstance();
+  
   // load table and their parent fields with type script
   const tables = await instance.requestTableAndParentFieldData();
+  
   // set the tables to profile
-  profile.setTables(tables);
-  // save profile
-  fs.writeFileSync("profile.json", JSON.stringify(profile));
+  profile.tables = tables;
+  
+  Profile.save(profile);
 })();

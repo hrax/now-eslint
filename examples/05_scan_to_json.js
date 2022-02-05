@@ -1,8 +1,8 @@
 /* eslint-disable */
 // Deconstruct necessary objects
-const {NowProfile, NowLinter, pdfsetup} = require("../index");
+const {Profile, NowLinter} = require("../index");
 // In production
-// const {NowProfile, NowLinter, pdfsetup} = require("@hrax/now-eslint");
+// const {Profile, NowLinter} = require("@hrax/now-eslint");
 
 /*
  * Configure profile object or load it from JSON using Profile.loadProfile
@@ -35,16 +35,19 @@ const config = {
 // Must, until the top-level awaits is enabled
 (async () => {
   // Create necessary object instances
-  const profile = new NowProfile(data);
+  const profile = new Profile(data);
   // If tables are not set in JSON data, we can set them later by using
-  profile.setTables(tables);
+  profile.tables = tables;
 
+  // Create NowLinter instance with profile and config; instance is stateful 
   const linter = new NowLinter(profile, config);
-  // Fetch configured changes and perform lint
+  
+  // Fetch configured changes and perform lint; each execution will clear previously linted changes
   await linter.process();
   
   // Generate JSON
   let json = JSON.stringify(linter);
+  // or
   json = JSON.stringify(linter.toJSON());
 
 })();

@@ -8,14 +8,14 @@ Update sets need to be committed locally on the configured instance. Change in t
 
 *For latest changes see [Patch Notes](#patch-notes).*
 
-#### 3rd Party Resources
+### 3rd party pesources
 - **Calibri**; a sans-serif typeface household developed by Luc(as) de Groot in 2002-2004 and introduced to the general public in 2007 \([download](https://www.downloadfonts.io/calibri-font-family-free/)\)
 
 > Minimum required NodeJS version to run `now-eslint` is 12.22
 
-## CLI
+# NOW ESLint as CLI
 
-### Installation
+## Installation
 
 CLI is the primary usage of the package, and it is recommended to install the package globally using
 
@@ -25,40 +25,69 @@ npm i -g @hrax/now-eslint
 
 **The global installation requires to have ESLint and all its required plugins installed globally as well.**
 
-### Profile command
+## Quickstart
 
-Setup for the CLI can be executed anywhere as the resulting profile will be saved in your home directory. Execute:
+If you already have `now-eslint` and ESLint installed, this short tutorial will show you how to get started in few easy steps.
 
-```
-now-eslint setup
-```
+### Step 0: Locate a directory for your reports
 
-You will be guided through a series of questions to set up your profile, connection to the instance and proxy if needed.
-
-After the command has succesfully completed, your home directory should contain folder `.now-eslint-profiles` with folder `profile_[yourprofilename]` which should contain 1 file: `profile.json`.
-
-### Report
-
-To generate an update set report, you should execute following command in the any folder where you have write rights to and want your report to be generated.
-
-Update set changes are linted against `.eslintrc` present in the configured folder or in user's profile directory. You can specify custom ESLint config file by using `overrideConfigFile` in the `profile.json` `properties.eslint` property.
-
-See example [A_02_customize_saved_profile.js](https://github.com/hrax/now-eslint/blob/master/examples/A_02_customize_saved_profile.js) for more information.
+Let's create a new directory where you will execute the command and have the PDF report generated.
 
 ```
-now-eslint report
+mkdir now-eslint-reports
+cd now-eslint-reports
 ```
 
-You will be guided through a series of questions to provide name, filename and update set query (for example "name=Default") for your report.
+### Step 1: Create a profile for your ServiceNow instance
 
-Note that linter currently does not allow reporting on custom XML serialized Service Now records such as 'Workflows'. If you encounter such an error, you can specify the table to be skipped in the `profile.json` `tables` property.
+To be able to execute a scan you will need to create a profile for your ServiceNow instance. This will create a new directory named `.now-eslint-profiles` in your home directory where all profiles will be stored.
 
-### Profile Customization
+```
+now-eslint profile quickstart
+```
 
+This will prompt you to provide URL to your ServiceNow instance, username and password that will be used to connect. See (Required instance access rights)[#required-instance-access-rights] for more details.
 
-## Library
+After that the command will try to test the connection to your instance and will download the basic configuration of the tables that will be eventually scanned - all tables that contain a field of type `script`, `script_plain` or `script_server`.
 
-### Installation
+### Step 2: Copy your eslint configuration is into the folder
+
+By default ESLint will look for any eslint configuration file, in the directory you are executing command in or any of its parents. Let's copy one into our `now-eslint-reports` folder.
+
+### Step 3: Run the report command
+
+Now, you should be ready to run your first update set scan and generate its ESLint report. Replace `[myupdateset]` with the name of your local update set on the instance in the following command.
+
+```
+now-eslint report quickstart -t "My quickstart report" -q "name=[myupdateset]" -f quickstart-report
+```
+
+Once executed, command will look for the profile named `quickstart` that we have created earlier. It will connect to the ServiceNow instance saved in the profile and will query for all update set changes which update set matches the encoded query `name=[myupdateset]`.
+
+After all update set changes have been identified, command will select only those that belong to any of the configured tables in the profile and will perform a ESLint scan on the configured table fields and save the results into a report file named `quickstart-report.pdf`
+
+### Step 4: Open and read the report
+
+The folder where you executed report command should now contain a file named `quickstart-report.pdf`. You should be able to open it in any PDF reader or locally installed browser. You will find the list of all changes that were present in the update set and their linting results.
+
+## Help
+
+You are able to get a list of all subcommands and their help by adding `--help`
+after the command such as:
+
+```
+now-eslint --help
+now-eslint report --help
+now-eslint profile --help
+```
+
+## ServiceNow instance profile customization
+
+**TODO:**
+
+# NOW ESLint as Library
+
+## Installation
 
 Library is the secondary usage of the package, and it is recommended to install the package into your project using
 
@@ -68,11 +97,11 @@ npm i @hrax/now-eslint
 
 ESLint and its dependencies should be installed in your project as well.
 
-### Examples
+## Examples
 
 See [examples](https://github.com/hrax/now-eslint/blob/master/examples/) folder for more details on executing NowLinter as a library.
 
-## Required Instance Access Rights
+# Required instance access rights
 
 We use Service Now REST API to read necessary information from the instance. Easiest setup would be to give the account `snc_read_only` and `admin` roles. If that is by any chance not possible, make sure account has read access to the following tables as well as access to the REST API.
 
@@ -107,17 +136,18 @@ fields:
 fields:  
     - sys_id
 
-## TODO/Nice to have
+# TODO/Nice to have
 
-- TODO: i18n; allow for reports to be translated
-- TODO: allow profile report customization via separate json file in profile folder
-- TODO: Allow to skip linting default values
-- TODO: Allow to mark and skip changes that have field "active" = false
-- TODO: Allow to conditionally lint fields (e.g. if other_field is true/false or if other_field is empty/not empty)
-- Nice to have: custom parse complex changes (e.g. workflow) to be able to lint selected nested complex records
+- TODO: report; i18n; allow for reports to be translated
+- TODO: profile; allow basic color/font customization
+- TODO: profile; allow extended report customization via separate json file in profile folder
+- TODO: linter; allow to skip linting default non-calculated values
+- TODO: linter; allow to mark and skip changes that have field "active" = false
+- TODO: linter; allow to conditionally lint fields (e.g. if other_field is true/false or if other_field is empty/not empty)
+- Nice to have: linter; custom parser for complex changes (e.g. `wf_workflow_version`) to be able to lint selected nested complex records
 
-## Patch Notes
-### v0.0.4
+# Patch Notes
+## v0.0.4
 
 - **Updated `nodejs` engine to minimum supported NodeJS version 12.22**
 - Major refactoring and package separation (common ServiceNow objects vs Linter specific)
@@ -133,7 +163,7 @@ This can be overriden with `NOW_ESLINT_PROFILE_HOME` node environment variable
 - Hopefully prepared the profiles for more customization
 
 
-### v0.0.3
+## v0.0.3
 
 - Updated ESLint to v7.8.1
 - Removed use of deprecated ESLint CLI as a preparation for ESLint v8.  

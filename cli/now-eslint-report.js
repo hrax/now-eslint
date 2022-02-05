@@ -100,11 +100,11 @@ program.name("now-eslint report")
 
       const fileName = options.fileName || result.fileName;
       const profile = Profile.load(name);
-      const opt = {};
-      opt.query = options.query || result.query;
-      opt.title = options.title || result.title;
+      const data = {};
+      data.query = options.query || result.query;
+      data.title = options.title || result.title;
 
-      const linter = new NowLinter(profile, opt);
+      const linter = new NowLinter(profile, data);
       
       console.info(colors.green(`Fetching data from the instance`));
       await linter.fetch();
