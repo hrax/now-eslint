@@ -110,7 +110,6 @@ fields:
 ## TODO/Nice to have
 
 - TODO: i18n; allow for reports to be translated
-- TODO: allow profile eslint customization via separate json file in profile folder
 - TODO: allow profile report customization via separate json file in profile folder
 - TODO: Allow to skip linting default values
 - TODO: Allow to mark and skip changes that have field "active" = false
@@ -122,12 +121,15 @@ fields:
 
 - **Updated `nodejs` engine to minimum supported NodeJS version 12.18**
 - Major refactoring and package separation (common ServiceNow objects vs Linter specific)
+- better CLI using commander (see CLI section)
 - Replaced xml-js with xmldom and xpath parsing of update xml payload as it is more precise
 - Added proxy connection url, that can be used in case proxy connection is required (proxy setting per profile)
 - Replaced HTML report with PDF (which decreased the report size as well)
-- Added NowProfile class that is used per-instance profile separation
-- Profile separation; profiles are stored in the current user home folder in folder `.now-eslint-profiles` and every profile folder has prefix `profile_`
-- Decreased amount of resources that need to be copied to the created profile
+- Added Profile class that is used per-instance profile separation
+- Profile separation; profiles are stored in the current user home folder in folder `.now-eslint-profiles` and every profile folder has prefix `profile_`\
+This can be overriden with `NOW_ESLINT_PROFILE_HOME` node environment variable
+- ESLint can be configured per profile via 'eslint.json' placed in profile directory
+- No resources copied to the profile
 - Hopefully prepared the profiles for more customization
 
 
