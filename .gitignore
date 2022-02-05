@@ -2,5 +2,6 @@
 *.sublime-workspace
 *.ENV
 *.pdf
+package-lock.json
 /node_modules
 /.vscode
