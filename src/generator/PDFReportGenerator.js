@@ -1,61 +1,53 @@
+/* eslint-disable no-magic-numbers */
 const pdfmake = require("pdfmake");
 const fs = require("fs");
 
-/**
- * Report generator
- */
-class NowReportGenerator {
-  constructor(def) {
-    this.docDef = def || {};
-  }
+const AbstractReportGenerator = require("./AbstractReportGenerator");
+const ScanStatus = require("../UpdateXMLScan").STATUS;
 
-  setFonts(fonts) {
-    this.fonts = fonts;
-  }
+class PDFReportGenerator extends AbstractReportGenerator {
+  constructor() {
+    super();
 
-  setTableLayouts(layouts) {
-    this.tableLayouts = layouts;
-  }
-
-  setDefinitionProperty(prop, value) {
-    this.docDef[prop] = value;
-  }
-
-  setContent(content) {
-    this.docDef.content = content;
-  }
-
-  addContent(content) {
-    if (!this.docDef.content) {
-      this.docDef.content = [];
-    }
-    content.forEach((item) => this.docDef.content.push(item));
-  }
-
-  addPageBreak() {
-    this.addContent([
-      {
-        text: "",
-        pageBreak: "after"
+    this.fonts = {
+      Calibri: {
+        normal: require.resolve("../resources/fonts/Calibri/Calibri.ttf"),
+        bold: require.resolve("../resources/fonts/Calibri/CALIBRIB.TTF"),
+        italics: require.resolve("../resources/fonts/Calibri/CALIBRII.TTF"),
+        bolditalics: require.resolve("../resources/fonts/Calibri/CALIBRIZ.TTF")
       }
-    ]);
+    };
+
+    this.tableLayouts = {};
+
+    this.pageSize = "A4";
+    this.pageOrientation = "portrait";
+    this.pageMargins = [40, 60, 40, 60];
+
+    // TODO: move styles definition here
   }
 
-  addParagraph(content) {
-    this.addContent([
-      {
-        text: content,
-        style: "paragraph"
-      }
-    ]);
+  addContent(document, ...content) {
+    content.forEach((c) => document.push(c));
   }
 
-  addHeading(heading, toc) {
-    if (toc === undefined) {
-      toc = true;
-    }
+  addPageBreak(document) {
+    this.addContent(document, {
+      // text: "",
+      pageBreak: "after"
+    });
+  }
 
-    this.addContent([
+  addParagraph(document, ...content) {
+    this.addContent(document, {
+      text: content,
+      style: "paragraph"
+    });
+  }
+
+  addHeading(document, heading, toc = true) {
+    this.addContent(
+      document,
       {
         text: heading,
         style: "heading1",
@@ -73,29 +65,28 @@ class NowReportGenerator {
           }
         ]
       }
-    ]);
+    );
   }
 
-  addHeading2(heading, toc) {
-    if (toc === undefined) {
-      toc = true;
-    }
-    
-    this.addContent([
+  addHeading2(document, heading, toc = true) {
+    this.addContent(
+      document,
       {
         text: heading,
         style: "heading2",
         tocItem: toc,
         tocMargin: [10, 0, 0, 0]
       }
-    ]);
+    );
   }
 
-  generateReportTitle(title) {
-    const content = [{
-      text: `\n\n\n\n\n\n\n\n\n\n${title}`,
-      style: "title"
-    }];
+  generateReportTitle(document, title) {
+    const content = [
+      {
+        text: `\n\n\n\n\n\n\n\n\n\n${title}`,
+        style: "title"
+      }
+    ];
 
     // TODO: if subtitle
     content.push({
@@ -129,21 +120,56 @@ class NowReportGenerator {
       alignment: "center",
       margin: [0, -5, 0, 5]
     });
-    this.addContent(content);
-    this.addPageBreak();
+    this.addContent(document, content);
+    this.addPageBreak(document);
   }
 
-  generateToc() {
-    this.addHeading("Table of Contents", false);
-    this.addContent([{toc: {}}]);
-    this.addPageBreak();
+  generateToc(document) {
+    this.addHeading(document, "Table of Contents", false);
+    this.addContent(document, {toc: {}});
+    this.addPageBreak(document);
   }
 
-  generateOverview(data) {
+  generateOverview(document, data) {
     const pkg = require("../package.json");
+    const status = [
+      {
+        label: ScanStatus.DELETED,
+        description: "Record deleted"
+      },
+      {
+        label: ScanStatus.IGNORED,
+        description: "Record ignored, target table is not configured"
+      },
+      {
+        label: ScanStatus.MANUAL,
+        description: "Record update should be checked manually"
+      },
+      {
+      //   label: NowUpdateXMLScan.STATUS.INACTIVE,
+      //   description: "Record should be linted, but is inactive"
+      // },
+      // {
+        label: ScanStatus.SKIPPED,
+        description: "Record should be linted, but does not contain anything to lint"
+      },
+      {
+        label: ScanStatus.ERROR,
+        description: "Record linted, at least one error found"
+      },
+      {
+        label: ScanStatus.WARNING,
+        description: "Record linted, at least one warning found"
+      },
+      {
+        label: ScanStatus.OK,
+        description: "Record linted, no linter warnings or erros found"
+      }
+    ];
     
-    this.addHeading("Report overview");
-    this.addParagraph([
+    this.addHeading(document, "Report overview");
+    this.addParagraph(
+      document,
       "The information in this document is generated from a ",
       {
         text: "now-eslint automation tool",
@@ -151,73 +177,72 @@ class NowReportGenerator {
         style: "link"
       },
       " that evaluates code in ServiceNow update sets against a defined set of ESLint standards for the implementation of ServiceNow product."
-    ]);
-    this.addParagraph("The content of this document is for informational purposes only and the list of issues scanned in the ServiceNow update sets may not be complete or exhaustive. The solution for the identified issue may be outside of the scope for the ServiceNow implementation.");
+    );
+    this.addParagraph(document, "The content of this document is for informational purposes only and the list of issues scanned in the ServiceNow update sets may not be complete or exhaustive. The solution for the identified issue may be outside of the scope for the ServiceNow implementation.");
     
-    this.addHeading2("Confidentiality Notice", false);
-    this.addParagraph("The content of this document may contain confidential information about the ServiceNow implementation, it is recommended to treat the document as such when considering of sharing it with the 3rd party.");
+    this.addHeading2(document, "Confidentiality Notice", false);
+    this.addParagraph(document, "The content of this document may contain confidential information about the ServiceNow implementation, it is recommended to treat the document as such when considering of sharing it with the 3rd party.");
 
-    if (data.status) {
-      this.addHeading2("Status description", false);
-      const table = {
-        margin: [0, 0, 0, 10],
-        table: {
-          headerRows: 1,
-          widths: ["auto", "*"],
-          body: [
-            [
-              {
-                text: "Status",
-                style: "tableHeaderLight"
-              },
-              {
-                text: "Description",
-                style: "tableHeaderLight"
-              }
-            ]
+    
+    this.addHeading2(document, "Status description", false);
+    const table = {
+      margin: [0, 0, 0, 10],
+      table: {
+        headerRows: 1,
+        widths: ["auto", "*"],
+        body: [
+          [
+            {
+              text: "Status",
+              style: "tableHeaderLight"
+            },
+            {
+              text: "Description",
+              style: "tableHeaderLight"
+            }
           ]
+        ]
+      },
+      layout: {
+        hLineWidth: function(i, node) {
+          return 0.5;
         },
-        layout: {
-          hLineWidth: function(i, node) {
-            return 0.5;
-          },
-          vLineWidth: function(i, node) {
-            return 0.5;
-          },
-          hLineColor: function(i, node) {
-            return "black";
-          },
-          vLineColor: function(i, node) {
-            return "black";
-          }
-          // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
-          // vLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
-          // paddingLeft: function(i, node) { return 4; },
-          // paddingRight: function(i, node) { return 4; },
-          // paddingTop: function(i, node) { return 2; },
-          // paddingBottom: function(i, node) { return 2; },
-          // fillColor: function (rowIndex, node, columnIndex) { return null; }
+        vLineWidth: function(i, node) {
+          return 0.5;
+        },
+        hLineColor: function(i, node) {
+          return "black";
+        },
+        vLineColor: function(i, node) {
+          return "black";
         }
-      };
+        // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+        // vLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+        // paddingLeft: function(i, node) { return 4; },
+        // paddingRight: function(i, node) { return 4; },
+        // paddingTop: function(i, node) { return 2; },
+        // paddingBottom: function(i, node) { return 2; },
+        // fillColor: function (rowIndex, node, columnIndex) { return null; }
+      }
+    };
 
-      data.status.forEach((item) => {
-        table.table.body.push([
-          {
-            text: `${item.label}`,
-            style: "tableCell"
-          },
-          {
-            text: `${item.description}`,
-            style: "tableCell"
-          }
-        ]);
-      });
-
-      this.addContent([table]);
-    }
-
-    this.addHeading("Resources");
-    this.addParagraph([
+    status.forEach((item) => {
+      table.table.body.push([
+        {
+          text: `${item.label}`,
+          style: "tableCell"
+        },
+        {
+          text: `${item.description}`,
+          style: "tableCell"
+        }
+      ]);
+    });
+    this.addContent(document, table);
+    
+    this.addHeading(document, "Resources");
+    this.addParagraph(
+      document,
       "For an overview of ServiceNow technical best practices, visit the ",
       {
         text: "Technical Best Practices",
@@ -225,11 +250,11 @@ class NowReportGenerator {
         style: "link"
       },
       " guide (Quebec)."
-    ]);
+    );
 
-    if (data.resources && data.resources.length > 0) {
+    if (data.resources["overview-resources"] != null && data.resources["overview-resources"].length > 0) {
       const ul = [];
-      data.resources.forEach((item) => {
+      data.resources["overview-resources"].forEach((item) => {
         ul.push({
           margin: [0, 0, 0, 3],
           text: item.label,
@@ -238,21 +263,23 @@ class NowReportGenerator {
         });
       });
 
-      this.addParagraph("For an ovewview of ESLint rules and practices for this report, visit one of the following:");
-      this.addContent([
+      this.addParagraph(document, "For an ovewview of ESLint rules and practices for this report, visit one of the following:");
+      this.addContent(
+        document,
         {
           margin: [10, 0, 0, 10],
           ul: ul
         }
-      ]);
+      );
     }
 
-    this.addPageBreak();
+    this.addPageBreak(document);
   }
 
-  generateReportSummary(data) {
-    this.addHeading("Summary");
-    this.addParagraph([
+  generateReportSummary(document, data) {
+    this.addHeading(document, "Summary");
+    this.addParagraph(
+      document,
       {
         text: "INSTANCE\n",
         style: "small",
@@ -263,30 +290,28 @@ class NowReportGenerator {
         link: `${data.domain}`,
         style: "link"
       }
-    ]);
-    this.addParagraph([
+    );
+    this.addParagraph(
+      document,
       {
         text: "QUERY\n",
         style: "small",
         bold: true
       },
-      {
-        text: `${data.query}`
-      }
-    ]);
-    this.addParagraph([
+      {text: `${data.query}`}
+    );
+    this.addParagraph(
+      document,
       {
         text: "UNIQUE CHANGES FOUND\n",
         style: "small",
         bold: true
       },
-      {
-        text: `${data.changes.size}`
-      }
-    ]);
+      {text: `${data.changes.size}`}
+    );
 
     if (data.changes) {
-      this.addParagraph(["\n", "Following table lists all changes that were identified to contain an error and should be reviewed:"]);
+      this.addParagraph(document, "\n", "Following table lists all changes that were identified to contain an error and should be reviewed:");
       let table = {
         table: {
           headerRows: 1,
@@ -357,14 +382,18 @@ class NowReportGenerator {
         ]);
       });
 
-      this.addContent([table]);
+      this.addContent(document, table);
     }
 
-    this.addPageBreak();
+    this.addPageBreak(document);
   }
 
-  generateReportFindings(data) {
-    this.addHeading("Findings");
+  generateReportFindings(document, data) {
+    if (!data.changes || data.changes == null) {
+      return;
+    }
+
+    this.addHeading(document, "Findings");
 
     const results = [];
 
@@ -617,15 +646,159 @@ class NowReportGenerator {
       // });
     });
 
-    this.addContent(results);
+    this.addContent(document, results);
   }
 
-  generate(path) {
+  build(data) {
+    const document = [];
+
+    // Page 1
+    this.generateReportTitle(document, data.title);
+
+    // Page 2 - ToC
+    this.generateToc(document);
+
+    // Page 3 - Overview
+    this.generateOverview(document, data);
+
+    this.generateReportSummary(document, data);
+
+    this.generateReportFindings(document, data);
+
+    return {
+      "pageSize": this.pageSize,
+      "pageOrientation": this.pageOrientation,
+      "pageMargins": this.pageMargins,
+      header: function(currentPage, pageCount, pageSize) {
+        if (currentPage === 1) {
+          return [];
+        }
+        return [
+          {
+            margin: [0, 20, 40, 0],
+            columns: [
+              {
+                width: "*",
+                text: []
+              },
+              {
+                width: "auto",
+                text: `${data.title}`,
+                alignment: "right",
+                style: "small"
+              }
+            ]
+          }
+        ];
+      },
+      footer: function(currentPage, pageCount) {
+        if (currentPage === 1) {
+          return [];
+        }
+        return [
+          {
+            margin: [40, 30, 40, 0],
+            columns: [
+              {
+                width: "40%",
+                text: [
+                  {
+                    text: "FOR INTERNAL USE",
+                    style: "small",
+                    italics: true
+                  }
+                ]
+              },
+              {
+                width: "*",
+                text: [
+                  {
+                    text: `${currentPage}`,
+                    style: "small",
+                    alignment: "center"
+                  }
+                ]
+              },
+              {
+                width: "40%",
+                text: ""
+              }
+            ],
+            columnGap: 5
+          }
+        ];
+      },
+      "defaultStyle": {
+        "color": "#212529",
+        "font": "Calibri",
+        "fontSize": 10,
+        "lineHeight": 1.1
+      },
+      "styles": {
+        "title": {
+          "color": "#293e41",
+          "fontSize": 30,
+          "alignment": "center",
+          "margin": [0, 0, 0, 10]
+        },
+        "heading1": {
+          "color": "#293e41",
+          "fontSize": 18,
+          "margin": [0, 5, 0, 10]
+        },
+        "heading2": {
+          "color": "#80b3a0",
+          "fontSize": 16,
+          "margin": [0, 5, 0, 10]
+        },
+        "heading3": {
+          "color": "#212529",
+          "fontSize": 14,
+          "margin": [0, 5, 0, 10]
+        },
+        "heading4": {
+          "color": "#212529",
+          "fontSize": 12,
+          "margin": [0, 5, 0, 10]
+        },
+        "small": {
+          "fontSize": 9
+        },
+        "tableCell": {
+          "margin": [3, 5, 3, 2]
+        },
+        "tableHeader": {
+          "fillColor": "#343a40",
+          "color": "#fff",
+          "margin": [3, 5, 3, 2],
+          "bold": true
+        },
+        "tableHeaderLight": {
+          "fillColor": "#6c757d",
+          "color": "#fff",
+          "margin": [3, 5, 3, 2],
+          "bold": true
+        },
+        "link": {
+          "color": "#0d6efd",
+          "decoration": "underline"
+        },
+        "paragraph": {
+          "margin": [0, 0, 0, 10]
+        }
+      },
+      content: document
+    };
+  }
+
+  generate(data, path) {
+    const document = this.build(data);
+
     const printer = new pdfmake(this.fonts);
-    const pdfDoc = printer.createPdfKitDocument(this.docDef, {tableLayouts: this.tableLayouts});
+    const pdfDoc = printer.createPdfKitDocument(document, {tableLayouts: this.tableLayouts});
     pdfDoc.pipe(fs.createWriteStream(path));
     pdfDoc.end();
   }
 }
 
-module.exports = NowReportGenerator;
+module.exports = PDFReportGenerator;

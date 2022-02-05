@@ -1,4 +1,4 @@
-const NowUpdateXMLScan = require("../src/NowUpdateXMLScan");
+const UpdateXMLScan = require("../src/UpdateXMLScan");
 
 describe("NowUpdateXMLScan", () => {
   it("returns correct count for errors and warnings", () => {
@@ -16,7 +16,7 @@ describe("NowUpdateXMLScan", () => {
       updatedOn: "sysId"
     };
     
-    const scan = new NowUpdateXMLScan(data);
+    const scan = new UpdateXMLScan(data);
     scan.reports.set("script", {
       warningCount: 1,
       errorCount: 2
@@ -31,6 +31,6 @@ describe("NowUpdateXMLScan", () => {
     expect(scan.errorCount).toBe(2);
     expect(scan.hasWarning).toBeTrue();
     expect(scan.hasError).toBeTrue();
-    expect(scan.status).toBe(NowUpdateXMLScan.STATUS.ERROR);
+    expect(scan.status).toBe(UpdateXMLScan.STATUS.ERROR);
   });
 });

@@ -2,7 +2,7 @@
 const crypto = require("crypto");
 
 const Assert = require("../util/Assert");
-const NowRequest = require("./NowRequest");
+const Request = require("./Request");
 
 /**
  * Base URL to load the update set xml changes ordered descending by updated on field
@@ -38,7 +38,7 @@ class NowInstance {
     Assert.notEmpty(domain);
     Assert.notEmpty(username);
     Assert.notEmpty(password);
-    this.request = new NowRequest({
+    this.request = new Request({
       domain: domain,
       username: username,
       password: password,

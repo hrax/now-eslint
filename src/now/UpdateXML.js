@@ -1,13 +1,13 @@
 const { customAlphabet } = require("nanoid");
 const Assert = require("../util/Assert");
 
-const NowUpdateXMLAction = {
+const UpdateXMLAction = {
   INSERT_OR_UPDATE: "INSERT_OR_UPDATE",
   DELETE: "DELETE"
 };
-Object.freeze(NowUpdateXMLAction);
+Object.freeze(UpdateXMLAction);
 
-class NowUpdateXML {
+class UpdateXML {
   constructor(data) {
     Assert.notNull(data, "Data must not be null.");
     Assert.isObject(data, "Data must be an Object.");
@@ -60,4 +60,4 @@ class NowUpdateXML {
   }
 }
 
-module.exports = NowUpdateXML;
+module.exports = UpdateXML;

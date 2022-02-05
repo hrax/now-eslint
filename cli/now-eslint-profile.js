@@ -14,10 +14,10 @@ const colors = require("colors/safe");
 const prompt = require("prompt");
 
 // Load local libraries
-const NowProfile = require("../src/NowProfile");
+const Profile = require("../src/Profile");
 
 // Configure global constants
-const PROFILE_HOME = NowProfile.profilesHomeDirPath();
+const PROFILE_HOME = Profile.profilesHomeDirPath();
 
 // Setup prompt
 prompt.message = "";
@@ -31,7 +31,7 @@ prompt.delimiter = "";
  * @throws commander.InvalidArgumentError if value does not match
  */
 const validateProfileName = (value) => {
-  if (NowProfile.isProfileNameValid(value)) {
+  if (Profile.isProfileNameValid(value)) {
     return value;
   }
   throw new commander.InvalidArgumentError("'name' can only contain lowecase/uppercase letters, numbers, underscore and dash.");
@@ -56,7 +56,7 @@ program.command("create", {isDefault: true})
   .action(async function(name, options) {
     debugWorkingDir();
 
-    if (NowProfile.exists(name) && options.force !== true) {
+    if (Profile.exists(name) && options.force !== true) {
       program.error(`Profile with name '${name}' already exists, use --force option to override`, {exitCode: 1});
     }
 
@@ -108,7 +108,7 @@ program.command("create", {isDefault: true})
         "proxy": result.useProxy ? `${result.proxy}` : null
       };
 
-      const profile = new NowProfile(data);
+      const profile = new Profile(data);
       const instance = profile.createInstance();
 
       console.info(colors.green(`Testing connection to the instance at '${profile.domain}' using username '${profile.username}'...`));
@@ -132,7 +132,7 @@ program.command("create", {isDefault: true})
       profile.tables = tables;
 
       console.info(colors.green("Saving the profile...\n"));
-      NowProfile.save(profile, options.force === true);
+      Profile.save(profile, options.force === true);
 
       console.info(colors.green("Setup completed.\n"));
     });
@@ -146,11 +146,11 @@ program.command("debug")
   .action(async function(name, options) {
     debugWorkingDir();
 
-    if (!NowProfile.exists(name)) {
+    if (!Profile.exists(name)) {
       program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
     }
 
-    const profile = NowProfile.load(name);
+    const profile = Profile.load(name);
     console.debug(colors.green(`Profile name: '${profile.name}'`));
     console.debug(colors.green(`Profile domain: '${profile.domain}'`));
     console.debug(colors.green(`Profile username: '${profile.username}'`));
@@ -175,7 +175,6 @@ program.command("debug")
     console.debug(colors.green(`Profile has resources: ${profile.resources.size !== 0}`));
     console.debug(colors.green(`Profile has colors: ${profile.colors.size !== 0}`));
     console.debug(colors.green(`Profile has eslint config: ${profile.eslint.size !== 0}`));
-    console.debug(colors.green(`Profile has eslintrc: ${profile.eslintrc.size !== 0}`));
   });
 
 // subcommand to update configuration of saved profile
@@ -201,7 +200,7 @@ program.command("purge")
   .action(async function(name, options) {
     debugWorkingDir();
 
-    if (!NowProfile.exists(name)) {
+    if (!Profile.exists(name)) {
       program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
     }
 
@@ -229,7 +228,7 @@ program.command("purge")
         program.error(`Purge of profile '${name}' not confirmed.`, {exitCode: 1});
       }
 
-      NowProfile.purge(name);
+      Profile.purge(name);
       console.info(colors.green(`Profile named '${name}' succesfully purged.`));
     });
   });
@@ -265,7 +264,7 @@ program.command("purge-all")
         program.error("Purge of all profiles not confirmed.", {exitCode: 1});
       }
 
-      NowProfile.purgeHome();
+      Profile.purgeHome();
       console.info(colors.green("All profiles succesfully purged."));
     });
   });

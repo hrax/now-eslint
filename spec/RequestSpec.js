@@ -1,6 +1,6 @@
-const NowRequest = require("../src/now/NowRequest");
+const Request = require("../src/now/Request");
 
-describe("NowRequest", () => {
+describe("Request", () => {
   const options = {
     "domain": "domain",
     "username": "user",
@@ -10,7 +10,7 @@ describe("NowRequest", () => {
   let requestGetSpy = null;
 
   beforeEach(async() => {
-    request = new NowRequest(options);
+    request = new Request(options);
     requestGetSpy = spyOn(request, "get").and.rejectWith(new Error("Received response body is empty"));
   });
 

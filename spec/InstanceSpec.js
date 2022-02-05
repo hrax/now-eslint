@@ -1,11 +1,11 @@
-const NowInstance = require("../src/now/NowInstance");
+const Instance = require("../src/now/Instance");
 
-describe("NowInstance", () => {
+describe("Instance", () => {
   let instance = null;
   let requestGetSpy = null;
 
   beforeEach(async() => {
-    instance = new NowInstance("domain", "username", "password");
+    instance = new Instance("domain", "username", "password");
     requestGetSpy = spyOn(instance.request, "get").and.rejectWith("Received response body is empty");
   });
 

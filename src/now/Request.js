@@ -23,7 +23,7 @@ const RESPONSE_STATUS = {
  * (so null out fields if they are not provided in the request), while PATCH means replace only specified fields.
  * For the Table API, however, PUT and PATCH mean the same thing.  PUT and PATCH modify only the fields specified in the request.
  */
-class NowRequest {
+class Request {
   /**
    * Create new instance of NowRequest to load the data from the Service Now instance
    */
@@ -194,4 +194,4 @@ class NowRequest {
   }
 }
 
-module.exports = NowRequest;
+module.exports = Request;

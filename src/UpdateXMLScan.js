@@ -1,26 +1,36 @@
-const NowUpdateXML = require("./now/NowUpdateXML");
+const UpdateXML = require("./now/UpdateXML");
 
-const NowUpdateXMLScanStatus = {
-  // Do not lint (action delete or not configured table)
-  IGNORE: "IGNORE",
-  // Linted, at least one warning found
-  WARNING: "WARNING",
-  // Linted, at least one error found
-  ERROR: "ERROR",
-  // Linted, no warnings or erros found
-  OK: "OK",
-  // Not linted, should be checked manually
+const UpdateXMLScanStatus = {
+  // Do not lint (deleted record)
+  DELETED: "DELETED",
+
+  // Do not lint (not configured table)
+  IGNORED: "IGNORED",
+
+  // Do not lint, should be checked manually (has no fields to check, but still configured)
   MANUAL: "MANUAL",
-  // Should be linted but does not contain anything to lint
-  SKIPPED: "SKIPPED",
+
   // JSON payload initialized can be scanned based on configuration
   SCAN: "SCAN",
-  // JSON payload detected as inactive; mark, do not lint
-  INACTIVE: "INACTIVE"
-};
-Object.freeze(NowUpdateXMLScanStatus);
 
-class NowUpdateXMLScan extends NowUpdateXML {
+  // JSON payload detected as inactive; mark, do not lint
+  INACTIVE: "INACTIVE",
+
+  // Should be linted but does not contain anything to lint
+  SKIPPED: "SKIPPED",
+
+  // Linted, at least one error found
+  ERROR: "ERROR",
+
+  // Linted, at least one warning found
+  WARNING: "WARNING",
+
+  // Linted, no warnings or erros found
+  OK: "OK"
+};
+Object.freeze(UpdateXMLScanStatus);
+
+class UpdateXMLScan extends UpdateXML {
   constructor(data) {
     super(data);
     const propertyConfig = {
@@ -31,16 +41,10 @@ class NowUpdateXMLScan extends NowUpdateXML {
     this.updates = 1;
     // Map[field, report]
     this.reports = new Map();
-    Object.defineProperty(this, "ignored", Object.assign({}, propertyConfig, {
+    Object.defineProperty(this, "command", Object.assign({}, propertyConfig, {
       writable: true,
       enumerable: false,
-      value: false
-    }));
-
-    Object.defineProperty(this, "skipped", Object.assign({}, propertyConfig, {
-      writable: true,
-      enumerable: false,
-      value: false
+      value: null
     }));
 
     Object.defineProperty(this, "warningCount", Object.assign({}, propertyConfig, {
@@ -107,37 +111,37 @@ class NowUpdateXMLScan extends NowUpdateXML {
 
     Object.defineProperty(this, "status", Object.assign({}, propertyConfig, {
       get() {
-        if (this.ignored) {
-          return NowUpdateXMLScanStatus.IGNORE;
-        }
-        
-        if (this.skipped) {
-          return NowUpdateXMLScanStatus.SKIPPED;
+        if (this.command != null) {
+          return this.command;
         }
 
         if (this.hasError) {
-          return NowUpdateXMLScanStatus.ERROR;
+          return UpdateXMLScanStatus.ERROR;
         }
 
         if (this.hasWarning) {
-          return NowUpdateXMLScanStatus.WARNING;
+          return UpdateXMLScanStatus.WARNING;
         }
 
         if (this.reports.size > 0) {
-          return NowUpdateXMLScanStatus.OK;
+          return UpdateXMLScanStatus.OK;
         }
 
-        return this.action.toLowerCase() === "delete" ? NowUpdateXMLScanStatus.IGNORE : NowUpdateXMLScanStatus.SCAN;
+        return this.action.toLowerCase() === "delete" ? UpdateXMLScanStatus.DELETED : UpdateXMLScanStatus.SCAN;
       }
     }));
   }
 
   ignore() {
-    this.ignored = true;
+    this.command = UpdateXMLScanStatus.IGNORED;
   }
 
   skip() {
-    this.skipped = true;
+    this.command = UpdateXMLScanStatus.SKIPPED;
+  }
+
+  manual() {
+    this.command = UpdateXMLScanStatus.MANUAL;
   }
 
   incrementUpdateCount() {
@@ -157,11 +161,11 @@ class NowUpdateXMLScan extends NowUpdateXML {
   }
 }
 
-Object.defineProperty(NowUpdateXMLScan, "STATUS", {
+Object.defineProperty(UpdateXMLScan, "STATUS", {
   enumerable: true,
   configurable: false,
   writable: false,
-  value: NowUpdateXMLScanStatus
+  value: UpdateXMLScanStatus
 });
 
-module.exports = NowUpdateXMLScan;
+module.exports = UpdateXMLScan;

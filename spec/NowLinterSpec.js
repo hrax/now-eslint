@@ -1,18 +1,18 @@
 /* eslint-disable */
 const fs = require("fs");
-const NowUpdateXMLScan = require("../src/NowUpdateXMLScan");
+const UpdateXMLScan = require("../src/UpdateXMLScan");
 const NowLinter = require("../src/NowLinter");
-const NowProfile = require("../src/NowProfile");
+const Profile = require("../src/Profile");
 
 describe("NowLinter", () => {
   const _createLinter = (options, tables) => {
-    const profile = new NowProfile({
+    const profile = new Profile({
       "name": "testprofile",
       "domain": "???",
       "username": "???",
       "password": "???"
     });
-    profile.setTables(tables);
+    profile.tables = tables;
     return new NowLinter(profile, options);
   };
 
@@ -124,7 +124,7 @@ describe("NowLinter", () => {
     expect(linter.eslint.lintText).not.toHaveBeenCalled();
 
     expect(changes.size).toBe(1);
-    expect(changes.values().next().value.status).toBe("IGNORE");
+    expect(changes.values().next().value.status).toBe(UpdateXMLScan.STATUS.IGNORED);
     expect(changes.values().next().value.hasReports).toBe(false);
   });
 

@@ -1,6 +1,6 @@
-const NowProfile = require("../src/NowProfile");
+const Profile = require("../src/Profile");
 
-describe("NowProfile", () => {
+describe("Profile", () => {
   describe("initialization", () => {
     it("should initialize basic configuration with empty extended configuration", () => {
       const data = {
@@ -10,7 +10,7 @@ describe("NowProfile", () => {
         password: "password12345",
         proxy: "http://user:password@domain:port"
       };
-      const profile = new NowProfile(data);
+      const profile = new Profile(data);
   
       expect(profile.name).toBe(data.name);
       expect(profile.domain).toBe(data.domain);
@@ -22,7 +22,6 @@ describe("NowProfile", () => {
       expect(profile.resources.size).toEqual(0);
       expect(profile.colors.size).toEqual(0);
       expect(profile.eslint.size).toEqual(0);
-      expect(profile.eslintrc.size).toEqual(0);
     });
 
     it("should initialize with extended configuration if provided", () => {
@@ -46,7 +45,7 @@ describe("NowProfile", () => {
           "no-console": 1
         }
       };
-      const profile = new NowProfile(data);
+      const profile = new Profile(data);
   
       expect(profile.tables.size).toEqual(1);
       expect(profile.tables.get("wf_workflow_version")).toBeNull();
@@ -59,9 +58,6 @@ describe("NowProfile", () => {
 
       expect(profile.eslint.size).toEqual(1);
       expect(profile.eslint.get("root")).toBeTrue();
-
-      expect(profile.eslintrc.size).toEqual(1);
-      expect(profile.eslintrc.get("no-console")).toEqual(1);
     });
   });
 
@@ -74,7 +70,7 @@ describe("NowProfile", () => {
         password: "password12345",
         proxy: "http://user:password@domain:port"
       };
-      const profile = new NowProfile(data);
+      const profile = new Profile(data);
       // serialize to JSON and deserialze to check
       const json = JSON.parse(JSON.stringify(profile));
   

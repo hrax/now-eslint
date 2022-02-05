@@ -4,12 +4,12 @@ const crypto = require("crypto");
 
 const Assert = require("./util/Assert");
 const helpers = require("./util/helpers");
-const NowUpdateXMLScan = require("./NowUpdateXMLScan");
+const UpdateXMLScan = require("./UpdateXMLScan");
 
 class NowLinter {
   /**
    * 
-   * @param {NowProfile} profile 
+   * @param {Profile} profile 
    * @param {Object} options 
    */
   constructor(profile, options) {
@@ -35,7 +35,7 @@ class NowLinter {
     
     this.profile = profile;
     this.instance = this.profile.createInstance();
-    this.eslint = new ESLint(this.profile.properties.get("eslint") || {});
+    this.eslint = new ESLint(Object.fromEntries(this.profile.eslint.entries()));
   }
 
   /**
@@ -50,7 +50,7 @@ class NowLinter {
     // Get records from the response
     response.result.forEach((record) => {
       const data = helpers.RESTHelper.transformUpdateXMLToData(record);
-      const scan = new NowUpdateXMLScan(data);
+      const scan = new UpdateXMLScan(data);
       if (!this.changes.has(scan.name)) {
         this.changes.set(scan.name, scan);
       } else {
@@ -74,9 +74,14 @@ class NowLinter {
       }
       
       const table = scan.targetTable;
-      const fields = this.profile.getTableFields(table);
-      if (fields == null || fields.length === 0) {
+      if (!this.profile.tables.has(table)) {
         scan.ignore();
+        return;
+      }
+
+      const fields = this.profile.tables.get(table).fields || null;
+      if (fields == null || fields.length === 0) {
+        scan.manual();
         return;
       }
 
@@ -141,76 +146,20 @@ class NowLinter {
     return JSON.parse(JSON.stringify(data));
   }
 
-  report(path, pdfsetup) {
+  report(path) {
     Assert.notEmpty(path, "path cannot be empty.");
-    Assert.notNull(pdfsetup, "pdfsetup cannot be null.");
-    Assert.isFunction(pdfsetup, "pdfsetup must be a function.");
     const data = Object.assign({}, {
       domain: this.profile.domain,
       username: this.profile.username,
       title: this.options.title,
       query: this.options.query,
-      changes: this.changes,
-      status: [
-        {
-          label: "OK",
-          description: "Linted, no warnings or erros found"
-        },
-        {
-          label: "ERROR",
-          description: "Linted, at least one error found"
-        },
-        {
-          label: "WARNING",
-          description: "Linted, at least one warning found"
-        },
-        {
-          label: "MANUAL",
-          description: "Not linted, should be checked manually"
-        },
-        {
-          label: "SKIPPED",
-          description: "Should be linted but does not contain anything to lint"
-        },
-        {
-          label: "IGNORE",
-          description: "Do not lint (action delete or not configured table)"
-        }
-      ]
+      changes: this.changes
     }, {
-      resources: this.profile.properties.has("resources") ? this.profile.properties.get("resources") : []
+      // resources: this.profile.resources.has("resources") ? this.profile.properties.get("resources") : []
     });
 
-    const setup = pdfsetup(data);
-
-    const generator = this.profile.createReportGenerator(setup.docDef);
-    generator.setFonts(setup.fonts);
-    if (setup.tableLayouts) {
-      generator.setTableLayouts(setup.tableLayouts);
-    }
-
-    /* PAGE 1; Report title */
-    generator.generateReportTitle(data.title);
-
-    /* PAGE 2; Table Of Contents */
-    generator.generateToc();
-    
-    // generator.generateLegalNotice(data);
-
-    /* PAGE 3; Report overview */
-    generator.generateOverview(data);
-
-    /* PAGE 4; Report summary, quick error list */
-    generator.generateReportSummary(data);
-
-    // generator.generateAdditionalInformation(data);
-
-    /* PAGE 5-X; Report findings */
-    generator.generateReportFindings(data);
-
-    // generator.generateAppendix(data);
-
-    generator.generate(path);
+    const generator = this.profile.createReportGenerator();
+    generator.generate(data, path);
   }
 }
 

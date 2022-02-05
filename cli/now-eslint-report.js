@@ -14,11 +14,11 @@ const colors = require("colors/safe");
 const prompt = require("prompt");
 
 // Load local libraries
-const NowProfile = require("../src/NowProfile");
+const Profile = require("../src/Profile");
 const NowLinter = require("../src/NowLinter");
 
 // Configure global constants
-const PROFILE_HOME = NowProfile.profilesHomeDirPath();
+const PROFILE_HOME = Profile.profilesHomeDirPath();
 
 // Setup prompt
 prompt.message = "";
@@ -74,7 +74,7 @@ prompt.get(schema, (err, result) => {
   }
 
   const data = fs.readFileSync(`${PROFILE_HOME}/profile_${result.profile}/profile.json`, "utf8");
-  const profile = new NowProfile(JSON.parse(data));
+  const profile = new Profile(JSON.parse(data));
   
   const options = {};
   options.query = result.query;

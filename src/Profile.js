@@ -3,9 +3,9 @@ const os = require("os");
 const path = require("path");
 
 const Assert = require("./util/Assert");
-const NowInstance = require("./now/NowInstance");
-const NowRequest = require("./now/NowRequest");
-const NowReportGenerator = require("./NowReportGenerator");
+const Instance = require("./now/Instance");
+const Request = require("./now/Request");
+const PDFReportGenerator = require("./generator/PDFReportGenerator");
 
 /**
  * Options object
@@ -23,7 +23,7 @@ const NowReportGenerator = require("./NowReportGenerator");
  *  eslintrc: null
  * }
  */
-class NowProfile {
+class Profile {
   constructor(options) {
     Assert.notNull(options, "Options cannot be null!");
     Assert.isObject(options, "Options needs to be an object!");
@@ -49,10 +49,10 @@ class NowProfile {
         return null;
       }
 
-      if (!value.startsWith(NowProfile.ENCODE_PREFIX)) {
+      if (!value.startsWith(Profile.ENCODE_PREFIX)) {
         return value;
       }
-      return Buffer.from(value.substring(NowProfile.ENCODE_PREFIX.length), "base64").toString("utf8");
+      return Buffer.from(value.substring(Profile.ENCODE_PREFIX.length), "base64").toString("utf8");
     };
 
     // Mutable privates Map; giggity
@@ -108,7 +108,6 @@ class NowProfile {
         privatesSafeSet("colors", newValue);
       }
     }));
-    // Keep this 2 as object notation or force map? Map for now
     Object.defineProperty(this, "eslint", Object.assign({}, propertyConfig, {
       get() {
         return privatesSafeGet("eslint");
@@ -117,26 +116,16 @@ class NowProfile {
         privatesSafeSet("eslint", newValue);
       }
     }));
-    Object.defineProperty(this, "eslintrc", Object.assign({}, propertyConfig, {
-      get() {
-        return privatesSafeGet("eslintrc");
-      },
-      set(newValue) {
-        privatesSafeSet("eslintrc", newValue);
-      }
-    }));
-
     
     // Set mutable properties
     this.tables = Object.assign({}, options.tables || {});
     this.resources = Object.assign({}, options.resources || {});
     this.colors = Object.assign({}, options.colors || {});
     this.eslint = Object.assign({}, options.eslint || {});
-    this.eslintrc = Object.assign({}, options.eslintrc || {});
   }
 
   createRequest() {
-    return new NowRequest({
+    return new Request({
       domain: this.domain,
       username: this.username,
       password: this.password,
@@ -145,20 +134,17 @@ class NowProfile {
   }
 
   createInstance() {
-    return new NowInstance(this.domain, this.username, this.password, this.proxy || null);
+    return new Instance(this.domain, this.username, this.password, this.proxy || null);
   }
 
-  createReportGenerator(docDef) {
-    Assert.notNull(docDef);
-    Assert.isObject(docDef);
-    
+  createReportGenerator() {
     // if (this.customGeneratorClassPath != null) {
     //   // require from current working directory or profile main directory
     //   const generator = require(`${this.customGeneratorClassPath}`);
     //   return new generator(docDef);
     // }
 
-    return new NowReportGenerator(docDef);
+    return new PDFReportGenerator();
   }
 
   toJSON() {
@@ -167,7 +153,7 @@ class NowProfile {
         return null;
       }
 
-      return [NowProfile.ENCODE_PREFIX, Buffer.from(value, "utf8").toString("base64")].join("");
+      return [Profile.ENCODE_PREFIX, Buffer.from(value, "utf8").toString("base64")].join("");
     };
     
     const toReturn = {
@@ -185,14 +171,14 @@ class NowProfile {
   }
 
   static profilesHomeDirPath() {
-    return path.normalize(process.env.NOW_ESLINT_PROFILE_HOME || NowProfile.PROFILES_HOME_DIR_PATH);
+    return path.normalize(process.env.NOW_ESLINT_PROFILE_HOME || Profile.PROFILES_HOME_DIR_PATH);
   }
 
   static load(profileName) {
-    const home = NowProfile.profilesHomeDirPath();
-    const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profileName}`);
+    const home = Profile.profilesHomeDirPath();
+    const profileHome = path.normalize(`${home}/${Profile.PROFILE_PREFIX}${profileName}`);
 
-    if (!NowProfile.exists(profileName)) {
+    if (!Profile.exists(profileName)) {
       throw new Error(`Profile home at ${profileHome} does not exists!`);
     }
 
@@ -205,32 +191,28 @@ class NowProfile {
       return JSON.parse(data);
     };
 
-    if (!fileExists(NowProfile.PROFILE_CONFIG_NAME)) {
+    if (!fileExists(Profile.PROFILE_CONFIG_NAME)) {
       throw new Error(`Profile config file was not found in the profile home at ${profileHome}`);
     }
 
-    var options = loadFile(NowProfile.PROFILE_CONFIG_NAME);
-    var profile = new NowProfile(options);
+    var options = loadFile(Profile.PROFILE_CONFIG_NAME);
+    var profile = new Profile(options);
 
     // Load other files
-    if (fileExists(NowProfile.PROFILE_TABLES_NAME)) {
-      profile.tables = loadFile(NowProfile.PROFILE_TABLES_NAME);
+    if (fileExists(Profile.PROFILE_TABLES_NAME)) {
+      profile.tables = loadFile(Profile.PROFILE_TABLES_NAME);
     }
 
-    if (fileExists(NowProfile.PROFILE_RESOURCES_NAME)) {
-      profile.resources = loadFile(NowProfile.PROFILE_RESOURCES_NAME);
+    if (fileExists(Profile.PROFILE_RESOURCES_NAME)) {
+      profile.resources = loadFile(Profile.PROFILE_RESOURCES_NAME);
     }
 
-    if (fileExists(NowProfile.PROFILE_COLORS_NAME)) {
-      profile.colors = loadFile(NowProfile.PROFILE_COLORS_NAME);
+    if (fileExists(Profile.PROFILE_COLORS_NAME)) {
+      profile.colors = loadFile(Profile.PROFILE_COLORS_NAME);
     }
 
-    if (fileExists(NowProfile.PROFILE_ESLINT_NAME)) {
-      profile.eslint = loadFile(NowProfile.PROFILE_ESLINT_NAME);
-    }
-
-    if (fileExists(NowProfile.PROFILE_ESLINTRC_NAME)) {
-      profile.eslintrc = loadFile(NowProfile.PROFILE_ESLINTRC_NAME);
+    if (fileExists(Profile.PROFILE_ESLINT_NAME)) {
+      profile.eslint = loadFile(Profile.PROFILE_ESLINT_NAME);
     }
 
     return profile;
@@ -238,13 +220,13 @@ class NowProfile {
 
   static save(profile, cleanup = false) {
     Assert.notNull(profile);
-    Assert.isInstance(profile, NowProfile, "Provided profile is not instance of NowProfile");
+    Assert.isInstance(profile, Profile, "Provided profile is not instance of NowProfile");
 
-    const home = NowProfile.profilesHomeDirPath();
-    const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profile.name}`);
+    const home = Profile.profilesHomeDirPath();
+    const profileHome = path.normalize(`${home}/${Profile.PROFILE_PREFIX}${profile.name}`);
 
     if (cleanup === true) {
-      NowProfile.purge(profile.name);
+      Profile.purge(profile.name);
     }
 
     // Check if directories exist otherwise create
@@ -262,33 +244,29 @@ class NowProfile {
     };
 
     // We always save profile in multiple files; easier manual maintenance
-    saveFile(NowProfile.PROFILE_CONFIG_NAME, profile);
+    saveFile(Profile.PROFILE_CONFIG_NAME, profile);
     
     if (profile.tables.size) {
-      saveFile(NowProfile.PROFILE_TABLES_NAME, Object.fromEntries(profile.tables.entries()));
+      saveFile(Profile.PROFILE_TABLES_NAME, Object.fromEntries(profile.tables.entries()));
     }
     
     if (profile.resources.size) {
-      saveFile(NowProfile.PROFILE_RESOURCES_NAME, Object.fromEntries(profile.resources.entries()));
+      saveFile(Profile.PROFILE_RESOURCES_NAME, Object.fromEntries(profile.resources.entries()));
     }
     
     if (profile.colors.size) {
-      saveFile(NowProfile.PROFILE_COLORS_NAME, Object.fromEntries(profile.colors.entries()));
+      saveFile(Profile.PROFILE_COLORS_NAME, Object.fromEntries(profile.colors.entries()));
     }
 
     if (profile.eslint.size) {
-      saveFile(NowProfile.PROFILE_ESLINT_NAME, Object.fromEntries(profile.eslint.entries()));
-    }
-
-    if (profile.eslintrc.size) {
-      saveFile(NowProfile.PROFILE_ESLINTRC_NAME, Object.fromEntries(profile.eslintrc.entries()));
+      saveFile(Profile.PROFILE_ESLINT_NAME, Object.fromEntries(profile.eslint.entries()));
     }
   }
 
   static exists(profileName) {
-    const home = NowProfile.profilesHomeDirPath();
-    const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profileName}`);
-    const profile = path.normalize(`${profileHome}/${NowProfile.PROFILE_CONFIG_NAME}`);
+    const home = Profile.profilesHomeDirPath();
+    const profileHome = path.normalize(`${home}/${Profile.PROFILE_PREFIX}${profileName}`);
+    const profile = path.normalize(`${profileHome}/${Profile.PROFILE_CONFIG_NAME}`);
     
     if (!fs.existsSync(`${home}`)) {
       return false;
@@ -307,8 +285,8 @@ class NowProfile {
   }
 
   static purge(profileName) {
-    const home = NowProfile.profilesHomeDirPath();
-    const profileHome = path.normalize(`${home}/${NowProfile.PROFILE_PREFIX}${profileName}`);
+    const home = Profile.profilesHomeDirPath();
+    const profileHome = path.normalize(`${home}/${Profile.PROFILE_PREFIX}${profileName}`);
     
     if (fs.existsSync(`${profileHome}`)) {
       fs.rmSync(`${profileHome}`, {recursive: true, force: true});
@@ -316,7 +294,7 @@ class NowProfile {
   }
 
   static purgeHome() {
-    const home = NowProfile.profilesHomeDirPath();
+    const home = Profile.profilesHomeDirPath();
 
     if (fs.existsSync(`${home}`)) {
       fs.rmSync(`${home}`, {recursive: true, force: true});
@@ -324,22 +302,21 @@ class NowProfile {
   }
 
   static isProfileNameValid(profileName) {
-    return NowProfile.PROFILE_NAME_REGEXP.test(profileName);
+    return Profile.PROFILE_NAME_REGEXP.test(profileName);
   }
 }
 
-NowProfile.PROFILES_HOME_DIR_PATH = path.normalize(`${os.homedir()}/.now-eslint-profiles`);
-NowProfile.PROFILE_PREFIX = "profile_";
+Profile.PROFILES_HOME_DIR_PATH = path.normalize(`${os.homedir()}/.now-eslint-profiles`);
+Profile.PROFILE_PREFIX = "profile_";
 
-NowProfile.PROFILE_CONFIG_NAME = "profile.json";
-NowProfile.PROFILE_TABLES_NAME = "tables.json";
-NowProfile.PROFILE_RESOURCES_NAME = "resources.json";
-NowProfile.PROFILE_COLORS_NAME = "colors.json";
-NowProfile.PROFILE_ESLINT_NAME = "eslint.json";
-NowProfile.PROFILE_ESLINTRC_NAME = ".eslintrc.json";
+Profile.PROFILE_CONFIG_NAME = "profile.json";
+Profile.PROFILE_TABLES_NAME = "tables.json";
+Profile.PROFILE_RESOURCES_NAME = "resources.json";
+Profile.PROFILE_COLORS_NAME = "colors.json";
+Profile.PROFILE_ESLINT_NAME = "eslint.json";
 
-NowProfile.ENCODE_PREFIX = "$$$";
+Profile.ENCODE_PREFIX = "$$$";
 
-NowProfile.PROFILE_NAME_REGEXP = /^[a-zA-Z0-9_\-]+$/;
+Profile.PROFILE_NAME_REGEXP = /^[a-zA-Z0-9_\-]+$/;
 
-module.exports = NowProfile;
+module.exports = Profile;
