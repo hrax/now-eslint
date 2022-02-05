@@ -25,7 +25,7 @@ npm i -g @hrax/now-eslint
 
 **The global installation requires to have ESLint and all its required plugins installed globally as well.**
 
-### Setup
+### Profile command
 
 Setup for the CLI can be executed anywhere as the resulting profile will be saved in your home directory. Execute:
 
