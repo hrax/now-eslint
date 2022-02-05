@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 const pdfmake = require("pdfmake");
 const fs = require("fs");
+const path = require("path");
 
 const AbstractReportGenerator = require("./AbstractReportGenerator");
 const ScanStatus = require("../UpdateXMLScan").STATUS;
@@ -11,10 +12,10 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
     this.fonts = {
       Calibri: {
-        normal: require.resolve("../resources/fonts/Calibri/Calibri.ttf"),
-        bold: require.resolve("../resources/fonts/Calibri/CALIBRIB.TTF"),
-        italics: require.resolve("../resources/fonts/Calibri/CALIBRII.TTF"),
-        bolditalics: require.resolve("../resources/fonts/Calibri/CALIBRIZ.TTF")
+        normal: path.normalize(__dirname + "/../../resources/fonts/Calibri/Calibri.ttf"),
+        bold: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIB.TTF"),
+        italics: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRII.TTF"),
+        bolditalics: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIZ.TTF")
       }
     };
 
@@ -33,7 +34,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
   addPageBreak(document) {
     this.addContent(document, {
-      // text: "",
+      text: "",
       pageBreak: "after"
     });
   }
@@ -131,7 +132,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
   }
 
   generateOverview(document, data) {
-    const pkg = require("../package.json");
+    const pkg = require(__dirname + "/../../package.json");
     const status = [
       {
         label: ScanStatus.DELETED,
@@ -252,7 +253,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
       " guide (Quebec)."
     );
 
-    if (data.resources["overview-resources"] != null && data.resources["overview-resources"].length > 0) {
+    if (data.resources != null && data.resources["overview-resources"] != null && data.resources["overview-resources"].length > 0) {
       const ul = [];
       data.resources["overview-resources"].forEach((item) => {
         ul.push({
