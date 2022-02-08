@@ -5,7 +5,6 @@ const path = require("path");
 const Assert = require("./util/Assert");
 const Instance = require("./now/Instance");
 const Request = require("./now/Request");
-const PDFReportGenerator = require("./generator/PDFReportGenerator");
 
 /**
  * Options object
@@ -137,16 +136,6 @@ class Profile {
     return new Instance(this.domain, this.username, this.password, this.proxy || null);
   }
 
-  createReportGenerator() {
-    // if (this.customGeneratorClassPath != null) {
-    //   // require from current working directory or profile main directory
-    //   const generator = require(`${this.customGeneratorClassPath}`);
-    //   return new generator(docDef);
-    // }
-
-    return new PDFReportGenerator();
-  }
-
   toJSON() {
     const encode = (value) => {
       if (value == null || value === "") {
@@ -238,9 +227,10 @@ class Profile {
 
     const saveFile = function(filename, data) {
       const filepath = path.normalize(`${profileHome}/${filename}`);
+      const padding = 2;
       // Delete old file before we save a new one
       fs.rmSync(filepath, {recursive: true, force: true});
-      fs.writeFileSync(filepath, JSON.stringify(data));
+      fs.writeFileSync(filepath, JSON.stringify(data, null, padding));
     };
 
     // We always save profile in multiple files; easier manual maintenance
@@ -317,6 +307,6 @@ Profile.PROFILE_ESLINT_NAME = "eslint.json";
 
 Profile.ENCODE_PREFIX = "$$$";
 
-Profile.PROFILE_NAME_REGEXP = /^[a-zA-Z0-9_\-]+$/;
+Profile.PROFILE_NAME_REGEXP = /^[a-zA-Z0-9_-]+$/;
 
 module.exports = Profile;

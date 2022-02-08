@@ -156,7 +156,7 @@ class UpdateXMLScan extends UpdateXML {
       hasError: this.hasError,
       status: this.status,
       updates: this.updates,
-      reports: Object.fromEntries(this.reports.entries())
+      reports: Array.from(this.reports.entries())
     });
   }
 }

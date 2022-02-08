@@ -151,9 +151,7 @@ class Instance {
     const tables = {};
 
     const getParentFields = function(table, fields, parents, toReturn) {
-      toReturn = toReturn || {
-        "fields": []
-      };
+      toReturn = toReturn || {"fields": []};
       
       if (fields[table] != null) {
         toReturn.fields = toReturn.fields.concat(fields[table].fields);

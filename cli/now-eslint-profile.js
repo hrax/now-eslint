@@ -12,6 +12,7 @@ const program = new commander.Command();
 // Load prompt & safe colors
 const colors = require("colors/safe");
 const prompt = require("prompt");
+const helpers = require("./cli-helpers");
 
 // Load local libraries
 const Profile = require("../src/Profile");
@@ -23,159 +24,159 @@ const PROFILE_HOME = Profile.profilesHomeDirPath();
 prompt.message = "";
 prompt.delimiter = "";
 
-// Helper methods
-/**
- * Validates if value matches profile name pattern
- * @param {String} value 
- * @returns value if value matches profile name pattern
- * @throws commander.InvalidArgumentError if value does not match
- */
-const validateProfileName = (value) => {
-  if (Profile.isProfileNameValid(value)) {
-    return value;
-  }
-  throw new commander.InvalidArgumentError("'name' can only contain lowecase/uppercase letters, numbers, underscore and dash.");
-};
-
 const debugWorkingDir = () => {
-  console.debug("Working profiles home directory: " + colors.green(`'${PROFILE_HOME}'\n`));
+  helpers.outputKeyValue("Working profiles home directory", `${PROFILE_HOME}`, true);
 };
-
-const output = {outputError: (str, write) => write(colors.red(str))};
 
 // Program setup; program is never meant to be run directly only as a subcommand
 program.name("now-eslint profile")
   .description("CLI to create and update now-eslint profiles")
-  .configureOutput(output);
+  .configureOutput({outputError: helpers.outputError})
+  .showHelpAfterError();
 
 // Default subcommand to create new profile
-program.command("create", {isDefault: true})
+const create = program.command("create", {isDefault: true})
   .description("create new profile for the ServiceNow instance (default)")
-  .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", validateProfileName)
-  .option("-f, --force", "force override if profile with the name exists")
-  .action(async function(name, options) {
-    debugWorkingDir();
+  .argument("<name>", `name of the profile; ${helpers.PROFILE_HELP}`, helpers.validateProfileName)
+  .option("-d, --domain <domain>", `the URL to the ServiceNow instance; ${helpers.DOMAIN_HELP}`, helpers.validateDomain)
+  .option("-u, --username <username>", "username used to connect")
+  .option("--no-proxy", "skip proxy configuration")
+  .option("-f, --force", "force override if profile with the name exists");
+create.action(async function(name, options) {
+  debugWorkingDir();
 
-    if (Profile.exists(name) && options.force !== true) {
-      program.error(`Profile with name '${name}' already exists, use --force option to override`, {exitCode: 1});
+  if (Profile.exists(name) && options.force !== true) {
+    program.error(`Profile with name '${name}' already exists, use --force option to override`, {exitCode: 1});
+  }
+
+  const schema = {
+    properties: {
+      domain: {
+        description: colors.yellow("Enter the URL to the ServiceNow instance"),
+        pattern: helpers.DOMAIN_REGEXP,
+        message: colors.red(helpers.DOMAIN_ERROR),
+        required: true,
+        default: options.domain,
+        ask: () => {
+          return options.domain == null;
+        }
+      },
+      username: {
+        description: colors.yellow("Enter username"),
+        required: true,
+        default: options.username,
+        ask: () => {
+          return options.username == null;
+        }
+      },
+      password: {
+        description: colors.yellow("Enter password"),
+        required: true,
+        hidden: true,
+        replace: "*"
+      },
+      useProxy: {
+        description: colors.yellow("Use proxy to connect to the instance?"),
+        type: "boolean",
+        default: false,
+        ask: () => {
+          return options.proxy;
+        }
+      },
+      proxy: {
+        description: colors.yellow("Enter proxy connection string e.g. http://username:password@domain:port"),
+        required: true,
+        ask: () => {
+          return options.proxy && prompt.history("useProxy").value === true;
+        }
+      }
+    }
+  };
+  
+  prompt.start();
+
+  prompt.get(schema, async function(err, result) {
+    if (err) {
+      program.error(err, {exitCode: 1});
     }
 
-    const schema = {
-      properties: {
-        domain: {
-          description: colors.yellow("Enter the URL to the service now instance"),
-          pattern: /^https?:\/\/.*?\/?$/,
-          message: colors.red("Instance URL must start with 'http(s)://' and should end with '/'"),
-          required: true
-        },
-        username: {
-          description: colors.yellow("Username"),
-          required: true
-        },
-        password: {
-          description: colors.yellow("Password"),
-          required: true,
-          hidden: true,
-          replace: "*"
-        },
-        useProxy: {
-          description: colors.yellow("Use proxy to connect to the instance?"),
-          type: "boolean",
-          default: false
-        },
-        proxy: {
-          description: colors.yellow("Proxy connection string e.g. http://username:password@domain:port"),
-          required: true,
-          ask: () => {
-            return prompt.history("useProxy").value === true;
-          }
-        }
-      }
+    const data = {
+      "name": `${name}`,
+      "domain": `${result.domain}`,
+      "username": `${result.username}`,
+      "password": `${result.password}`,
+      "proxy": result.useProxy ? `${result.proxy}` : null
     };
-    
-    prompt.start();
 
-    prompt.get(schema, async function(err, result) {
-      if (err) {
-        program.error(err);
+    const profile = new Profile(data);
+    const instance = profile.createInstance();
+
+    helpers.outputInfo(`Testing connection to the instance at '${profile.domain}' using username '${profile.username}'...\n`);
+
+    const message = "Unable to connect to the instance, please verify the instance url, username and password.";
+    try {
+      const connected = await instance.testConnection();
+      if (!connected) {
+        program.error(message, {exitCode: 1});
       }
 
-      const data = {
-        "name": `${name}`,
-        "domain": `${result.domain}`,
-        "username": `${result.username}`,
-        "password": `${result.password}`,
-        "proxy": result.useProxy ? `${result.proxy}` : null
-      };
+      helpers.outputInfo(`Succesfully connected to the instance at '${profile.domain}'.\n`);
+    } catch (err) {
+      helpers.outputError(message);
+      program.error(err, {exitCode: 1});
+    }
 
-      const profile = new Profile(data);
-      const instance = profile.createInstance();
+    helpers.outputInfo("Generating table configuration...\n");
+    const tables = await instance.requestTableAndParentFieldData();
+    // Force skip workflow version parsing; TODO: custom XML parsing setup
+    tables["wf_workflow_version"] = null;
+    profile.tables = tables;
 
-      console.info(colors.green(`Testing connection to the instance at '${profile.domain}' using username '${profile.username}'...`));
-      const message = "Unable to connect to the instance, please verify the instance url, username and password.";
-      try {
-        const connected = await instance.testConnection();
-        if (!connected) {
-          program.error(message, {exitCode: 1});
-        }
+    helpers.outputInfo("Saving the profile...\n");
+    Profile.save(profile, options.force === true);
 
-        console.info(colors.green(`Succesfully connected to the instance at '${profile.domain}'.\n`));
-      } catch (err) {
-        output.outputError(message, console.error);
-        program.error(err, {exitCode: 1});
-      }
-
-      console.info(colors.green("Generating table configuration...\n"));
-      const tables = await instance.requestTableAndParentFieldData();
-      // Force skip workflow version parsing; TODO: custom XML parsing setup
-      tables["wf_workflow_version"] = null;
-      profile.tables = tables;
-
-      console.info(colors.green("Saving the profile...\n"));
-      Profile.save(profile, options.force === true);
-
-      console.info(colors.green("Setup completed.\n"));
-    });
+    helpers.outputInfo("Profile setup completed.");
   });
+});
 
 // subcommand to debug configuration of saved profile
-program.command("debug")
+const debug = program.command("debug")
   .description("debug existing profile by printing out saved configuration")
-  .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", validateProfileName)
-  .option("-t, --test-connection", "test connection to the instance")
-  .action(async function(name, options) {
-    debugWorkingDir();
+  .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", helpers.validateProfileName)
+  .option("-t, --test-connection", "test connection to the instance");
+debug.action(async function(name, options) {
+  debugWorkingDir();
 
-    if (!Profile.exists(name)) {
-      program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
-    }
+  if (!Profile.exists(name)) {
+    program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
+  }
 
-    const profile = Profile.load(name);
-    console.debug(colors.green(`Profile name: '${profile.name}'`));
-    console.debug(colors.green(`Profile domain: '${profile.domain}'`));
-    console.debug(colors.green(`Profile username: '${profile.username}'`));
-    console.debug(colors.green(`Profile proxy: '${profile.proxy || "N/A"}'\n`));
+  const profile = Profile.load(name);
+  helpers.outputKeyValue("Profile name", profile.name);
+  helpers.outputKeyValue("Profile domain", profile.domain);
+  helpers.outputKeyValue("Profile username", profile.username);
+  helpers.outputKeyValue("Profile proxy", `${profile.proxy || "No"}\n`);
 
-    if (options.testConnection === true) {
-      const instance = profile.createInstance();
-      const msg = "Unable to connect to the instance.";
-      try {
-        const connected = await instance.testConnection();
-        if (!connected) {
-          output.outputError(msg + "\n", console.error);
-        }
-
-        console.debug(colors.green("Succesfully connected to the instance.\n"));
-      } catch (err) {
-        output.outputError(msg + "\n", console.error);
+  if (options.testConnection === true) {
+    const instance = profile.createInstance();
+    const msg = "Unable to connect to the instance.";
+    try {
+      const connected = await instance.testConnection();
+      if (!connected) {
+        helpers.outputError(msg + "\n");
       }
+
+      helpers.outputInfo("Succesfully connected to the instance.\n");
+    } catch (err) {
+      helpers.outputError(msg + "\n");
     }
-    
-    console.debug(colors.green(`Profile has tables: ${profile.tables.size !== 0}`));
-    console.debug(colors.green(`Profile has resources: ${profile.resources.size !== 0}`));
-    console.debug(colors.green(`Profile has colors: ${profile.colors.size !== 0}`));
-    console.debug(colors.green(`Profile has eslint config: ${profile.eslint.size !== 0}`));
-  });
+  }
+  
+  helpers.outputKeyValue("Profile has tables", helpers.boolYesNo(profile.tables.size !== 0));
+  helpers.outputKeyValue("Profile has resources", helpers.boolYesNo(profile.resources.size !== 0));
+  helpers.outputKeyValue("Profile has colors", helpers.boolYesNo(profile.colors.size !== 0));
+  helpers.outputKeyValue("Profile has eslint config", helpers.boolYesNo(profile.eslint.size !== 0));
+});
 
 // subcommand to update configuration of saved profile
 // program.command("update")
@@ -193,80 +194,80 @@ program.command("debug")
 //   });
 
 // subcommand to purge configuration of saved profile
-program.command("purge")
+const purge = program.command("purge")
   .description("purge single existing ServiceNow instance profile")
-  .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", validateProfileName)
-  .option("-f, --force", "force purge")
-  .action(async function(name, options) {
-    debugWorkingDir();
+  .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", helpers.validateProfileName)
+  .option("-f, --force", "force purge");
+purge.action(async function(name, options) {
+  debugWorkingDir();
 
-    if (!Profile.exists(name)) {
-      program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
+  if (!Profile.exists(name)) {
+    program.error(`Profile with name '${name}' does not exist.`, {exitCode: 1});
+  }
+
+  const schema = {
+    properties: {
+      confirm: {
+        description: colors.yellow(`Are you sure you want to purge profile named '${name}'? Type 'PURGE' in uppercase to confirm.`),
+        required: true,
+        ask: () => {
+          return options.force !== true;
+        }
+      }
+    }
+  };
+  
+  prompt.start();
+
+  prompt.get(schema, async function(err, result) {
+    if (err) {
+      program.error(err, {exitCode: 1});
     }
 
-    const schema = {
-      properties: {
-        confirm: {
-          description: colors.yellow(`Are you sure you want to purge profile named '${name}'? Type 'PURGE' in uppercase to confirm.`),
-          required: true,
-          ask: () => {
-            return options.force !== true;
-          }
-        }
-      }
-    };
-    
-    prompt.start();
+    // force = false & confirm != PURGE
+    if (options.force !== true && result.confirm !== "PURGE") {
+      program.error(`Purge of profile '${name}' not confirmed.`, {exitCode: 1});
+    }
 
-    prompt.get(schema, async function(err, result) {
-      if (err) {
-        program.error(err);
-      }
-
-      // force = false & confirm != PURGE
-      if (options.force !== true && result.confirm !== "PURGE") {
-        program.error(`Purge of profile '${name}' not confirmed.`, {exitCode: 1});
-      }
-
-      Profile.purge(name);
-      console.info(colors.green(`Profile named '${name}' succesfully purged.`));
-    });
+    Profile.purge(name);
+    helpers.outputInfo(`Profile named '${name}' succesfully purged.`);
   });
+});
 
 // subcommand to purge configuration of ALL profile
-program.command("purge-all")
+const purgeAll = program.command("purge-all")
   .description("purge all existing ServiceNow instance profiles")
-  .option("-f, --force", "force purge all")
-  .action(async function(options) {
-    debugWorkingDir();
+  .option("-f, --force", "force purge all");
+purgeAll.action(async function(options) {
+  debugWorkingDir();
 
-    const schema = {
-      properties: {
-        confirm: {
-          description: colors.yellow("Are you sure you want to purge ALL saved profiles'? Type 'PURGE' in uppercase to confirm."),
-          required: true,
-          ask: () => {
-            return options.force !== true;
-          }
+  const schema = {
+    properties: {
+      confirm: {
+        description: colors.yellow("Are you sure you want to purge ALL saved profiles'? Type 'PURGE' in uppercase to confirm."),
+        required: true,
+        ask: () => {
+          return options.force !== true;
         }
       }
-    };
-    
-    prompt.start();
+    }
+  };
+  
+  prompt.start();
 
-    prompt.get(schema, async function(err, result) {
-      if (err) {
-        program.error(err);
-      }
+  prompt.get(schema, async function(err, result) {
+    if (err) {
+      program.error(err, {exitCode: 1});
+    }
 
-      // force = false & confirm != PURGE
-      if (options.force !== true && result.confirm !== "PURGE") {
-        program.error("Purge of all profiles not confirmed.", {exitCode: 1});
-      }
+    // force = false & confirm != PURGE
+    if (options.force !== true && result.confirm !== "PURGE") {
+      program.error("Purge of all profiles not confirmed.", {exitCode: 1});
+    }
 
-      Profile.purgeHome();
-      console.info(colors.green("All profiles succesfully purged."));
-    });
+    Profile.purgeHome();
+    helpers.outputInfo("All profiles succesfully purged.");
   });
+});
 
 program.parseAsync(process.argv);

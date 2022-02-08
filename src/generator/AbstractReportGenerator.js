@@ -6,7 +6,7 @@ class AbstractReportGenerator {
     throw new Error("abstract; implement in child class");
   }
 
-  generate(data, path) {
+  save(path, data) {
     throw new Error("abstract; implement in child class");
   }
 }

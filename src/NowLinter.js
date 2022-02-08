@@ -5,6 +5,8 @@ const crypto = require("crypto");
 const Assert = require("./util/Assert");
 const helpers = require("./util/helpers");
 const UpdateXMLScan = require("./UpdateXMLScan");
+const PDFReportGenerator = require("./generator/PDFReportGenerator");
+const JSONReportGenerator = require("./generator/JSONReportGenerator");
 
 class NowLinter {
   /**
@@ -14,6 +16,7 @@ class NowLinter {
    */
   constructor(profile, options) {
     // TODO: validation
+    Assert.notEmpty(options.title, "Title in options needs to be specified!");
     Assert.notEmpty(options.query, "Query in options needs to be specified!");
 
     Object.defineProperty(this, "options", {
@@ -25,6 +28,7 @@ class NowLinter {
         "title": "Service Now ESLint Report"
       }, options || {})
     });
+    Object.freeze(this.options);
 
     Object.defineProperty(this, "changes", {
       writable: false,
@@ -126,7 +130,6 @@ class NowLinter {
    */
   async process() {
     await this.fetch();
-
     await this.lint();
   }
 
@@ -136,30 +139,42 @@ class NowLinter {
    */
   toJSON() {
     const data = {
-      "domain": this.profile.domain,
-      "title": this.options.title,
-      "query": this.options.query,
-      "changes": Object.fromEntries(this.changes)
+      domain: this.profile.domain,
+      username: this.profile.username,
+      title: this.options.title,
+      query: this.options.query,
+      changes: Array.from(this.changes.entries()),
+      resources: Object.fromEntries(this.profile.resources.entries())
     };
 
     // Lazy deep copy
     return JSON.parse(JSON.stringify(data));
   }
 
-  report(path) {
+  reportJSON(path) {
     Assert.notEmpty(path, "path cannot be empty.");
-    const data = Object.assign({}, {
-      domain: this.profile.domain,
-      username: this.profile.username,
-      title: this.options.title,
-      query: this.options.query,
-      changes: this.changes
-    }, {
-      // resources: this.profile.resources.has("resources") ? this.profile.properties.get("resources") : []
-    });
+    this.report(path, new JSONReportGenerator())
+  }
 
-    const generator = this.profile.createReportGenerator();
-    generator.generate(data, path);
+  reportPDF(path) {
+    Assert.notEmpty(path, "path cannot be empty.");
+    this.report(path, new PDFReportGenerator());
+  }
+
+  reportPDFfromJSON(path, data) {
+    Assert.notEmpty(path, "path cannot be empty.");
+    Assert.notNull(data, "data cannot be null.");
+
+    const generator = new PDFReportGenerator();
+    generator.save(path, data);
+  }
+
+  report(path, generator) {
+    Assert.notEmpty(path, "path cannot be empty.");
+    Assert.notNull(generator, "generator cannot be null.");
+    
+    const data = Object.assign({}, this.toJSON());
+    generator.save(path, data);
   }
 }
 

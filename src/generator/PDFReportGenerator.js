@@ -184,7 +184,6 @@ class PDFReportGenerator extends AbstractReportGenerator {
     this.addHeading2(document, "Confidentiality Notice", false);
     this.addParagraph(document, "The content of this document may contain confidential information about the ServiceNow implementation, it is recommended to treat the document as such when considering of sharing it with the 3rd party.");
 
-    
     this.addHeading2(document, "Status description", false);
     const table = {
       margin: [0, 0, 0, 10],
@@ -226,7 +225,6 @@ class PDFReportGenerator extends AbstractReportGenerator {
         // fillColor: function (rowIndex, node, columnIndex) { return null; }
       }
     };
-
     status.forEach((item) => {
       table.table.body.push([
         {
@@ -264,7 +262,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
         });
       });
 
-      this.addParagraph(document, "For an ovewview of ESLint rules and practices for this report, visit one of the following:");
+      this.addParagraph(document, "You can as well review these additional resources by visiting one of the following:");
       this.addContent(
         document,
         {
@@ -308,7 +306,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
         style: "small",
         bold: true
       },
-      {text: `${data.changes.size}`}
+      {text: `${data.changes.length || 0}`}
     );
 
     if (data.changes) {
@@ -361,7 +359,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
         }
       };
 
-      data.changes.forEach((scan) => {
+      data.changes.forEach(([name, scan]) => {
         if (scan.status !== "ERROR") {
           return;
         }
@@ -398,7 +396,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
     const results = [];
 
-    data.changes.forEach((scan, key) => {
+    data.changes.forEach(([key, scan]) => {
       // Change type and target
       results.push({
         text: `${scan.targetName} (${scan.type})`,
@@ -548,8 +546,8 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
       results.push(links);
 
-      if (scan.hasReports) {
-        scan.reports.forEach((report, field) => {
+      if (scan.reports && scan.reports.length) {
+        scan.reports.forEach(([field, report]) => {
           results.push({
             text: `Report for field '${field}'`,
             bold: true,
@@ -792,7 +790,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
     };
   }
 
-  generate(data, path) {
+  save(path, data) {
     const document = this.build(data);
 
     const printer = new pdfmake(this.fonts);
