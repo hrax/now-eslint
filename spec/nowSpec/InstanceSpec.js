@@ -1,4 +1,4 @@
-const Instance = require("../src/now/Instance");
+const Instance = require("../../src/now/Instance");
 
 describe("Instance", () => {
   let instance = null;

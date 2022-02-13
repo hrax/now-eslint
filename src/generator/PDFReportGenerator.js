@@ -59,8 +59,10 @@ class PDFReportGenerator extends AbstractReportGenerator {
         canvas: [
           {
             type: "line",
-            x1: 0, y1: 0,
-            x2: 515.28, y2: 0,
+            x1: 0,
+            y1: 0,
+            x2: 515.28,
+            y2: 0,
             lineWidth: 0.5,
             lineColor: "#80b3a0"
           }
@@ -113,15 +115,18 @@ class PDFReportGenerator extends AbstractReportGenerator {
     });
     content.push({
       text: new Date().toLocaleString("en-US", {
-        day: "numeric", // numeric, 2-digit
-        year: "numeric", // numeric, 2-digit
-        month: "long" // numeric, 2-digit, long, short, narrow
+        // numeric, 2-digit
+        day: "numeric",
+        // numeric, 2-digit
+        year: "numeric",
+        // numeric, 2-digit, long, short, narrow
+        month: "long"
       }),
       style: "small",
       alignment: "center",
       margin: [0, -5, 0, 5]
     });
-    this.addContent(document, content);
+    this.addContent(document, ...content);
     this.addPageBreak(document);
   }
 
@@ -276,7 +281,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
   }
 
   generateReportSummary(document, data) {
-    this.addHeading(document, "Summary");
+    this.addHeading(document, "Report summary");
     this.addParagraph(
       document,
       {
@@ -309,7 +314,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
       {text: `${data.changes.length || 0}`}
     );
 
-    if (data.changes) {
+    if (data.changes && data.changes.length) {
       this.addParagraph(document, "\n", "Following table lists all changes that were identified to contain an error and should be reviewed:");
       let table = {
         table: {
@@ -394,258 +399,262 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
     this.addHeading(document, "Findings");
 
-    const results = [];
-
-    data.changes.forEach(([key, scan]) => {
-      // Change type and target
-      results.push({
-        text: `${scan.targetName} (${scan.type})`,
-        style: "heading2",
-        id: `scan-${scan.id}`,
-        tocItem: true,
-        tocMargin: [10, 0, 0, 0]
-      });
-
-      // Change details
-      results.push({
-        columns: [
-          {
-            width: "auto",
-            text: [
-              {
-                text: "CREATED BY ",
-                style: "small",
-                bold: true
-              },
-              `${scan.createdBy}`,
-              {
-                text: " AT ",
-                style: "small",
-                bold: true
-              },
-              `${scan.createdOn}`
-            ]
-          },
-          {
-            width: "auto",
-            text: [
-              {
-                text: "UPDATED BY ",
-                style: "small",
-                bold: true
-              },
-              `${scan.updatedBy}`,
-              {
-                text: " AT ",
-                style: "small",
-                bold: true
-              },
-              `${scan.updatedOn}`
-            ]
-          }
-        ],
-        columnGap: 5
-      });
-      results.push({
-        columns: [
-          {
-            width: "auto",
-            text: [
-              {
-                text: "STATUS ",
-                style: "small",
-                bold: true
-              },
-              `${scan.status}`
-            ]
-          },
-          {
-            width: "auto",
-            text: [
-              {
-                text: "ACTION ",
-                style: "small",
-                bold: true
-              },
-              `${scan.action}`
-            ]
-          },
-          {
-            width: "auto",
-            text: [
-              {
-                text: "UPDATES ",
-                style: "small",
-                bold: true
-              },
-              `${scan.updates}`
-            ]
-          },
-          {
-            width: "auto",
-            text: [
-              {
-                text: "ERRORS ",
-                style: "small",
-                bold: true
-              },
-              `${scan.errorCount}`
-            ]
-          },
-          {
-            width: "*",
-            text: [
-              {
-                text: "WARNINGS ",
-                style: "small",
-                bold: true
-              },
-              `${scan.warningCount}`
-            ]
-          }
-        ],
-        columnGap: 5
-      });
-
-      const links = {
-        margin: [0, 0, 0, 10],
-        columns: [
-          {
-            width: "*",
-            text: [
-              {
-                text: "LINKS ",
-                style: "small",
-                bold: true
-              }
-            ]
-          }
-        ],
-        columnGap: 5
-      };
-      links.columns[0].text.push(
-        {
-          text: "Update Set",
-          style: ["link"],
-          link: `${data.domain}/sys_update_set.do?sys_id=${scan.updateSet}`
-        },
-        "  ",
-        {
-          text: "Change",
-          style: ["link"],
-          link: `${data.domain}/sys_update_xml.do?sys_id=${scan.id}`
-        }
-      );
-      if (scan.action !== "DELETE" && scan.targetTable && scan.targetId) {
-        links.columns[0].text.push("  ", {
-          text: "Record",
-          style: ["link"],
-          link: `${data.domain}/${scan.targetTable}.do?sys_id=${scan.targetId}`
+    
+    if (data.changes && data.changes.length) {
+      const results = [];
+      data.changes.forEach(([key, scan]) => {
+        // Change type and target
+        results.push({
+          text: `${scan.targetName} (${scan.type})`,
+          style: "heading2",
+          id: `scan-${scan.id}`,
+          tocItem: true,
+          tocMargin: [10, 0, 0, 0]
         });
-      }
-
-      results.push(links);
-
-      if (scan.reports && scan.reports.length) {
-        scan.reports.forEach(([field, report]) => {
-          results.push({
-            text: `Report for field '${field}'`,
-            bold: true,
-            style: "heading5",
-            margin: [0, 0, 0, 5]
-          });
-
-          let table = {
-            margin: [0, 0, 0, 10],
-            table: {
-              headerRows: 1,
-              widths: ["auto", "auto", "auto", "*"],
-              body: [
-                [{
-                  text: "Line",
-                  style: "tableHeaderLight"
-                },
+  
+        // Change details
+        results.push({
+          columns: [
+            {
+              width: "auto",
+              text: [
                 {
-                  text: "Severity",
-                  style: "tableHeaderLight"
+                  text: "CREATED BY ",
+                  style: "small",
+                  bold: true
                 },
+                `${scan.createdBy}`,
                 {
-                  text: "Rule",
-                  style: "tableHeaderLight"
+                  text: " AT ",
+                  style: "small",
+                  bold: true
                 },
-                {
-                  text: "Message",
-                  style: "tableHeaderLight"
-                }
-                ]
+                `${scan.createdOn}`
               ]
             },
-            layout: {
-              hLineWidth: function(i, node) {
-                return 0.5;
-              },
-              vLineWidth: function(i, node) {
-                return 0.5;
-              },
-              hLineColor: function(i, node) {
-                return "black";
-              },
-              vLineColor: function(i, node) {
-                return "black";
-              }
-              // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
-              // vLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
-              // paddingLeft: function(i, node) { return 4; },
-              // paddingRight: function(i, node) { return 4; },
-              // paddingTop: function(i, node) { return 2; },
-              // paddingBottom: function(i, node) { return 2; },
-              // fillColor: function (rowIndex, node, columnIndex) { return null; }
+            {
+              width: "auto",
+              text: [
+                {
+                  text: "UPDATED BY ",
+                  style: "small",
+                  bold: true
+                },
+                `${scan.updatedBy}`,
+                {
+                  text: " AT ",
+                  style: "small",
+                  bold: true
+                },
+                `${scan.updatedOn}`
+              ]
             }
-          };
-
-          report.messages.forEach((message) => {
-            table.table.body.push([
-              {
-                text: `${message.line}:${message.column}`,
-                style: "tableCell"
-              },
-              {
-                text: message.severity === 1 ? "Warning" : "Error",
-                style: "tableCell"
-              },
-              {
-                text: `${message.ruleId}`,
-                style: "tableCell"
-              },
-              {
-                text: `${message.message}`,
-                style: "tableCell"
-              }
-            ]);
-          });
-          
-          results.push(table);
+          ],
+          columnGap: 5
         });
-      }
-
-      // Change separator
-      // results.push({
-      //   margin: [0, 15, 0, 15],
-      //   canvas: [
-      //     {
-      //       type: "line",
-      //       x1: 0,
-      //       x2: 515.28,
-      //       y1: 0,
-      //       y2: 0,
-      //       lineWidth: 0.5,
-      //       lineColor: "#80b3a0"
-      //     }
-      //   ]
-      // });
-    });
-
-    this.addContent(document, results);
+        results.push({
+          columns: [
+            {
+              width: "auto",
+              text: [
+                {
+                  text: "STATUS ",
+                  style: "small",
+                  bold: true
+                },
+                `${scan.status}`
+              ]
+            },
+            {
+              width: "auto",
+              text: [
+                {
+                  text: "ACTION ",
+                  style: "small",
+                  bold: true
+                },
+                `${scan.action}`
+              ]
+            },
+            {
+              width: "auto",
+              text: [
+                {
+                  text: "UPDATES ",
+                  style: "small",
+                  bold: true
+                },
+                `${scan.updates}`
+              ]
+            },
+            {
+              width: "auto",
+              text: [
+                {
+                  text: "ERRORS ",
+                  style: "small",
+                  bold: true
+                },
+                `${scan.errorCount}`
+              ]
+            },
+            {
+              width: "*",
+              text: [
+                {
+                  text: "WARNINGS ",
+                  style: "small",
+                  bold: true
+                },
+                `${scan.warningCount}`
+              ]
+            }
+          ],
+          columnGap: 5
+        });
+  
+        const links = {
+          margin: [0, 0, 0, 10],
+          columns: [
+            {
+              width: "*",
+              text: [
+                {
+                  text: "LINKS ",
+                  style: "small",
+                  bold: true
+                }
+              ]
+            }
+          ],
+          columnGap: 5
+        };
+        links.columns[0].text.push(
+          {
+            text: "Update Set",
+            style: ["link"],
+            link: `${data.domain}/sys_update_set.do?sys_id=${scan.updateSet}`
+          },
+          "  ",
+          {
+            text: "Change",
+            style: ["link"],
+            link: `${data.domain}/sys_update_xml.do?sys_id=${scan.id}`
+          }
+        );
+        if (scan.action !== "DELETE" && scan.targetTable && scan.targetId) {
+          links.columns[0].text.push("  ", {
+            text: "Record",
+            style: ["link"],
+            link: `${data.domain}/${scan.targetTable}.do?sys_id=${scan.targetId}`
+          });
+        }
+  
+        results.push(links);
+  
+        if (scan.reports && scan.reports.length) {
+          scan.reports.forEach(([field, report]) => {
+            results.push({
+              text: `Report for field '${field}'`,
+              bold: true,
+              style: "heading5",
+              margin: [0, 0, 0, 5]
+            });
+  
+            let table = {
+              margin: [0, 0, 0, 10],
+              table: {
+                headerRows: 1,
+                widths: ["auto", "auto", "auto", "*"],
+                body: [
+                  [
+                    {
+                      text: "Line",
+                      style: "tableHeaderLight"
+                    },
+                    {
+                      text: "Severity",
+                      style: "tableHeaderLight"
+                    },
+                    {
+                      text: "Rule",
+                      style: "tableHeaderLight"
+                    },
+                    {
+                      text: "Message",
+                      style: "tableHeaderLight"
+                    }
+                  ]
+                ]
+              },
+              layout: {
+                hLineWidth: function(i, node) {
+                  return 0.5;
+                },
+                vLineWidth: function(i, node) {
+                  return 0.5;
+                },
+                hLineColor: function(i, node) {
+                  return "black";
+                },
+                vLineColor: function(i, node) {
+                  return "black";
+                }
+                // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+                // vLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+                // paddingLeft: function(i, node) { return 4; },
+                // paddingRight: function(i, node) { return 4; },
+                // paddingTop: function(i, node) { return 2; },
+                // paddingBottom: function(i, node) { return 2; },
+                // fillColor: function (rowIndex, node, columnIndex) { return null; }
+              }
+            };
+  
+            report.messages.forEach((message) => {
+              table.table.body.push([
+                {
+                  text: `${message.line}:${message.column}`,
+                  style: "tableCell"
+                },
+                {
+                  text: message.severity === 1 ? "Warning" : "Error",
+                  style: "tableCell"
+                },
+                {
+                  text: `${message.ruleId}`,
+                  style: "tableCell"
+                },
+                {
+                  text: `${message.message}`,
+                  style: "tableCell"
+                }
+              ]);
+            });
+            
+            results.push(table);
+          });
+        }
+  
+        // Change separator
+        // results.push({
+        //   margin: [0, 15, 0, 15],
+        //   canvas: [
+        //     {
+        //       type: "line",
+        //       x1: 0,
+        //       x2: 515.28,
+        //       y1: 0,
+        //       y2: 0,
+        //       lineWidth: 0.5,
+        //       lineColor: "#80b3a0"
+        //     }
+        //   ]
+        // });
+      });
+      this.addContent(document, ...results);
+    } else {
+      this.addParagraph(document, "No changes were found...");
+    }
   }
 
   build(data) {
@@ -760,12 +769,8 @@ class PDFReportGenerator extends AbstractReportGenerator {
           "fontSize": 12,
           "margin": [0, 5, 0, 10]
         },
-        "small": {
-          "fontSize": 9
-        },
-        "tableCell": {
-          "margin": [3, 5, 3, 2]
-        },
+        "small": {"fontSize": 9},
+        "tableCell": {"margin": [3, 5, 3, 2]},
         "tableHeader": {
           "fillColor": "#343a40",
           "color": "#fff",
@@ -782,9 +787,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
           "color": "#0d6efd",
           "decoration": "underline"
         },
-        "paragraph": {
-          "margin": [0, 0, 0, 10]
-        }
+        "paragraph": {"margin": [0, 0, 0, 10]}
       },
       content: document
     };

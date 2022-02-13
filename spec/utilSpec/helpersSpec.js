@@ -1,5 +1,5 @@
 const fs = require("fs");
-const helpers = require("../src/util/helpers");
+const helpers = require("../../src/util/helpers");
 
 describe("XPathHelper", () => {
   it("parses field value from table", () => {
