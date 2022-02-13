@@ -45,5 +45,5 @@ const config = {
   await linter.process();
   
   // Generate PDF report
-  linter.report(`${process.cwd()}/myreport.pdf`);
+  linter.reportPDF(`${process.cwd()}/myreport.pdf`);
 })();

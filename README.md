@@ -1,17 +1,17 @@
-# NOW ESLint
+# NOW ESLint v0.0.4
 
 NodeJS CLI/Library to lint scripts in update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
 
-Primary goal is to be utilized by user locally using CLI, however option to generate JSON should allow this to be utilized in mid server as an extension to automate release processes using Service Now instance.
+Primary goal is to be utilized by user locally using CLI, however option to generate JSON should allow this to be utilized in mid server as an extension to automate QA/release processes using Service Now instance.
 
-Update sets need to be committed locally on the configured instance. Change in the committed update set is linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
+Update sets need to be available locally (must be found in Local Update Sets table) on the configured instance. Changes in the provided update sets are linted independently on the current version of the record on the instance. Update sets can be linted on instance utilizing custom/vanity url as long as the configuration allows for REST API access.
 
 *For latest changes see [Patch Notes](https://github.com/hrax/now-eslint/wiki/Patch-Notes).*
 
 ### 3rd party pesources
 - **Calibri**; a sans-serif typeface household developed by Luc(as) de Groot in 2002-2004 and introduced to the general public in 2007 \([download](https://www.downloadfonts.io/calibri-font-family-free/)\)
 
-> Minimum required NodeJS version to run `now-eslint` is 12.22
+**Minimum required NodeJS version to run `now-eslint` is 12.22**
 
 # NOW ESLint as CLI
 
@@ -31,7 +31,7 @@ If you already have `now-eslint` and ESLint installed, this short tutorial will 
 
 ### Step 0: Locate a directory for your reports
 
-Let's create a new directory where you will execute the command and have the PDF report generated.
+Let's create a new directory named `now-eslint-reports` where you will execute the command and have the PDF report generated.
 
 ```
 mkdir now-eslint-reports
@@ -42,11 +42,13 @@ cd now-eslint-reports
 
 To be able to execute a scan you will need to create a profile for your ServiceNow instance. This will create a new directory named `.now-eslint-profiles` in your home directory where all profiles will be stored.
 
+Let's name this profile `quickstart`.
+
 ```
 now-eslint profile quickstart
 ```
 
-This will prompt you to provide URL to your ServiceNow instance, username and password that will be used to connect. See [Required instance access rights](#required-instance-access-rights) for more details.
+This will prompt you to provide URL to your ServiceNow instance, username and password that will be used to connect and if needed you will be able to enter proxy connection URL. See [Required instance access rights](#required-instance-access-rights) for more details.
 
 After that the command will try to test the connection to your instance and will download the basic configuration of the tables that will be eventually scanned - all tables that contain a field of type `script`, `script_plain` or `script_server`.
 
@@ -62,9 +64,9 @@ Now, you should be ready to run your first update set scan and generate its ESLi
 now-eslint report quickstart -t "My quickstart report" -q "name=[myupdateset]" -f quickstart-report
 ```
 
-Once executed, command will look for the profile named `quickstart` that we have created earlier. It will connect to the ServiceNow instance saved in the profile and will query for all update set changes which update set matches the encoded query `name=[myupdateset]`.
+Once executed, command will look for the profile named `quickstart` that we have created earlier. It will connect to the ServiceNow instance saved in the profile and will query for all update set changes whose update set matches the encoded query `name=[myupdateset]`.
 
-After all update set changes have been identified, command will select only those that belong to any of the configured tables in the profile and will perform a ESLint scan on the configured table fields and save the results into a report file named `quickstart-report.pdf`
+After all update set changes have been identified, command will select only those that belong to any of the tables configured in the profile and will perform an ESLint scan on the table fields and save the results into a report file named `quickstart-report.pdf`
 
 ### Step 4: Open and read the report
 
