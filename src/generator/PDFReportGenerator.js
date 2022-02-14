@@ -130,13 +130,13 @@ class PDFReportGenerator extends AbstractReportGenerator {
     this.addPageBreak(document);
   }
 
-  generateToc(document) {
+  generateReportToc(document) {
     this.addHeading(document, "Table of Contents", false);
     this.addContent(document, {toc: {}});
     this.addPageBreak(document);
   }
 
-  generateOverview(document, data) {
+  generateReportOverview(document, data) {
     const pkg = require(__dirname + "/../../package.json");
     const status = [
       {
@@ -365,7 +365,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
       };
 
       data.changes.forEach(([name, scan]) => {
-        if (scan.status !== "ERROR") {
+        if (scan.status !== "ERROR" && scan.status !== "MANUAL") {
           return;
         }
 
@@ -397,7 +397,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
       return;
     }
 
-    this.addHeading(document, "Findings");
+    this.addHeading(document, "Report findings");
 
     
     if (data.changes && data.changes.length) {
@@ -664,13 +664,15 @@ class PDFReportGenerator extends AbstractReportGenerator {
     this.generateReportTitle(document, data.title);
 
     // Page 2 - ToC
-    this.generateToc(document);
+    this.generateReportToc(document);
 
-    // Page 3 - Overview
-    this.generateOverview(document, data);
+    // Page 3 - Report overview
+    this.generateReportOverview(document, data);
 
+    // Page 4 - Report summary
     this.generateReportSummary(document, data);
 
+    // Page 5+ - Report findings
     this.generateReportFindings(document, data);
 
     return {
