@@ -811,12 +811,16 @@ class PDFReportGenerator extends AbstractReportGenerator {
     };
   }
 
-  save(path, data) {
+  extension() {
+    return "pdf";
+  }
+
+  save(path, fileName, data) {
     const document = this.build(data);
 
     const printer = new pdfmake(this.fonts);
     const pdfDoc = printer.createPdfKitDocument(document, {tableLayouts: this.tableLayouts});
-    pdfDoc.pipe(fs.createWriteStream(path));
+    pdfDoc.pipe(fs.createWriteStream(`${path}/${fileName}.${this.extension()}`));
     pdfDoc.end();
   }
 }

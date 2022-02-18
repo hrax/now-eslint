@@ -151,30 +151,13 @@ class NowLinter {
     return JSON.parse(JSON.stringify(data));
   }
 
-  reportJSON(path) {
+  report(path, fileName, generator) {
     Assert.notEmpty(path, "path cannot be empty.");
-    this.report(path, new JSONReportGenerator())
-  }
-
-  reportPDF(path) {
-    Assert.notEmpty(path, "path cannot be empty.");
-    this.report(path, new PDFReportGenerator());
-  }
-
-  reportPDFfromJSON(path, data) {
-    Assert.notEmpty(path, "path cannot be empty.");
-    Assert.notNull(data, "data cannot be null.");
-
-    const generator = new PDFReportGenerator();
-    generator.save(path, data);
-  }
-
-  report(path, generator) {
-    Assert.notEmpty(path, "path cannot be empty.");
+    Assert.notEmpty(path, "fileName cannot be empty.");
     Assert.notNull(generator, "generator cannot be null.");
     
     const data = Object.assign({}, this.toJSON());
-    generator.save(path, data);
+    generator.save(path, fileName, data);
   }
 }
 

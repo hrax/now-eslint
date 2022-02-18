@@ -17,6 +17,7 @@ const helpers = require("./cli-helpers");
 // Load local libraries
 const Profile = require("../src/Profile");
 const NowLinter = require("../src/NowLinter");
+const PDFReportGenerator = require("../src/generator/PDFReportGenerator");
 
 // Configure global constants
 const PROFILE_HOME = Profile.profilesHomeDirPath();
@@ -98,6 +99,7 @@ report.action(async(name, options) => {
     };
 
     const linter = new NowLinter(profile, data);
+    const generator = new PDFReportGenerator();
     
     helpers.outputInfo(`Fetching data from the instance`);
     await linter.fetch();
@@ -105,10 +107,10 @@ report.action(async(name, options) => {
     helpers.outputInfo(`Linting fetched data`);
     await linter.lint();
     
-    helpers.outputInfo(`Generating report '${fileName}.pdf'`);
-    linter.reportPDF(`${process.cwd()}/${fileName}.pdf`);
+    helpers.outputInfo(`Generating report '${fileName}.${generator.extension()}'`);
+    linter.report(process.cwd(), fileName, generator);
 
-    helpers.outputInfo(`Saved report '${fileName}.pdf'`);
+    helpers.outputInfo(`Saved report '${fileName}.${generator.extension()}'`);
   });
 });
 

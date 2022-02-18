@@ -6,7 +6,11 @@ class AbstractReportGenerator {
     throw new Error("abstract; implement in child class");
   }
 
-  save(path, data) {
+  extension() {
+    throw new Error("abstract; implement in child class");
+  }
+
+  save(path, fileName, data) {
     throw new Error("abstract; implement in child class");
   }
 }
