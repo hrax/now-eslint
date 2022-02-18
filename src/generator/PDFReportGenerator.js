@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 const pdfmake = require("pdfmake");
 const fs = require("fs");
-const path = require("path");
+const npath = require("path");
 
 const AbstractReportGenerator = require("./AbstractReportGenerator");
 const ScanStatus = require("../UpdateXMLScan").STATUS;
@@ -12,10 +12,10 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
     this.fonts = {
       Calibri: {
-        normal: path.normalize(__dirname + "/../../resources/fonts/Calibri/Calibri.ttf"),
-        bold: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIB.TTF"),
-        italics: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRII.TTF"),
-        bolditalics: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIZ.TTF")
+        normal: npath.normalize(__dirname + "/../../resources/fonts/Calibri/Calibri.ttf"),
+        bold: npath.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIB.TTF"),
+        italics: npath.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRII.TTF"),
+        bolditalics: npath.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIZ.TTF")
       }
     };
 
@@ -24,8 +24,6 @@ class PDFReportGenerator extends AbstractReportGenerator {
     this.pageSize = "A4";
     this.pageOrientation = "portrait";
     this.pageMargins = [40, 60, 40, 60];
-
-    // TODO: move styles definition here
   }
 
   addContent(document, ...content) {
@@ -820,7 +818,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
     const printer = new pdfmake(this.fonts);
     const pdfDoc = printer.createPdfKitDocument(document, {tableLayouts: this.tableLayouts});
-    pdfDoc.pipe(fs.createWriteStream(`${path}/${fileName}.${this.extension()}`));
+    pdfDoc.pipe(fs.createWriteStream(npath.resolve(`${path}/${fileName}.${this.extension()}`)));
     pdfDoc.end();
   }
 }

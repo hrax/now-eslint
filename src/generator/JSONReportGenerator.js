@@ -1,5 +1,5 @@
 const fs = require("fs");
-const path = require("path");
+const npath = require("path");
 const Assert = require("../util/Assert");
 
 const AbstractReportGenerator = require("./AbstractReportGenerator");
@@ -23,7 +23,7 @@ class JSONReportGenerator extends AbstractReportGenerator {
   save(path, fileName, data) {
     Assert.notEmpty(path, "Path for the save method needs to be provided!");
     const document = this.build(data);
-    fs.writeFileSync(`${path}/${fileName}.${this.extension()}`, document);
+    fs.writeFileSync(npath.resolve(`${path}/${fileName}.${this.extension()}`), document);
   }
 }
 
