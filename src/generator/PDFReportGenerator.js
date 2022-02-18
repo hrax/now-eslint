@@ -657,6 +657,130 @@ class PDFReportGenerator extends AbstractReportGenerator {
     }
   }
 
+  getHeader(data) {
+    return function(currentPage, pageCount, pageSize) {
+      if (currentPage === 1) {
+        return [];
+      }
+      return [
+        {
+          margin: [0, 20, 40, 0],
+          columns: [
+            {
+              width: "*",
+              text: []
+            },
+            {
+              width: "auto",
+              text: `${data.title}`,
+              alignment: "right",
+              style: "small"
+            }
+          ]
+        }
+      ];
+    };
+  }
+
+  getFooter(data) {
+    return function(currentPage, pageCount) {
+      if (currentPage === 1) {
+        return [];
+      }
+      return [
+        {
+          margin: [40, 30, 40, 0],
+          columns: [
+            {
+              width: "40%",
+              text: [
+                {
+                  text: "FOR INTERNAL USE",
+                  style: "small",
+                  italics: true
+                }
+              ]
+            },
+            {
+              width: "*",
+              text: [
+                {
+                  text: `${currentPage}`,
+                  style: "small",
+                  alignment: "center"
+                }
+              ]
+            },
+            {
+              width: "40%",
+              text: ""
+            }
+          ],
+          columnGap: 5
+        }
+      ];
+    };
+  }
+
+  getDefaultStyle() {
+    return {
+      "color": "#212529",
+      "font": "Calibri",
+      "fontSize": 10,
+      "lineHeight": 1.1
+    };
+  }
+
+  getStyles() {
+    return {
+      "title": {
+        "color": "#293e41",
+        "fontSize": 30,
+        "alignment": "center",
+        "margin": [0, 0, 0, 10]
+      },
+      "heading1": {
+        "color": "#293e41",
+        "fontSize": 18,
+        "margin": [0, 5, 0, 10]
+      },
+      "heading2": {
+        "color": "#80b3a0",
+        "fontSize": 16,
+        "margin": [0, 5, 0, 10]
+      },
+      "heading3": {
+        "color": "#212529",
+        "fontSize": 14,
+        "margin": [0, 5, 0, 10]
+      },
+      "heading4": {
+        "color": "#212529",
+        "fontSize": 12,
+        "margin": [0, 5, 0, 10]
+      },
+      "small": {"fontSize": 9},
+      "tableCell": {"margin": [3, 5, 3, 2]},
+      "tableHeader": {
+        "fillColor": "#343a40",
+        "color": "#fff",
+        "margin": [3, 5, 3, 2],
+        "bold": true
+      },
+      "tableHeaderLight": {
+        "fillColor": "#6c757d",
+        "color": "#fff",
+        "margin": [3, 5, 3, 2],
+        "bold": true
+      },
+      "link": {
+        "color": "#0d6efd",
+        "decoration": "underline"
+      },
+      "paragraph": {"margin": [0, 0, 0, 10]}
+    };
+  }
+
   build(data) {
     const document = [];
 
@@ -679,118 +803,10 @@ class PDFReportGenerator extends AbstractReportGenerator {
       "pageSize": this.pageSize,
       "pageOrientation": this.pageOrientation,
       "pageMargins": this.pageMargins,
-      header: function(currentPage, pageCount, pageSize) {
-        if (currentPage === 1) {
-          return [];
-        }
-        return [
-          {
-            margin: [0, 20, 40, 0],
-            columns: [
-              {
-                width: "*",
-                text: []
-              },
-              {
-                width: "auto",
-                text: `${data.title}`,
-                alignment: "right",
-                style: "small"
-              }
-            ]
-          }
-        ];
-      },
-      footer: function(currentPage, pageCount) {
-        if (currentPage === 1) {
-          return [];
-        }
-        return [
-          {
-            margin: [40, 30, 40, 0],
-            columns: [
-              {
-                width: "40%",
-                text: [
-                  {
-                    text: "FOR INTERNAL USE",
-                    style: "small",
-                    italics: true
-                  }
-                ]
-              },
-              {
-                width: "*",
-                text: [
-                  {
-                    text: `${currentPage}`,
-                    style: "small",
-                    alignment: "center"
-                  }
-                ]
-              },
-              {
-                width: "40%",
-                text: ""
-              }
-            ],
-            columnGap: 5
-          }
-        ];
-      },
-      "defaultStyle": {
-        "color": "#212529",
-        "font": "Calibri",
-        "fontSize": 10,
-        "lineHeight": 1.1
-      },
-      "styles": {
-        "title": {
-          "color": "#293e41",
-          "fontSize": 30,
-          "alignment": "center",
-          "margin": [0, 0, 0, 10]
-        },
-        "heading1": {
-          "color": "#293e41",
-          "fontSize": 18,
-          "margin": [0, 5, 0, 10]
-        },
-        "heading2": {
-          "color": "#80b3a0",
-          "fontSize": 16,
-          "margin": [0, 5, 0, 10]
-        },
-        "heading3": {
-          "color": "#212529",
-          "fontSize": 14,
-          "margin": [0, 5, 0, 10]
-        },
-        "heading4": {
-          "color": "#212529",
-          "fontSize": 12,
-          "margin": [0, 5, 0, 10]
-        },
-        "small": {"fontSize": 9},
-        "tableCell": {"margin": [3, 5, 3, 2]},
-        "tableHeader": {
-          "fillColor": "#343a40",
-          "color": "#fff",
-          "margin": [3, 5, 3, 2],
-          "bold": true
-        },
-        "tableHeaderLight": {
-          "fillColor": "#6c757d",
-          "color": "#fff",
-          "margin": [3, 5, 3, 2],
-          "bold": true
-        },
-        "link": {
-          "color": "#0d6efd",
-          "decoration": "underline"
-        },
-        "paragraph": {"margin": [0, 0, 0, 10]}
-      },
+      "header": this.getHeader(data),
+      "footer": this.getFooter(data),
+      "defaultStyle": this.getDefaultStyle(),
+      "styles": this.getStyles(),
       content: document
     };
   }
