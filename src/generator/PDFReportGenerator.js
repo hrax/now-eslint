@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 const pdfmake = require("pdfmake");
 const fs = require("fs");
-const npath = require("path");
+const path = require("path");
 
 const AbstractReportGenerator = require("./AbstractReportGenerator");
 const ScanStatus = require("../UpdateXMLScan").STATUS;
@@ -12,10 +12,16 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
     this.fonts = {
       Calibri: {
-        normal: npath.normalize(__dirname + "/../../resources/fonts/Calibri/Calibri.ttf"),
-        bold: npath.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIB.TTF"),
-        italics: npath.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRII.TTF"),
-        bolditalics: npath.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIZ.TTF")
+        normal: path.normalize(__dirname + "/../../resources/fonts/Calibri/Calibri.ttf"),
+        bold: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIB.TTF"),
+        italics: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRII.TTF"),
+        bolditalics: path.normalize(__dirname + "/../../resources/fonts/Calibri/CALIBRIZ.TTF")
+      },
+      fontawesome: {
+        normal: path.normalize(__dirname + "/../../resources/fonts/fontawesome/fontawesome.ttf"),
+        bold: path.normalize(__dirname + "/../../resources/fonts/fontawesome/fontawesome.ttf"),
+        italics: path.normalize(__dirname + "/../../resources/fonts/fontawesome/fontawesome.ttf"),
+        bolditalics: path.normalize(__dirname + "/../../resources/fonts/fontawesome/fontawesome.ttf")
       }
     };
 
@@ -403,7 +409,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
       data.changes.forEach(([key, scan]) => {
         // Change type and target
         results.push({
-          text: `${scan.targetName} (${scan.type})`,
+          text: ` ${scan.targetName} (${scan.type})`,
           style: "heading2",
           id: `scan-${scan.id}`,
           tocItem: true,
@@ -731,6 +737,11 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
   getStyles() {
     return {
+      "icon": {"font": "fontawesome"},
+      "m-r-sm": {"margin": [0, 0, 5, 0]},
+      "m-l-sm": {"margin": [5, 0, 0, 0]},
+      "m-r": {"margin": [0, 0, 10, 0]},
+      "m-l": {"margin": [10, 0, 0, 0]},
       "title": {
         "color": "#293e41",
         "fontSize": 30,
@@ -798,6 +809,14 @@ class PDFReportGenerator extends AbstractReportGenerator {
     this.generateReportFindings(document, data);
 
     return {
+      // ownerPassword: '123456',
+      // permissions: {
+      //   printing: "highResolution", //'lowResolution'
+      //   modifying: true,
+      //   copying: false,
+      //   contentAccessibility: false,
+      //   documentAssembly: true
+      // },
       "pageSize": this.pageSize,
       "pageOrientation": this.pageOrientation,
       "pageMargins": this.pageMargins,
@@ -813,12 +832,12 @@ class PDFReportGenerator extends AbstractReportGenerator {
     return "pdf";
   }
 
-  save(path, fileName, data) {
+  save(folder, fileName, data) {
     const document = this.build(data);
 
     const printer = new pdfmake(this.fonts);
     const pdfDoc = printer.createPdfKitDocument(document, {tableLayouts: this.tableLayouts});
-    pdfDoc.pipe(fs.createWriteStream(npath.resolve(`${path}/${fileName}.${this.extension()}`)));
+    pdfDoc.pipe(fs.createWriteStream(path.resolve(`${folder}/${fileName}.${this.extension()}`)));
     pdfDoc.end();
   }
 }

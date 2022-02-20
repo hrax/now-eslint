@@ -43,10 +43,11 @@
   "dependencies": {
     "@xmldom/xmldom": ">=0.7.0",
     "commander": "^9.0.0",
+    "docx": "^7.3.0",
     "dotenv": "^8.6.0",
     "https-proxy-agent": "^5.0.0",
     "nanoid": "^3.2.0",
-    "pdfmake": "^0.1.72",
+    "pdfmake": "^0.2.4",
     "prompt": "^1.2.1",
     "whatwg-url": "^8.7.0",
     "xpath": "0.0.32"
