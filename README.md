@@ -1,5 +1,9 @@
 # NOW ESLint v1.0.0
 
+[![build](https://github.com/hrax/now-eslint/actions/workflows/test.yml/badge.svg)](https://github.com/hrax/now-eslint/actions/workflows/test.yml)
+[![npm](https://img.shields.io/npm/v/@hrax/now-eslint)](https://www.npmjs.com/package/@hrax/now-eslint)
+
+
 NodeJS CLI/Library to lint scripts in update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
 
 Primary goal is to be utilized by user locally using CLI, however option to generate JSON should allow this to be utilized in mid server as an extension to automate QA/release processes using Service Now instance.
