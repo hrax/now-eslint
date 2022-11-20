@@ -1,4 +1,4 @@
-# NOW ESLint v0.0.4
+# NOW ESLint v1.0.0
 
 NodeJS CLI/Library to lint scripts in update set changes on Service Now instances based on the user table configuration. Offers independent lint configuration with possibility to utilize custom ESLint plugins compared to the solution provided by Service Now out-of-box.
 
