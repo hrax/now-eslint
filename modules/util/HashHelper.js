@@ -1,4 +1,8 @@
 const crypto = require("crypto");
+const template = require("./template.js");
+
+const HASH_PREFIX = template`8e${0}`;
+const HASH_PREFIX_RE = new RegExp("^" + HASH_PREFIX("\\d+"), "i");
 
 class HashHelper {
   /**
@@ -18,22 +22,23 @@ class HashHelper {
   }
 
   static hash(string) {
-    string = HashHelper.cleanup(string);
-    return "x" + string.length + crypto.createHash("sha256")
-      .update(string)
+    const cleaned = HashHelper.cleanup(string);
+    const prefix = HASH_PREFIX(cleaned.length);
+    return prefix + crypto.createHash("sha256")
+      .update(prefix)
+      .update(cleaned)
       .digest("hex");
   }
 
   static matches(string, hash) {
     // Hash not set or not a hash
-    if (hash == null || !hash.match(/^x\d/i)) {
+    if (hash == null || !hash.match(HASH_PREFIX_RE)) {
       return false;
     }
 
-    string = HashHelper.cleanup(string);
-
     // Hash quick check
-    if (!hash.startsWith("x" + string.length)) {
+    const cleaned = HashHelper.cleanup(string);
+    if (!hash.startsWith(HASH_PREFIX(cleaned.length))) {
       return false;
     }
 
