@@ -1,8 +1,7 @@
+/* eslint-disable no-console */
 const {InvalidArgumentError} = require("commander");
-
 const colors = require("colors/safe");
-
-const Profile = require("../src/Profile");
+const Profile = require("../linter/Profile.js");
 
 const DOMAIN_REGEXP = /^https?:\/\/.*?\/?$/;
 const DOMAIN_HELP = "must start with 'http(s)://' and should end with '/'";
@@ -14,14 +13,13 @@ module.exports = {
   DOMAIN_REGEXP: DOMAIN_REGEXP,
   DOMAIN_HELP: DOMAIN_HELP,
   DOMAIN_ERROR: DOMAIN_ERROR,
+  PROFILE_HELP: PROFILE_HELP,
   validateDomain: (value) => {
     if (DOMAIN_REGEXP.test(value)) {
       return value;
     }
     throw new InvalidArgumentError(DOMAIN_ERROR);
   },
-
-  PROFILE_HELP: PROFILE_HELP,
   /**
    * Validates if value matches profile name pattern
    * @param {String} value 

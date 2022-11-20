@@ -1,3 +1,4 @@
+const template = require("./template.js");
 
 /**
  * Static utility class for asserting method parameters.
@@ -13,19 +14,29 @@ class Assert {
   /**
    * Formats text with {i} placeholders
    * 
-   * "Hello {0}!" with value "world" will become Hello world!
+   * "Hello ${0}!" with value "world" will become Hello world!
    * 
-   * @param {*} text The text to replace
+   * @param {*} message The text to replace
    * @param {...any} args values to replace the placeholders with
    */
-  static _format(text, ...args) {
-    let s = text || "";
-    let i = args.length || 0;
+  static _format(message) {
+    const format = (string) => {
+      return (...values) => {
+        const dict = values[values.length - 1] || {};
+        return string.replace(/\$?{(?:(\d)|(?:"([a-z_-]+)"))}/gmi, (match, index, key) => {
+          const value = index != null ? values[index] : dict[key];
+          return value || match;
+        });
+      };
+    };
 
-    while (i--) {
-      s = s.replace(new RegExp("\\{" + i + "\\}", "gm"), args[i]);
+    // Already templated
+    if (typeof message === "function") {
+      return message;
     }
-    return s;
+
+    // String
+    return format(message);
   }
 
   /**
@@ -35,7 +46,7 @@ class Assert {
    */
   static notEmpty(value, message) {
     if (value == null || value === "") {
-      throw new Error(message || "Empty value detected!");
+      throw new Error(Assert._format(message || "Empty value detected!")());
     }
   }
 
@@ -46,7 +57,7 @@ class Assert {
    */
   static notNull(value, message) {
     if (value == null) {
-      throw new Error(message || "Null or undefined value detected!");
+      throw new Error(Assert._format(message || "Null or undefined value detected!")());
     }
   }
 
@@ -162,9 +173,10 @@ class Assert {
     Assert.isObject(obj);
     Assert.isArray(props);
 
+    
     const keys = Object.keys(obj);
     if (!props.every((key) => keys.indexOf(key) !== -1)) {
-      throw new Error(Assert._format(message || "Object does not contain all properties!", props.join(",")));
+      throw new Error(Assert._format(message || "Object does not contain all properties!")(props.join(",")));
     }
   }
 
@@ -182,7 +194,7 @@ class Assert {
 
     const keys = Object.keys(obj);
     if (!props.some((key) => keys.indexOf(key) !== -1)) {
-      throw new Error(Assert._format(message  || "Object does not contain some properties!", props.join(",")));
+      throw new Error(Assert._format(message || "Object does not contain some properties!")(props.join(",")));
     }
   }
 
@@ -192,7 +204,7 @@ class Assert {
 
     const found = array.find((item) => value.toLowerCase() === item.toLowerCase());
     if (found === undefined) {
-      throw new Error(Assert._format(message || "Value '{0}' is not present in the provided array '{1}'!", value, array.join(", ")));
+      throw new Error(Assert._format(message || template`Value '${0}' is not present in the provided array '${1}'!`)(value, array.join(", ")));
     }
   }
 
@@ -202,13 +214,13 @@ class Assert {
 
     const found = array.find((item) => value === item);
     if (found === undefined) {
-      throw new Error(Assert._format(message || "Value '{0}' is not present in the provided array '{1}'!", value, array.join(", ")));
+      throw new Error(Assert._format(message || template`Value '${0}' is not present in the provided array '${1}'!`)(value, array.join(", ")));
     }
   }
 
   static isInstance(value, clazz, message) {
     if (!(value instanceof clazz)) {
-      throw new Error(Assert._format(message || "Value '{0}' is not instance of '{1}'!", value.name || value, clazz.name || clazz));
+      throw new Error(Assert._format(message || template`Value '${0}' is not instance of '${1}'!`)(value.name || value, clazz.name || clazz));
     }
   }
 }

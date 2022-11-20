@@ -1,4 +1,4 @@
-const UpdateXML = require("./now/UpdateXML");
+const UpdateXML = require("../core/UpdateXML.js");
 
 const UpdateXMLScanStatus = {
   // Do not lint (deleted record)
@@ -161,11 +161,12 @@ class UpdateXMLScan extends UpdateXML {
   }
 }
 
-Object.defineProperty(UpdateXMLScan, "STATUS", {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value: UpdateXMLScanStatus
-});
+// Object.defineProperty(UpdateXMLScan, "STATUS", {
+//   enumerable: true,
+//   configurable: false,
+//   writable: false,
+//   value: UpdateXMLScanStatus
+// });
 
 module.exports = UpdateXMLScan;
+module.exports.STATUS = UpdateXMLScanStatus;

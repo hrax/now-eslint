@@ -1,4 +1,5 @@
-const Request = require("../../src/now/Request");
+/* eslint-disable no-magic-numbers */
+const Request = require("../../modules/core/Request.js");
 
 describe("Request", () => {
   const options = {

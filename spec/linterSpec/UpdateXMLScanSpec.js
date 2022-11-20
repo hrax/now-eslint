@@ -1,4 +1,4 @@
-const UpdateXMLScan = require("../src/UpdateXMLScan");
+const UpdateXMLScan = require("../../modules/linter/UpdateXMLScan.js");
 
 describe("NowUpdateXMLScan", () => {
   it("returns correct count for errors and warnings", () => {

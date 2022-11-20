@@ -1,23 +1,22 @@
 /* eslint-disable */
-const {ESLint, Linter} = require("eslint");
-const crypto = require("crypto");
+const {ESLint} = require("eslint");
 
-const Assert = require("./util/Assert");
-const helpers = require("./util/helpers");
-const UpdateXMLScan = require("./UpdateXMLScan");
-const PDFReportGenerator = require("./generator/PDFReportGenerator");
-const JSONReportGenerator = require("./generator/JSONReportGenerator");
+const Assert = require("../util/Assert.js");
+const helpers = require("../util/index.js");
+const UpdateXMLScan = require("./UpdateXMLScan.js");
+const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
+const JSONReportGenerator = require("../generator/JSONReportGenerator.js");
 
-class NowLinter {
+class Linter {
   /**
    * 
    * @param {Profile} profile 
    * @param {Object} options 
    */
   constructor(profile, options) {
-    // TODO: validation
-    Assert.notEmpty(options.title, "Title in options needs to be specified!");
-    Assert.notEmpty(options.query, "Query in options needs to be specified!");
+    Assert.notNull(options, "Options must be specified.");
+    Assert.notEmpty(options.title, "Title in options needs to be specified.");
+    Assert.notEmpty(options.query, "Query in options needs to be specified.");
 
     Object.defineProperty(this, "options", {
       writable: false,
@@ -161,4 +160,4 @@ class NowLinter {
   }
 }
 
-module.exports = NowLinter;
+module.exports = Linter;

@@ -1,4 +1,4 @@
-const Profile = require("../src/Profile");
+const Profile = require("../../modules/linter/Profile.js");
 
 describe("Profile", () => {
   describe("initialization", () => {

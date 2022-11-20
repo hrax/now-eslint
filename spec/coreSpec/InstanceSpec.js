@@ -1,4 +1,6 @@
-const Instance = require("../../src/now/Instance");
+/* eslint-disable no-magic-numbers */
+const Instance = require("../../modules/core/Instance.js");
+const HashHelper = require("../../modules/util/HashHelper.js");
 
 describe("Instance", () => {
   let instance = null;
@@ -48,16 +50,18 @@ describe("Instance", () => {
 
   describe("#requestTableFieldData", () => {
     it("parses table field data", async() => {
+      const default_value = `(function executeRule(current, previous /*null when async*/) {
+
+        // Add your code here
+      
+      })(current, previous);`;
+
       requestGetSpy.and.resolveTo(JSON.stringify({
         "result": [
           {
             "name": "sys_script",
             "element": "script",
-            "default_value": `(function executeRule(current, previous /*null when async*/) {
-
-              // Add your code here
-            
-            })(current, previous);`
+            "default_value": default_value
           },
           {
             "name": "sys_script",
@@ -70,7 +74,10 @@ describe("Instance", () => {
       // Hash calculated manually for test
       const expected = {
         "sys_script": {
-          "fields": ["script", "condition"]
+          "fields": ["script", "condition"],
+          "defaults": {
+            "script": HashHelper.hash(default_value)
+          }
         }
       };
 
@@ -84,16 +91,19 @@ describe("Instance", () => {
   describe("#requestTableAndParentFieldData", () => {
     // B -> A
     it("merges table and direct parent data", async() => {
+      const default_value = `(function executeRule(current, previous /*null when async*/) {
+
+        // Add your code here
+      
+      })(current, previous);`;
+      const hash = HashHelper.hash(default_value);
+
       requestGetSpy.and.returnValues(JSON.stringify({
         "result": [
           {
             "name": "A",
             "element": "script",
-            "default_value": `(function executeRule(current, previous /*null when async*/) {
-
-              // Add your code here
-            
-            })(current, previous);`
+            "default_value": default_value
           },
           {
             "name": "B",
@@ -112,10 +122,16 @@ describe("Instance", () => {
 
       await expectAsync(instance.requestTableAndParentFieldData()).toBeResolvedTo({
         "A": {
-          "fields": ["script"]
+          "fields": ["script"],
+          "defaults": {
+            "script": hash
+          }
         },
         "B": {
-          "fields": ["condition", "script"]
+          "fields": ["condition", "script"],
+          "defaults": {
+            "script": hash
+          }
         }
       });
       
@@ -152,10 +168,12 @@ describe("Instance", () => {
 
       await expectAsync(instance.requestTableAndParentFieldData()).toBeResolvedTo({
         "A": {
-          "fields": ["script"]
+          "fields": ["script"],
+          "defaults": {}
         },
         "C": {
-          "fields": ["condition", "script"]
+          "fields": ["condition", "script"],
+          "defaults": {}
         }
       });
       

@@ -18,6 +18,7 @@ const helpers = require("./cli-helpers");
 const Profile = require("../src/Profile");
 const NowLinter = require("../src/NowLinter");
 const PDFReportGenerator = require("../src/generator/PDFReportGenerator");
+const DocxReportGenerator = require("../src/generator/DocxReportGenerator");
 
 // Configure global constants
 const PROFILE_HOME = Profile.profilesHomeDirPath();
@@ -99,7 +100,8 @@ report.action(async(name, options) => {
     };
 
     const linter = new NowLinter(profile, data);
-    const generator = new PDFReportGenerator();
+    // const generator = new PDFReportGenerator();
+    const generator = new DocxReportGenerator();
     
     helpers.outputInfo(`Fetching data from the instance`);
     await linter.fetch();

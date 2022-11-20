@@ -1,7 +1,7 @@
 /* eslint-disable no-console, max-len */
 const http = require("https");
 const HttpsProxyAgent = require("https-proxy-agent");
-const Assert = require("../util/Assert");
+const Assert = require("../util/Assert.js");
 
 const URL_PATH_SEPARATOR = "/";
 

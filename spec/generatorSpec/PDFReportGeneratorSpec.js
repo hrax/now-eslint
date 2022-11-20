@@ -1,8 +1,8 @@
 /* eslint-disable no-magic-numbers */
-const PDFReportGenerator = require("../../src/generator/PDFReportGenerator");
-const UpdateXMLScan = require("../../src/UpdateXMLScan");
+const PDFReportGenerator = require("../../modules/generator/PDFReportGenerator.js");
+const UpdateXMLScan = require("../../modules/linter/UpdateXMLScan.js");
 
-describe("PDFReportGenerator", () => {
+xdescribe("PDFReportGenerator", () => {
   let data = {};
 
   beforeEach(() => {

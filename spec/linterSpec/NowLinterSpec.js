@@ -1,8 +1,8 @@
 /* eslint-disable */
 const fs = require("fs");
-const UpdateXMLScan = require("../src/UpdateXMLScan");
-const NowLinter = require("../src/NowLinter");
-const Profile = require("../src/Profile");
+const UpdateXMLScan = require("../../modules/linter/UpdateXMLScan.js");
+const NowLinter = require("../../modules/linter/Linter.js");
+const Profile = require("../../modules/linter/Profile.js");
 
 describe("NowLinter", () => {
   const _createLinter = (options, tables) => {

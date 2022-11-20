@@ -1,7 +1,14 @@
 const xpath = require("xpath");
-const dom = require("@xmldom/xmldom").DOMParser;
+const {DOMParser} = require("@xmldom/xmldom");
 
 class RESTHelper {
+  /**
+   * No instances
+   */
+  constructor() {
+    throw new Error("Static class, no instances!");
+  }
+
   static transformUpdateXMLToData(record) {
     // type,target_name,update_set,payload
     const toReturn = {
@@ -20,7 +27,7 @@ class RESTHelper {
     };
 
     if (toReturn.payload != null) {
-      const doc = new dom().parseFromString(toReturn.payload);
+      const doc = new DOMParser().parseFromString(toReturn.payload);
       const tableElm = xpath.select1("//*/*[1]", doc);
       const idElm = xpath.select1("./sys_id/text()", tableElm);
 
@@ -32,18 +39,4 @@ class RESTHelper {
   }
 }
 
-class XPathHelper {
-  static parseFieldValue(table, field, payload) {
-    const doc = new dom().parseFromString(payload);
-    const data = xpath.select1(`//record_update/${table}/${field}/text()`, doc);
-    if (data == null) {
-      return null;
-    }
-    return data.nodeValue;
-  }
-}
-
-module.exports = {
-  RESTHelper,
-  XPathHelper
-};
+module.exports = RESTHelper;

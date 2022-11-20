@@ -1,10 +1,12 @@
+// eslint-disable-next-line id-length
 const fs = require("fs");
+// eslint-disable-next-line id-length
 const os = require("os");
 const path = require("path");
 
-const Assert = require("./util/Assert");
-const Instance = require("./now/Instance");
-const Request = require("./now/Request");
+const Assert = require("../util/Assert.js");
+const Instance = require("../core/Instance.js");
+const Request = require("../core/Request.js");
 
 /**
  * Options object

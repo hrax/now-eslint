@@ -1,4 +1,4 @@
-const Assert = require("../util/Assert");
+const Assert = require("../util/Assert.js");
 
 const UpdateXMLAction = {
   INSERT_OR_UPDATE: "INSERT_OR_UPDATE",

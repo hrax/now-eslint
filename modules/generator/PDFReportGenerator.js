@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const AbstractReportGenerator = require("./AbstractReportGenerator");
-const ScanStatus = require("../UpdateXMLScan").STATUS;
+const ScanStatus = require("../linter/UpdateXMLScan").STATUS;
 
 class PDFReportGenerator extends AbstractReportGenerator {
   constructor() {
@@ -793,7 +793,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
   build(data) {
     const document = [];
 
-    // Page 1
+    // Page 1 - Title
     this.generateReportTitle(document, data.title);
 
     // Page 2 - ToC

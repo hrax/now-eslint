@@ -12,10 +12,10 @@ const program = new commander.Command();
 // Load prompt & safe colors
 const colors = require("colors/safe");
 const prompt = require("prompt");
-const helpers = require("./cli-helpers");
+const helpers = require("./helpers.js");
 
 // Load local libraries
-const Profile = require("../src/Profile");
+const Profile = require("../linter/Profile.js");
 
 // Configure global constants
 const PROFILE_HOME = Profile.profilesHomeDirPath();
@@ -40,8 +40,21 @@ const create = program.command("create", {isDefault: true})
   .argument("<name>", `name of the profile; ${helpers.PROFILE_HELP}`, helpers.validateProfileName)
   .option("-d, --domain <domain>", `the URL to the ServiceNow instance; ${helpers.DOMAIN_HELP}`, helpers.validateDomain)
   .option("-u, --username <username>", "username used to connect")
-  .option("--no-proxy", "skip proxy configuration")
-  .option("-f, --force", "force override if profile with the name exists");
+  .option("--proxy", "proxy connection configuration")
+  .option("-f, --force", "force override if profile with the name exists")
+  .addHelpText("after", `
+  
+  Required read-only user access (tables):
+  sys_update_xml
+  sys_update_set
+  sys_dictionary
+  sys_db_object
+
+  Example call:
+  now-eslint profile create <profileName> -d "https://example.service-now.com" -u admin
+  now-eslint profile create <profileName> -d "https://example.service-now.com" -u admin --proxy`);
+
+
 create.action(async function(name, options) {
   debugWorkingDir();
 
@@ -75,19 +88,11 @@ create.action(async function(name, options) {
         hidden: true,
         replace: "*"
       },
-      useProxy: {
-        description: colors.yellow("Use proxy to connect to the instance?"),
-        type: "boolean",
-        default: false,
-        ask: () => {
-          return options.proxy;
-        }
-      },
       proxy: {
         description: colors.yellow("Enter proxy connection string e.g. http://username:password@domain:port"),
         required: true,
         ask: () => {
-          return options.proxy && prompt.history("useProxy").value === true;
+          return options.proxy === true;
         }
       }
     }
@@ -113,7 +118,7 @@ create.action(async function(name, options) {
 
     helpers.outputInfo(`Testing connection to the instance at '${profile.domain}' using username '${profile.username}'...\n`);
 
-    const message = "Unable to connect to the instance, please verify the instance url, username and password.";
+    const message = "Unable to connect to the instance, please verify the instance url, username, password and role access.";
     try {
       const connected = await instance.testConnection();
       if (!connected) {
