@@ -2,5 +2,7 @@
 *.sublime-workspace
 *.ENV
 *.pdf
+*.doc
+*.docx
 /node_modules
 /.vscode
