@@ -1,7 +1,12 @@
-name: test
+name: Test ${{github.ref_name}}
 
-on: [push, pull_request, workflow_call, workflow_dispatch]
-  paths-ignore: [ "**.md", ".*" ]
+on: 
+  push:
+    paths-ignore: [ "**.md", ".*" ]
+  pull_request:
+    paths-ignore: [ "**.md", ".*" ]
+  workflow_call:
+  workflow_dispatch:
 
 permissions: 
   contents: read
