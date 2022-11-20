@@ -23,6 +23,7 @@ class Assert {
     const format = (string) => {
       return (...values) => {
         const dict = values[values.length - 1] || {};
+        // https://regex101.com/r/nJmoi8/1
         return string.replace(/\$?{(?:(\d)|(?:"([a-z_-]+)"))}/gmi, (match, index, key) => {
           const value = index != null ? values[index] : dict[key];
           return value || match;
