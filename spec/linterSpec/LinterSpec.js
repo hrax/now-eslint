@@ -1,7 +1,7 @@
-/* eslint-disable */
+/* eslint-disable no-magic-numbers */
 const fs = require("fs");
 const UpdateXMLScan = require("../../modules/linter/UpdateXMLScan.js");
-const NowLinter = require("../../modules/linter/Linter.js");
+const Linter = require("../../modules/linter/Linter.js");
 const Profile = require("../../modules/linter/Profile.js");
 
 describe("NowLinter", () => {
@@ -13,7 +13,7 @@ describe("NowLinter", () => {
       "password": "???"
     });
     profile.tables = tables;
-    return new NowLinter(profile, options);
+    return new Linter(profile, options);
   };
 
   let payload = null;
@@ -23,7 +23,7 @@ describe("NowLinter", () => {
     payload = fs.readFileSync("./spec/payloads/sys_script_include_50ba882f07d610108110f2ae7c1ed00d.xml", {encoding: "utf8"});
     data = {
       "name": "sys_script_include_50ba882f07d610108110f2ae7c1ed00d",
-      "sys_id": "43ca802f07d610108110f2ae7c1ed05a",
+      "sys_id": "50ba882f07d610108110f2ae7c1ed00d",
       "action": "INSERT_OR_UPDATE",
       "sys_created_by": "admin",
       "sys_created_on": "1970-01-01 00:00:01",
@@ -44,9 +44,7 @@ describe("NowLinter", () => {
     const linter = _createLinter(options, {
       "sys_script_include": {
         "fields": ["script"],
-        "defaults": {
-          "script": "9eca59a2abdba2593b84ea175b0f96749d1f8edd719f4e288bb97fcb8d729bb4"
-        }
+        "defaults": {}
       }
     });
     spyOn(linter.instance, "requestUpdateXMLByUpdateSetQuery").and.returnValue({result: [data]});
@@ -164,7 +162,7 @@ describe("NowLinter", () => {
     expect(changes.values().next().value.hasReports).toBe(false);
   });
 
-  xit("Skip on default value", async () => {
+  it("Skip on default value", async () => {
     payload = fs.readFileSync("./spec/payloads/sys_script_include_default_script.xml", {encoding: "utf8"});
     data.payload = payload;
 
@@ -173,12 +171,11 @@ describe("NowLinter", () => {
       "query": "name=Default"
     };
     
-    // FIXME: why is the hash from xml calculated differently?
     const linter = _createLinter(options, {
       "sys_script_include": {
         "fields": ["script"],
         "defaults": {
-          "script": "ecba1e1635d91377085928e7bbe4ed97f51e4a2ab68ed105a5d4140df7a5d001"
+          "script": "8e9400d73d211a94fd1e54c72c68a86423dcfb3891281895338b983f64e3c69f21ba"
         }
       }
     });
@@ -191,7 +188,7 @@ describe("NowLinter", () => {
 
     await linter.process();
 
-    const changes = linter.getChanges();
+    const changes = linter.changes;
 
     expect(linter.instance.requestUpdateXMLByUpdateSetQuery).toHaveBeenCalledTimes(1);
     expect(linter.eslint.lintText).not.toHaveBeenCalled();

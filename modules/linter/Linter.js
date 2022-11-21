@@ -2,7 +2,9 @@
 const {ESLint} = require("eslint");
 
 const Assert = require("../util/Assert.js");
-const helpers = require("../util/index.js");
+const HashHelper = require("../util/HashHelper.js");
+const RESTHelper = require("../util/RESTHelper.js");
+const XPathHelper = require("../util/XPathHelper.js");
 const UpdateXMLScan = require("./UpdateXMLScan.js");
 const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
 const JSONReportGenerator = require("../generator/JSONReportGenerator.js");
@@ -52,7 +54,7 @@ class Linter {
 
     // Get records from the response
     response.result.forEach((record) => {
-      const data = helpers.RESTHelper.transformUpdateXMLToData(record);
+      const data = RESTHelper.transformUpdateXMLToData(record);
       const scan = new UpdateXMLScan(data);
       if (!this.changes.has(scan.name)) {
         this.changes.set(scan.name, scan);
@@ -102,18 +104,17 @@ class Linter {
 
         // For each configured field run lint
         fields.forEach(async (field) => {
-          const data = helpers.XPathHelper.parseFieldValue(table, field, scan.payload);
+          const data = XPathHelper.parseFieldValue(table, field, scan.payload);
           if (data == null || data === "") {
             scan.skip();
             return;
           }
           
-          /* // data is default value
-          const hash = crypto.createHash("sha256").update(data).digest("hex");
-          if (hash === this.tables[scan.table].defaults[field]) {
-            scan.setSkippedReport();
+          // data is default value
+          if (this.profile.tables.get(table).defaults[field] && HashHelper.matches(data, this.profile.tables.get(table).defaults[field])) {
+            scan.skip();
             return;
-          } */
+          }
           
           const report = await this.eslint.lintText(data);
           if (report.length) {
