@@ -12,13 +12,13 @@ const program = new commander.Command();
 // Load prompt & safe colors
 const colors = require("colors/safe");
 const prompt = require("prompt");
-const helpers = require("./cli-helpers");
+const helpers = require("./helpers.js");
 
 // Load local libraries
-const Profile = require("../src/Profile");
-const NowLinter = require("../src/NowLinter");
-const PDFReportGenerator = require("../src/generator/PDFReportGenerator");
-const DocxReportGenerator = require("../src/generator/DocxReportGenerator");
+const Profile = require("../linter/Profile.js");
+const Linter = require("../linter/Linter.js");
+const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
+// const DocxReportGenerator = require("../generator/DocxReportGenerator.js");
 
 // Configure global constants
 const PROFILE_HOME = Profile.profilesHomeDirPath();
@@ -99,14 +99,14 @@ report.action(async(name, options) => {
       query: result.query
     };
 
-    const linter = new NowLinter(profile, data);
-    // const generator = new PDFReportGenerator();
-    const generator = new DocxReportGenerator();
+    const linter = new Linter(profile, data);
+    const generator = new PDFReportGenerator();
+    // const generator = new DocxReportGenerator();
     
-    helpers.outputInfo(`Fetching data from the instance`);
+    helpers.outputInfo("Fetching data from the instance");
     await linter.fetch();
 
-    helpers.outputInfo(`Linting fetched data`);
+    helpers.outputInfo("Linting fetched data");
     await linter.lint();
     
     helpers.outputInfo(`Generating report '${fileName}.${generator.extension()}'`);
@@ -115,7 +115,5 @@ report.action(async(name, options) => {
     helpers.outputInfo(`Saved report '${fileName}.${generator.extension()}'`);
   });
 });
-
-// const reportJSON = program.command("json")
   
 program.parseAsync(process.argv);

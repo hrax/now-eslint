@@ -7,7 +7,7 @@ const DOMAIN_REGEXP = /^https?:\/\/.*?\/?$/;
 const DOMAIN_HELP = "must start with 'http(s)://' and should end with '/'";
 const DOMAIN_ERROR = `ServiceNow instance URL ${DOMAIN_HELP}`;
 
-const PROFILE_HELP = "must contain lowecase/uppercase letters, numbers, underscore and dash";
+const PROFILE_HELP = "must contain lowecase/uppercase letters, numbers, underscore or dash";
 
 module.exports = {
   DOMAIN_REGEXP: DOMAIN_REGEXP,

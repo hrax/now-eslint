@@ -45,23 +45,23 @@
     "test": "jasmine"
   },
   "dependencies": {
-    "@xmldom/xmldom": ">=0.8.4",
-    "commander": "^9.0.0",
-    "docx": "^7.3.0",
-    "dotenv": "^8.6.0",
-    "https-proxy-agent": "^5.0.0",
-    "nanoid": "^3.2.0",
-    "pdfmake": "^0.2.4",
-    "prompt": "^1.2.1",
-    "whatwg-url": "^8.7.0",
+    "@xmldom/xmldom": "^0.8.6",
+    "chart.js": "^4.0.1",
+    "chartjs-node-canvas": "^4.1.6",
+    "commander": "^9.4.1",
+    "docx": "^7.7.0",
+    "dotenv": "^16.0.3",
+    "https-proxy-agent": "^5.0.1",
+    "pdfmake": "^0.2.6",
+    "prompt": "^1.3.0",
     "xpath": "0.0.32"
   },
   "devDependencies": {
-    "@babel/core": ">=7.17.0",
-    "@babel/eslint-parser": ">=7.17.0",
-    "eslint": "^7.32.0",
+    "@babel/core": "^7.20.2",
+    "@babel/eslint-parser": "^7.19.1",
+    "eslint": "^8.28.0",
     "eslint-plugin-jasmine": "^4.1.3",
-    "jasmine": "^3.99.0"
+    "jasmine": "^4.5.0"
   },
   "type": "commonjs",
   "engines": {

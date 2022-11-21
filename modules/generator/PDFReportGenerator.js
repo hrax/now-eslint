@@ -1,5 +1,6 @@
 /* eslint-disable no-magic-numbers */
 const pdfmake = require("pdfmake");
+// eslint-disable-next-line id-length
 const fs = require("fs");
 const path = require("path");
 
@@ -254,16 +255,16 @@ class PDFReportGenerator extends AbstractReportGenerator {
       "For an overview of ServiceNow technical best practices, visit the ",
       {
         text: "Technical Best Practices",
-        link: "https://developer.servicenow.com/dev.do#!/guides/quebec/now-platform/tpb-guide/scripting_technical_best_practices",
+        link: "https://developer.servicenow.com/dev.do#!/guides/tokyo/now-platform/tpb-guide/scripting_technical_best_practices",
         style: "link"
       },
-      " guide (Quebec)."
+      " guide (Tokyo)."
     );
 
     if (data.resources != null && data.resources["overview-resources"] != null && data.resources["overview-resources"].length > 0) {
-      const ul = [];
+      const list = [];
       data.resources["overview-resources"].forEach((item) => {
-        ul.push({
+        list.push({
           margin: [0, 0, 0, 3],
           text: item.label,
           link: item.link,
@@ -276,7 +277,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
         document,
         {
           margin: [10, 0, 0, 10],
-          ul: ul
+          ul: list
         }
       );
     }
