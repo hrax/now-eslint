@@ -3,7 +3,7 @@ const {ESLint} = require("eslint");
 
 const Assert = require("../util/Assert.js");
 const HashHelper = require("../util/HashHelper.js");
-const RESTHelper = require("../util/RESTHelper.js");
+const RESTHelper = require("../util/RestHelper.js");
 const XPathHelper = require("../util/XPathHelper.js");
 const UpdateXMLScan = require("./UpdateXMLScan.js");
 const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
