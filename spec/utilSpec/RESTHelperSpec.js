@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 const fs = require("fs");
-const RESTHelper = require("../../modules/util/RESTHelper.js");
+const RESTHelper = require("../../modules/util/RestHelper.js");
 
 describe("RESTHelper", () => {
   it("#transformUpdateXMLToData", () => {
