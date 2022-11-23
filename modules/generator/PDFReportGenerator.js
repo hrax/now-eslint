@@ -69,16 +69,14 @@ class PDFReportGenerator extends AbstractReportGenerator {
     }));
   }
 
-  addChart(document, type, chwidth, chheight, iwidth, iheight, data, options = {}) {
+  addChart(document, type, chwidth, chheight, data, choptions = {}, ioptions = {}) {
     const chart = ChartHelper.chart(chwidth, chheight, {
       type: type,
       data: data || {},
-      options: options || {}
+      options: choptions || {}
     });
     
-    this.addImage(document, chart, {
-      fit: [iwidth, iheight]
-    });
+    this.addImage(document, chart, Object.assign({}, ioptions || {}));
   }
 
   addParagraph(document, ...content) {
@@ -324,8 +322,20 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
   generateReportSummary(document, data) {
     this.addHeading(document, "Report summary");
+
+    const columns = [
+      {
+        width: "*",
+        stack: []
+      },
+      {
+        width: "250",
+        stack: []
+      }
+    ];
+
     this.addParagraph(
-      document,
+      columns[0].stack,
       {
         text: "INSTANCE\n",
         style: "small",
@@ -337,8 +347,9 @@ class PDFReportGenerator extends AbstractReportGenerator {
         style: "link"
       }
     );
+    
     this.addParagraph(
-      document,
+      columns[0].stack,
       {
         text: "QUERY\n",
         style: "small",
@@ -347,7 +358,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
       {text: `${data.query}`}
     );
     this.addParagraph(
-      document,
+      columns[0].stack,
       {
         text: "UNIQUE CHANGES FOUND\n",
         style: "small",
@@ -361,19 +372,46 @@ class PDFReportGenerator extends AbstractReportGenerator {
       labels: [ScanStatus.IGNORED, ScanStatus.WARNING, ScanStatus.ERROR, ScanStatus.OK, ScanStatus.SKIPPED, ScanStatus.MANUAL, ScanStatus.DELETED],
       datasets: [
         {
-          label: "By Status",
           backgroundColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#33FF33",  "#17a2b8"],
           borderColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#33FF33", "#17a2b8"],
           data: [data.metrics[ScanStatus.IGNORED] || 0, data.metrics[ScanStatus.WARNING] || 0, data.metrics[ScanStatus.ERROR] || 0, data.metrics[ScanStatus.OK] || 0, data.metrics[ScanStatus.SKIPPED] || 0, data.metrics[ScanStatus.SCAN] || 0, data.metrics[ScanStatus.MANUAL] || 0, data.metrics[ScanStatus.DELETED] || 0]
         }
       ]
     };
-    this.addChart(document, "doughnut", 400, 400, 250, 250, chart, {
+
+    // PDF is in 72DPI, therefore we need to render bigger chart, then downscale
+    // rendering 400x400px (~300pt) downscaling to 250pt
+    this.addChart(columns[1].stack, "doughnut", 400, 400, chart, {
       plugins: {
+        "title": {
+          display: true,
+          "text": "By Status",
+          font: {
+            size: 32,
+            color: "#212529"
+          },
+          padding: {
+            bottom: 20
+          }
+        },
         "legend": {
-          "position": "bottom"
+          display: true,
+          "position": "bottom",
+          labels: {
+            color: "#212529",
+            font: {
+              size: 12
+            }
+          }
         }
       }
+    }, {
+      width: 250
+    });
+
+    document.push({
+      columns: columns,
+      columnGap: 15
     });
 
     if (data.changes && data.changes.length) {
