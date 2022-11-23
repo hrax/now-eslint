@@ -19,7 +19,7 @@ const UPDATE_SET_API_PATH = template`/api/now/table/sys_update_set?sysparm_displ
  * Base URL to load the fields of type script from the dictionary
  * Skips tables starting with var_ and wf_
  */
-const DICTIONARY_SCRIPTS_API_PATH = template`"/api/now/table/sys_dictionary?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_fields=name,element,default_value&sysparm_query=nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement`;
+const DICTIONARY_SCRIPTS_API_PATH = template`/api/now/table/sys_dictionary?sysparm_display_value=false&sysparm_exclude_reference_link=true&sysparm_fields=name,element,default_value&sysparm_query=nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement`;
 
 /**
  * Base URL to load the tables that have parent which is not empty or not "Application File" order ascending by name

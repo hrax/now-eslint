@@ -6,8 +6,9 @@ const HashHelper = require("../util/HashHelper.js");
 const RESTHelper = require("../util/RestHelper.js");
 const XPathHelper = require("../util/XPathHelper.js");
 const UpdateXMLScan = require("./UpdateXMLScan.js");
-const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
-const JSONReportGenerator = require("../generator/JSONReportGenerator.js");
+// const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
+// const JSONReportGenerator = require("../generator/JSONReportGenerator.js");
+const AbstractReportGenerator = require("../generator/AbstractReportGenerator.js");
 
 class Linter {
   /**
@@ -144,8 +145,16 @@ class Linter {
       title: this.options.title,
       query: this.options.query,
       changes: Array.from(this.changes.entries()),
-      resources: Object.fromEntries(this.profile.resources.entries())
+      resources: Object.fromEntries(this.profile.resources.entries()),
+      metrics: {}
     };
+
+    data.changes.forEach(([name, scan]) => {
+      if (data.metrics[scan.status] == null) {
+        data.metrics[scan.status] = 0;
+      }
+      data.metrics[scan.status]++;
+    });
 
     // Lazy deep copy
     return JSON.parse(JSON.stringify(data));
@@ -153,9 +162,10 @@ class Linter {
 
   report(path, fileName, generator) {
     Assert.notEmpty(path, "path cannot be empty.");
-    Assert.notEmpty(path, "fileName cannot be empty.");
+    Assert.notEmpty(fileName, "fileName cannot be empty.");
     Assert.notNull(generator, "generator cannot be null.");
-    
+    Assert.isInstance(generator, AbstractReportGenerator, "provided generator needs to be instance of AbstractReportGenerator");
+
     const data = Object.assign({}, this.toJSON());
     generator.save(path, fileName, data);
   }

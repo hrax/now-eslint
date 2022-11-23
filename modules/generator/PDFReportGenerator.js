@@ -1,11 +1,16 @@
 /* eslint-disable no-magic-numbers */
 const pdfmake = require("pdfmake");
+const ChartHelper = require("../util/ChartHelper.js");
+const template = require("../util/template.js");
+
 // eslint-disable-next-line id-length
 const fs = require("fs");
 const path = require("path");
 
-const AbstractReportGenerator = require("./AbstractReportGenerator");
-const ScanStatus = require("../linter/UpdateXMLScan").STATUS;
+const AbstractReportGenerator = require("./AbstractReportGenerator.js");
+const {STATUS: ScanStatus} = require("../linter/UpdateXMLScan.js");
+
+const IMG_TPL = template`data:${0};base64,${1}`;
 
 class PDFReportGenerator extends AbstractReportGenerator {
   constructor() {
@@ -41,6 +46,38 @@ class PDFReportGenerator extends AbstractReportGenerator {
     this.addContent(document, {
       text: "",
       pageBreak: "after"
+    });
+  }
+
+  addImageBase64(document, image, options = {}, mime = "image/png") {
+    if (image == null) {
+      return;
+    }
+
+    this.addContent(document, Object.assign({}, options || {}, {
+      "image": IMG_TPL(mime || "image/png", image)
+    }));
+  }
+
+  addImage(document, image, options) {
+    if (image == null) {
+      return;
+    }
+   
+    this.addContent(document, Object.assign({}, options || {}, {
+      "image": image
+    }));
+  }
+
+  addChart(document, type, chwidth, chheight, iwidth, iheight, data, options = {}) {
+    const chart = ChartHelper.chart(chwidth, chheight, {
+      type: type,
+      data: data || {},
+      options: options || {}
+    });
+    
+    this.addImage(document, chart, {
+      fit: [iwidth, iheight]
     });
   }
 
@@ -318,6 +355,26 @@ class PDFReportGenerator extends AbstractReportGenerator {
       },
       {text: `${data.changes.length || 0}`}
     );
+
+    // generate chart
+    const chart = {
+      labels: [ScanStatus.IGNORED, ScanStatus.WARNING, ScanStatus.ERROR, ScanStatus.OK, ScanStatus.SKIPPED, ScanStatus.MANUAL, ScanStatus.DELETED],
+      datasets: [
+        {
+          label: "By Status",
+          backgroundColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#33FF33",  "#17a2b8"],
+          borderColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#33FF33", "#17a2b8"],
+          data: [data.metrics[ScanStatus.IGNORED] || 0, data.metrics[ScanStatus.WARNING] || 0, data.metrics[ScanStatus.ERROR] || 0, data.metrics[ScanStatus.OK] || 0, data.metrics[ScanStatus.SKIPPED] || 0, data.metrics[ScanStatus.SCAN] || 0, data.metrics[ScanStatus.MANUAL] || 0, data.metrics[ScanStatus.DELETED] || 0]
+        }
+      ]
+    };
+    this.addChart(document, "doughnut", 400, 400, 250, 250, chart, {
+      plugins: {
+        "legend": {
+          "position": "bottom"
+        }
+      }
+    });
 
     if (data.changes && data.changes.length) {
       this.addParagraph(document, "\n", "Following table lists all changes that were identified to contain an error and should be reviewed:");

@@ -105,7 +105,7 @@ class Request {
           response.on("end", () => {
             // If response status code is not 200 resolve reject promise with an error
             if (response.statusCode !== RESPONSE_STATUS.OK) {
-              reject(new Error("Received response status code is '" + response.statusCode + "' expected '" + RESPONSE_STATUS.OK + "'"), response);
+              reject(new Error(`Received response status code is '${response.statusCode}' expected '${RESPONSE_STATUS.OK}' on path '${path}'`), response);
               return;
             }
 
