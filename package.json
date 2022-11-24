@@ -17,7 +17,7 @@
   ],
   "homepage": "https://github.com/hrax/now-eslint",
   "bugs": "https://github.com/hrax/now-eslint/issues",
-  "license": "ISC",
+  "license": "MIT",
   "author": {
     "name": "Gregor Magdolen",
     "url": "https://hrax.dev"
