@@ -112,7 +112,7 @@ class Linter {
           }
           
           // data is default value
-          if (this.profile.tables.get(table).defaults[field] && HashHelper.matches(data, this.profile.tables.get(table).defaults[field])) {
+          if (this.profile.tables.get(table).defaults && this.profile.tables.get(table).defaults[field] && HashHelper.matches(data, this.profile.tables.get(table).defaults[field])) {
             scan.skip();
             return;
           }

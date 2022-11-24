@@ -9,6 +9,7 @@ const path = require("path");
 
 const AbstractReportGenerator = require("./AbstractReportGenerator.js");
 const {STATUS: ScanStatus} = require("../linter/UpdateXMLScan.js");
+const Assert = require("../util/Assert.js");
 
 const IMG_TPL = template`data:${0};base64,${1}`;
 
@@ -197,7 +198,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
       // },
       // {
         label: ScanStatus.SKIPPED,
-        description: "Record should be linted, but does not contain anything to lint"
+        description: "Record should be linted, but does not contain anything to lint (empty script field or default value)"
       },
       {
         label: ScanStatus.ERROR,
@@ -369,12 +370,12 @@ class PDFReportGenerator extends AbstractReportGenerator {
 
     // generate chart
     const chart = {
-      labels: [ScanStatus.IGNORED, ScanStatus.WARNING, ScanStatus.ERROR, ScanStatus.OK, ScanStatus.SKIPPED, ScanStatus.MANUAL, ScanStatus.DELETED],
+      labels: [ScanStatus.IGNORED, ScanStatus.WARNING, ScanStatus.ERROR, ScanStatus.OK, ScanStatus.SKIPPED + "/" + ScanStatus.MANUAL, ScanStatus.DELETED],
       datasets: [
         {
-          backgroundColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#33FF33",  "#17a2b8"],
-          borderColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#33FF33", "#17a2b8"],
-          data: [data.metrics[ScanStatus.IGNORED] || 0, data.metrics[ScanStatus.WARNING] || 0, data.metrics[ScanStatus.ERROR] || 0, data.metrics[ScanStatus.OK] || 0, data.metrics[ScanStatus.SKIPPED] || 0, data.metrics[ScanStatus.SCAN] || 0, data.metrics[ScanStatus.MANUAL] || 0, data.metrics[ScanStatus.DELETED] || 0]
+          backgroundColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#17a2b8"],
+          borderColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#17a2b8"],
+          data: [data.metrics[ScanStatus.IGNORED] || 0, data.metrics[ScanStatus.WARNING] || 0, data.metrics[ScanStatus.ERROR] || 0, data.metrics[ScanStatus.OK] || 0, (data.metrics[ScanStatus.SKIPPED] || 0) + (data.metrics[ScanStatus.MANUAL] || 0), data.metrics[ScanStatus.DELETED] || 0]
         }
       ]
     };
@@ -929,8 +930,11 @@ class PDFReportGenerator extends AbstractReportGenerator {
   }
 
   save(folder, fileName, data) {
+    Assert.notEmpty(folder, "Path for report needs to be provided");
+    Assert.notEmpty(fileName, "File name for the report needs to be provided");
+    Assert.notNull(data, "Report data need to be provided");
+    
     const document = this.build(data);
-
     const printer = new pdfmake(this.fonts);
     const pdfDoc = printer.createPdfKitDocument(document, {tableLayouts: this.tableLayouts});
     pdfDoc.pipe(fs.createWriteStream(path.resolve(`${folder}/${fileName}.${this.extension()}`)));

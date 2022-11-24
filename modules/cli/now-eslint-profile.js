@@ -132,10 +132,9 @@ create.action(async function(name, options) {
     }
 
     helpers.outputInfo("Generating table configuration...\n");
-    const tables = await instance.requestTableAndParentFieldData();
+    await profile.loadInstanceTables();
     // Force skip workflow version parsing; TODO: custom XML parsing setup
-    tables["wf_workflow_version"] = null;
-    profile.tables = tables;
+    profile.tables["wf_workflow_version"] = null;
 
     helpers.outputInfo("Saving the profile...\n");
     Profile.save(profile, options.force === true);

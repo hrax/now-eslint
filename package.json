@@ -25,7 +25,10 @@
   "main": "index.js",
   "exports": {
     ".": "./index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./generator": "./modules/generator/index.js",
+    "./generator/index": "./modules/generator/index.js",
+    "./generator/index.js": "./modules/generator/index.js"
   },
   "bin": {
     "now-eslint": "./modules/cli/now-eslint.js"
@@ -35,7 +38,8 @@
     "resources",
     "index.js",
     "package.json",
-    "README.md"
+    "README.md",
+    "LICENSE.txt"
   ],
   "repository": {
     "type": "git",

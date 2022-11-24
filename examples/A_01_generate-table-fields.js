@@ -1,7 +1,5 @@
-const fs = require("fs");
-
-// Load the NowLoader
-const {Profile} = require("@hrax/now-eslint");
+const {Profile} = require("../index.js");
+// const {Profile} = require("@hrax/now-eslint");
 
 // Configure profile data object
 const data = {
@@ -16,14 +14,10 @@ const data = {
 
 // Must, until the top-level awaits is enabled
 (async() => {
+  // Create Profile
   const profile = new Profile(data);
-  const instance = profile.createInstance();
-  
-  // load table and their parent fields with type script
-  const tables = await instance.requestTableAndParentFieldData();
-  
-  // set the tables to profile
-  profile.tables = tables;
-  
+  // Load table data from the instance
+  await profile.loadInstanceTables();
+  // Save the profile to the profile home directory
   Profile.save(profile);
 })();

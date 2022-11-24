@@ -138,6 +138,10 @@ class Profile {
     return new Instance(this.domain, this.username, this.password, this.proxy || null);
   }
 
+  async loadInstanceTables() {
+    this.tables = await this.createInstance().requestTableAndParentFieldData();
+  }
+
   toJSON() {
     const encode = (value) => {
       if (value == null || value === "") {
@@ -166,6 +170,7 @@ class Profile {
   }
 
   static load(profileName) {
+    let options, profile;
     const home = Profile.profilesHomeDirPath();
     const profileHome = path.normalize(`${home}/${Profile.PROFILE_PREFIX}${profileName}`);
 
@@ -186,8 +191,8 @@ class Profile {
       throw new Error(`Profile config file was not found in the profile home at ${profileHome}`);
     }
 
-    var options = loadFile(Profile.PROFILE_CONFIG_NAME);
-    var profile = new Profile(options);
+    options = loadFile(Profile.PROFILE_CONFIG_NAME);
+    profile = new Profile(options);
 
     // Load other files
     if (fileExists(Profile.PROFILE_TABLES_NAME)) {
@@ -202,6 +207,7 @@ class Profile {
       profile.colors = loadFile(Profile.PROFILE_COLORS_NAME);
     }
 
+    // TODO: Check & load .eslintrc.json file
     if (fileExists(Profile.PROFILE_ESLINT_NAME)) {
       profile.eslint = loadFile(Profile.PROFILE_ESLINT_NAME);
     }
@@ -306,6 +312,7 @@ Profile.PROFILE_TABLES_NAME = "tables.json";
 Profile.PROFILE_RESOURCES_NAME = "resources.json";
 Profile.PROFILE_COLORS_NAME = "colors.json";
 Profile.PROFILE_ESLINT_NAME = "eslint.json";
+Profile.PROFILE_ESLINTRC_NAME = ".eslintrc.json";
 
 Profile.ENCODE_PREFIX = "$$$";
 

@@ -1,7 +1,8 @@
-/* eslint-disable */
 // Deconstruct necessary objects
-const {Profile, NowLinter} = require("../index");
-// const {Profile, NowLinter} = require("@hrax/now-eslint");
+const {Profile, Linter} = require("../index.js");
+const {PDFReportGenerator} = require("../modules/generator/index.js");
+// const {Profile, Linter} = require("@hrax/now-eslint");
+// const {PDFReportGenerator} = require("@hrax/now-eslint/generator");
 
 /*
  * Configure profile object or load it from JSON using Profile.loadProfile
@@ -27,30 +28,31 @@ const tables = {
 
 // Configuration of the linter
 const config = {
-  query: "",
-  title: ""
+  query: "Sample Report",
+  title: "name=Sample Update Set"
 };
 
 // Must, until the top-level awaits is enabled
-(async () => {
+(async() => {
   // Create necessary object instances
   const profile = new Profile(data);
-  // If tables are not set in JSON data, we can set them later by using
+  // Set the tables inline or load them via await profile.loadInstanceTables()
   profile.tables = tables;
 
-  // Configure ESLint
-  // See https://eslint.org/docs/developer-guide/nodejs-api#eslint-class for available options for eslint property
+  // Configure ESLint 
+  // See https://eslint.org/docs/developer-guide/nodejs-api#eslint-class for available options for profile.eslint property
+  // You can additionally have eslint configuration file in the folder where you execute the command or user root folder
   profile.eslint = {
     "overrideConfig": null,
-    "overrideConfigFile": null,
+    "overrideConfigFile": null
   };
 
-  // Create NowLinter instance with profile and config; instance is stateful 
-  const linter = new NowLinter(profile, config);
+  // Create Linter instance with profile and config; instance is stateful 
+  const linter = new Linter(profile, config);
   
   // Fetch configured changes and perform lint; each execution will clear previously linted changes
   await linter.process();
   
   // Generate PDF report
-  linter.report(`${process.cwd()}/myreport.pdf`);
+  linter.report(process.cwd(), "sample_report", new PDFReportGenerator());
 })();

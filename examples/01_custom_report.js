@@ -1,8 +1,33 @@
+/* eslint-disable no-unused-vars */
 // Deconstruct necessary objects
 const {Profile, Linter} = require("../index.js");
-const {JSONReportGenerator} = require("../modules/generator/index.js");
+const {AbstractReportGenerator} = require("../modules/generator/index.js");
 // const {Profile, Linter} = require("@hrax/now-eslint");
-// const {JSONReportGenerator} = require("@hrax/now-eslint/generator");
+// const {AbstractReportGenerator} = require("@hrax/now-eslint/generator");
+
+// Dependencies for the custom generator
+// eslint-disable-next-line 
+const fs = require("fs");
+const path = require("path");
+
+class MyCustomReportGenerator extends AbstractReportGenerator {
+  build(data) {
+    // you can build your report here
+    return null;
+  }
+
+  extension() {
+    // report file extension
+    return "docx";
+  }
+
+  save(folder, fileName, data) {
+    const report = this.build(data);
+
+    // write report to file system
+    fs.writeFileSync(path.resolve(`${folder}/${fileName}.${this.extension()}`), report);
+  }
+}
 
 /*
  * Configure profile object or load it from JSON using Profile.load
@@ -29,23 +54,22 @@ const tables = {
 // Configuration of the linter
 const config = {
   title: "Sample Report",
-  query: "name=Same Update Set"
+  query: "name=Sample Update Set"
 };
 
 // Must, until the top-level awaits is enabled
 (async() => {
   // Create necessary object instances
   const profile = new Profile(data);
-  
-  // Set the tables inline or load them via await profile.loadInstanceTables()
+  // If tables are not set in JSON data, we can set them later by using
   profile.tables = tables;
 
-  // Create NowLinter instance with profile and config; instance is stateful 
+  // Set the tables inline or load them via await profile.loadInstanceTables()
   const linter = new Linter(profile, config);
 
   // Fetch configured changes and perform lint; each execution will clear previously linted changes
   await linter.process();
   
-  // Generate PDF report; path, report file name, generator instance
-  linter.report(process.cwd(), "sample_report", new JSONReportGenerator());
+  // Generate PDF report
+  linter.report(process.cwd(), "sample_report", new MyCustomReportGenerator());
 })();

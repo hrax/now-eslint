@@ -1,7 +1,8 @@
-/* eslint-disable */
 // Deconstruct necessary objects
-const {Profile, NowLinter} = require("../index");
-// const {Profile, NowLinter} = require("@hrax/now-eslint");
+const {Profile, Linter} = require("../index.js");
+const {PDFReportGenerator} = require("../modules/generator/index.js");
+// const {Profile, Linter} = require("@hrax/now-eslint");
+// const {PDFReportGenerator} = require("@hrax/now-eslint/generator");
 
 /*
  * Configure profile object or load it from JSON using Profile.load
@@ -27,23 +28,23 @@ const tables = {
 
 // Configuration of the linter
 const config = {
-  title: "",
-  query: ""
+  title: "Sample Report",
+  query: "name=Sample Update Set"
 };
 
 // Must, until the top-level awaits is enabled
-(async () => {
+(async() => {
   // Create necessary object instances
   const profile = new Profile(data);
   // If tables are not set in JSON data, we can set them later by using
   profile.tables = tables;
 
-  // Create NowLinter instance with profile and config; instance is stateful 
-  const linter = new NowLinter(profile, config);
+  // Set the tables inline or load them via await profile.loadInstanceTables()
+  const linter = new Linter(profile, config);
 
   // Fetch configured changes and perform lint; each execution will clear previously linted changes
   await linter.process();
   
   // Generate PDF report
-  linter.reportPDF(`${process.cwd()}/myreport.pdf`);
+  linter.report(process.cwd(), "sample_report", new PDFReportGenerator());
 })();
