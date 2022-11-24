@@ -2,9 +2,9 @@ name: build
 
 on: 
   push:
-    paths-ignore: [ "**.md", ".**" ]
+    paths-ignore: [ "**.md", ".**", "**.txt" ]
   pull_request:
-    paths-ignore: [ "**.md", ".**" ]
+    paths-ignore: [ "**.md", ".**", "**.txt" ]
   workflow_call:
   workflow_dispatch:
 
