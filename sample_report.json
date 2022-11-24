@@ -228,7 +228,14 @@
       }
     ]
   ],
-  "resources": {},
+  "resources": {
+    "overview-resources": [
+      {
+        "label": "Google",
+        "link": "http://www.google.com"
+      }
+    ]
+  },
   "metrics": {
     "SKIPPED": 1,
     "DELETED": 1,
