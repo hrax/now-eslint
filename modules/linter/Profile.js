@@ -101,14 +101,14 @@ class Profile {
         privatesSafeSet("resources", newValue);
       }
     }));
-    Object.defineProperty(this, "colors", Object.assign({}, propertyConfig, {
-      get() {
-        return privatesSafeGet("colors");
-      },
-      set(newValue) {
-        privatesSafeSet("colors", newValue);
-      }
-    }));
+    // Object.defineProperty(this, "colors", Object.assign({}, propertyConfig, {
+    //   get() {
+    //     return privatesSafeGet("colors");
+    //   },
+    //   set(newValue) {
+    //     privatesSafeSet("colors", newValue);
+    //   }
+    // }));
     Object.defineProperty(this, "eslint", Object.assign({}, propertyConfig, {
       get() {
         return privatesSafeGet("eslint");
@@ -121,7 +121,7 @@ class Profile {
     // Set mutable properties
     this.tables = Object.assign({}, options.tables || {});
     this.resources = Object.assign({}, options.resources || {});
-    this.colors = Object.assign({}, options.colors || {});
+    // this.colors = Object.assign({}, options.colors || {});
     this.eslint = Object.assign({}, options.eslint || {});
   }
 
@@ -203,9 +203,9 @@ class Profile {
       profile.resources = loadFile(Profile.PROFILE_RESOURCES_NAME);
     }
 
-    if (fileExists(Profile.PROFILE_COLORS_NAME)) {
-      profile.colors = loadFile(Profile.PROFILE_COLORS_NAME);
-    }
+    // if (fileExists(Profile.PROFILE_COLORS_NAME)) {
+    //   profile.colors = loadFile(Profile.PROFILE_COLORS_NAME);
+    // }
 
     // TODO: Check & load .eslintrc.json file
     if (fileExists(Profile.PROFILE_ESLINT_NAME)) {
@@ -252,9 +252,9 @@ class Profile {
       saveFile(Profile.PROFILE_RESOURCES_NAME, Object.fromEntries(profile.resources.entries()));
     }
     
-    if (profile.colors.size) {
-      saveFile(Profile.PROFILE_COLORS_NAME, Object.fromEntries(profile.colors.entries()));
-    }
+    // if (profile.colors.size) {
+    //   saveFile(Profile.PROFILE_COLORS_NAME, Object.fromEntries(profile.colors.entries()));
+    // }
 
     if (profile.eslint.size) {
       saveFile(Profile.PROFILE_ESLINT_NAME, Object.fromEntries(profile.eslint.entries()));

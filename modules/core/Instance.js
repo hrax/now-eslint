@@ -172,6 +172,7 @@ class Instance {
       tables[table] = getParentFields(table, fields, parents);
     });
 
+    tables["wf_workflow"] = null;
     return tables;
   }
 
