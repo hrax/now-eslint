@@ -132,7 +132,8 @@ describe("Instance", () => {
           "defaults": {
             "script": hash
           }
-        }
+        },
+        "wf_workflow": null
       });
       
       expect(instance.request.get).toHaveBeenCalledTimes(2);
@@ -174,7 +175,8 @@ describe("Instance", () => {
         "C": {
           "fields": ["condition", "script"],
           "defaults": {}
-        }
+        },
+        "wf_workflow": null
       });
       
       expect(instance.request.get).toHaveBeenCalledTimes(2);

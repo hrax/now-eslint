@@ -228,10 +228,22 @@
       }
     ]
   ],
-  "resources": {},
+  "resources": {
+    "overview-resources": [
+      {
+        "label": "Google",
+        "link": "http://www.google.com"
+      }
+    ]
+  },
   "metrics": {
-    "SKIPPED": 1,
-    "DELETED": 1,
-    "ERROR": 1
+    "byStatus": {
+      "SKIPPED": 1,
+      "DELETED": 1,
+      "ERROR": 1
+    },
+    "totalChanges": 3,
+    "uniqueChanges": 3,
+    "totalUpdateSets": 1
   }
 }

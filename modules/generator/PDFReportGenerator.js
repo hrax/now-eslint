@@ -365,7 +365,25 @@ class PDFReportGenerator extends AbstractReportGenerator {
         style: "small",
         bold: true
       },
-      {text: `${data.changes.length || 0}`}
+      {text: `${data.metrics.uniqueChanges || 0}`}
+    );
+    this.addParagraph(
+      columns[0].stack,
+      {
+        text: "TOTAL CHANGES FOUND\n",
+        style: "small",
+        bold: true
+      },
+      {text: `${data.metrics.totalChanges || 0}`}
+    );
+    this.addParagraph(
+      columns[0].stack,
+      {
+        text: "TOTAL UPDATE SETS FOUND\n",
+        style: "small",
+        bold: true
+      },
+      {text: `${data.metrics.totalUpdateSets || 0}`}
     );
 
     // generate chart
@@ -375,7 +393,7 @@ class PDFReportGenerator extends AbstractReportGenerator {
         {
           backgroundColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#17a2b8"],
           borderColor: ["#6c757d", "#ffc107", "#dc3545", "#28a745", "#007bff", "#17a2b8"],
-          data: [data.metrics[ScanStatus.IGNORED] || 0, data.metrics[ScanStatus.WARNING] || 0, data.metrics[ScanStatus.ERROR] || 0, data.metrics[ScanStatus.OK] || 0, (data.metrics[ScanStatus.SKIPPED] || 0) + (data.metrics[ScanStatus.MANUAL] || 0), data.metrics[ScanStatus.DELETED] || 0]
+          data: [data.metrics.byStatus[ScanStatus.IGNORED] || 0, data.metrics.byStatus[ScanStatus.WARNING] || 0, data.metrics.byStatus[ScanStatus.ERROR] || 0, data.metrics.byStatus[ScanStatus.OK] || 0, (data.metrics.byStatus[ScanStatus.SKIPPED] || 0) + (data.metrics.byStatus[ScanStatus.MANUAL] || 0), data.metrics.byStatus[ScanStatus.DELETED] || 0]
         }
       ]
     };

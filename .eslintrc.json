@@ -24,7 +24,7 @@
     "computed-property-spacing": ["error", "never"],
     "func-call-spacing": ["error", "never"],
     "function-paren-newline": ["error", "multiline"],
-    "id-length": ["error", {"min": 3, "properties": "never", "exceptions": ["c","i","j","k","l","x","y","z","e","ex"]}],
+    "id-length": ["error", {"min": 3, "properties": "never", "exceptions": ["c","i","j","k","l","x","y","z","e","ex", "it"]}],
     "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 1}],
     "key-spacing": ["error", {"beforeColon": false, "afterColon": true}],
     "keyword-spacing": ["error", {"before": true, "after": true}],

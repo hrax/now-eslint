@@ -38,6 +38,7 @@ class Linter {
       enumerable: true,
       value: new Map()
     });
+    this._jsonData = null;
     
     this.profile = profile;
     this.instance = this.profile.createInstance();
@@ -50,6 +51,7 @@ class Linter {
    */
   async fetch() {
     this.changes.clear();
+    this._jsonData = null;
 
     const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this.options.query);
 
@@ -139,25 +141,45 @@ class Linter {
    * @returns {Object}
    */
   toJSON() {
-    const data = {
-      domain: this.profile.domain,
-      username: this.profile.username,
-      title: this.options.title,
-      query: this.options.query,
-      changes: Array.from(this.changes.entries()),
-      resources: Object.fromEntries(this.profile.resources.entries()),
-      metrics: {}
-    };
+    if (this._jsonData == null) {
+      const data = {
+        domain: this.profile.domain,
+        username: this.profile.username,
+        title: this.options.title,
+        query: this.options.query,
+        changes: Array.from(this.changes.entries()),
+        resources: Object.fromEntries(this.profile.resources.entries()),
+        metrics: {
+          byStatus: {},
+          totalChanges: 0,
+          uniqueChanges: 0,
+          totalUpdateSets: 0
+        }
+      };
+  
+      // Metrics
+      const updateSets = new Set();
+      data.changes.forEach(([name, scan]) => {
+        // Status metrics
+        if (data.metrics.byStatus[scan.status] == null) {
+          data.metrics.byStatus[scan.status] = 0;
+        }
+        data.metrics.byStatus[scan.status]++;
+  
+        // Changes metrics
+        data.metrics.totalChanges += parseInt(scan.updates);
+        
+        // Update Sets
+        updateSets.add(scan.updateSet);
+      });
+      data.metrics.uniqueChanges = data.changes.length;
+      data.metrics.totalUpdateSets = updateSets.size;
 
-    data.changes.forEach(([name, scan]) => {
-      if (data.metrics[scan.status] == null) {
-        data.metrics[scan.status] = 0;
-      }
-      data.metrics[scan.status]++;
-    });
+      this._jsonData = data;
+    }
 
     // Lazy deep copy
-    return JSON.parse(JSON.stringify(data));
+    return JSON.parse(JSON.stringify(this._jsonData));
   }
 
   report(path, fileName, generator) {

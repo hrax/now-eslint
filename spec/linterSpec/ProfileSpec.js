@@ -20,7 +20,7 @@ describe("Profile", () => {
 
       expect(profile.tables.size).toEqual(0);
       expect(profile.resources.size).toEqual(0);
-      expect(profile.colors.size).toEqual(0);
+      // expect(profile.colors.size).toEqual(0);
       expect(profile.eslint.size).toEqual(0);
     });
 
@@ -53,8 +53,8 @@ describe("Profile", () => {
       expect(profile.resources.size).toEqual(1);
       expect(profile.resources.get("links")).toBe("N/A");
 
-      expect(profile.colors).not.toBeNull();
-      expect(profile.colors.size).toEqual(0);
+      // expect(profile.colors).not.toBeNull();
+      // expect(profile.colors.size).toEqual(0);
 
       expect(profile.eslint.size).toEqual(1);
       expect(profile.eslint.get("root")).toBeTrue();
