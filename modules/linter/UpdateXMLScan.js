@@ -38,9 +38,19 @@ class UpdateXMLScan extends UpdateXML {
       enumerable: true
     };
 
-    this.updates = 1;
-    // Map[field, report]
-    this.reports = new Map();
+    Object.defineProperty(this, "updates", Object.assign({}, propertyConfig, {
+      writable: true,
+      enumerable: true,
+      value: 1
+    }));
+    
+    // Map[field:String, report:Array]
+    Object.defineProperty(this, "reports", Object.assign({}, propertyConfig, {
+      writable: true,
+      enumerable: true,
+      value: new Map()
+    }));
+
     Object.defineProperty(this, "command", Object.assign({}, propertyConfig, {
       writable: true,
       enumerable: false,
@@ -111,7 +121,12 @@ class UpdateXMLScan extends UpdateXML {
 
     Object.defineProperty(this, "status", Object.assign({}, propertyConfig, {
       get() {
-        if (this.command != null) {
+        // Do not perform any other checks if action is delete
+        if (this.action.toLowerCase() === "delete") {
+          return UpdateXMLScanStatus.DELETED;
+        }
+
+        if (this.command != null && !this.hasReports) {
           return this.command;
         }
 
@@ -123,11 +138,12 @@ class UpdateXMLScan extends UpdateXML {
           return UpdateXMLScanStatus.WARNING;
         }
 
-        if (this.reports.size > 0) {
+        if (this.hasReports) {
           return UpdateXMLScanStatus.OK;
         }
 
-        return this.action.toLowerCase() === "delete" ? UpdateXMLScanStatus.DELETED : UpdateXMLScanStatus.SCAN;
+        // Default status
+        return UpdateXMLScanStatus.SCAN;
       }
     }));
   }
@@ -160,13 +176,6 @@ class UpdateXMLScan extends UpdateXML {
     });
   }
 }
-
-// Object.defineProperty(UpdateXMLScan, "STATUS", {
-//   enumerable: true,
-//   configurable: false,
-//   writable: false,
-//   value: UpdateXMLScanStatus
-// });
 
 module.exports = UpdateXMLScan;
 module.exports.STATUS = UpdateXMLScanStatus;

@@ -38,20 +38,43 @@ class Linter {
       enumerable: true,
       value: new Map()
     });
-    this._jsonData = null;
     
-    this.profile = profile;
-    this.instance = this.profile.createInstance();
-    this.eslint = new ESLint(Object.fromEntries(this.profile.eslint.entries()));
+    Object.defineProperty(this, "metrics", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: new Map()
+    });
+    
+    Object.defineProperty(this, "profile", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: profile
+    });
+
+    Object.defineProperty(this, "instance", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: this.profile.createInstance()
+    });
+
+    Object.defineProperty(this, "eslint", {
+      writable: false,
+      configurable: false,
+      enumerable: true,
+      value: new ESLint(Object.fromEntries(this.profile.eslint.entries()))
+    });
   }
 
   /**
-   * Fetch update set changes from the instance. Resets loaded changes on each call!
+   * Fetch update set changes from the instance. Resets loaded changes & metrics on each call!
    * @returns {void}
    */
   async fetch() {
     this.changes.clear();
-    this._jsonData = null;
+    this.metrics.clear();
 
     const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this.options.query);
 
@@ -75,6 +98,8 @@ class Linter {
    * @return {void}
    */
   async lint() {
+    const updateSetIDs = new Set();
+
     // Check the changes against configured lint tables
     this.changes.forEach((scan, name) => {
       if (scan.status !== "SCAN") {
@@ -93,7 +118,7 @@ class Linter {
         return;
       }
 
-        /* if (this.options.skipInactive) {
+      /* if (this.options.skipInactive) {
           let active = NowLinter.getJSONFieldValue(change.payload, "active");
           if (active == null) {
             active = true;
@@ -105,27 +130,50 @@ class Linter {
           }
         } */
 
-        // For each configured field run lint
-        fields.forEach(async (field) => {
-          const data = XPathHelper.parseFieldValue(table, field, scan.payload);
-          if (data == null || data === "") {
-            scan.skip();
-            return;
-          }
-          
-          // data is default value
-          if (this.profile.tables.get(table).defaults && this.profile.tables.get(table).defaults[field] && HashHelper.matches(data, this.profile.tables.get(table).defaults[field])) {
-            scan.skip();
-            return;
-          }
-          
-          const report = await this.eslint.lintText(data);
-          if (report.length) {
-            report[0].filePath = "<" + scan.name + "@" + field + ">";
-            scan.reports.set(field, report[0]);
-          }
-        });
+      // For each configured field run lint
+      fields.forEach(async (field) => {
+        const data = XPathHelper.parseFieldValue(table, field, scan.payload);
+        if (data == null || data === "") {
+          scan.skip();
+          return;
+        }
+        
+        // data is default value
+        if (this.profile.tables.get(table).defaults && this.profile.tables.get(table).defaults[field] && HashHelper.matches(data, this.profile.tables.get(table).defaults[field])) {
+          scan.skip();
+          return;
+        }
+        
+        const report = await this.eslint.lintText(data);
+        if (report.length) {
+          report[0].filePath = "<" + scan.name + "@" + field + ">";
+          scan.reports.set(field, report[0]);
+        }
       });
+    });
+      
+    // Metrics
+    this.metrics.set("byStatus", {});
+    this.metrics.set("totalChanges", 0);
+    this.metrics.set("uniqueChanges", 0);
+    this.metrics.set("totalUpdateSets", 0);
+    
+    // Calculate metrics
+    this.changes.forEach((scan, name) => {
+      // Status metrics
+      if (this.metrics.get("byStatus")[scan.status] == null) {
+        this.metrics.get("byStatus")[scan.status] = 0;
+      }
+      this.metrics.get("byStatus")[scan.status]++;
+
+      // Changes metrics
+      this.metrics.set("totalChanges", this.metrics.get("totalChanges") + parseInt(scan.updates));
+      
+      // Update Sets
+      updateSetIDs.add(scan.updateSet);
+    });
+    this.metrics.set("uniqueChanges", this.changes.length);
+    this.metrics.set("totalUpdateSets", updateSetIDs.size);
   }
 
   /**
@@ -141,7 +189,6 @@ class Linter {
    * @returns {Object}
    */
   toJSON() {
-    if (this._jsonData == null) {
       const data = {
         domain: this.profile.domain,
         username: this.profile.username,
@@ -149,37 +196,11 @@ class Linter {
         query: this.options.query,
         changes: Array.from(this.changes.entries()),
         resources: Object.fromEntries(this.profile.resources.entries()),
-        metrics: {
-          byStatus: {},
-          totalChanges: 0,
-          uniqueChanges: 0,
-          totalUpdateSets: 0
-        }
+        metrics: Object.fromEntries(this.metrics.entries())
       };
-  
-      // Metrics
-      const updateSets = new Set();
-      data.changes.forEach(([name, scan]) => {
-        // Status metrics
-        if (data.metrics.byStatus[scan.status] == null) {
-          data.metrics.byStatus[scan.status] = 0;
-        }
-        data.metrics.byStatus[scan.status]++;
-  
-        // Changes metrics
-        data.metrics.totalChanges += parseInt(scan.updates);
-        
-        // Update Sets
-        updateSets.add(scan.updateSet);
-      });
-      data.metrics.uniqueChanges = data.changes.length;
-      data.metrics.totalUpdateSets = updateSets.size;
-
-      this._jsonData = data;
-    }
 
     // Lazy deep copy
-    return JSON.parse(JSON.stringify(this._jsonData));
+    return JSON.parse(JSON.stringify(data));
   }
 
   report(path, fileName, generator) {
