@@ -6,4 +6,4 @@ exports = module.exports = Linter;
 
 // export modules + explicit access to Linter
 exports.Linter = Linter;
-exports.Profile = Profile;
+exports.Profile = Profile; 
