@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "alwaysStrict": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "declaration": true,
+    "outDir": "./build",
+  },
+  "include": ["./modules/**/*", "./spec/**/*"],
+  "exclude": ["node_modules", "./spec/support/*.json"]
+}

@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-const Instance = require("../../modules/core/Instance.js");
+const Instance = require("../../modules/core/_Instance.js/index.js");
 const HashHelper = require("../../modules/util/HashHelper.js");
 
 describe("Instance", () => {
