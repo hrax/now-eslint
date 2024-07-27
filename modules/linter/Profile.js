@@ -5,7 +5,7 @@ const os = require("os");
 const path = require("path");
 
 const Assert = require("../util/Assert.js");
-const Instance = require("../core/_Instance.js/index.js");
+const Instance = require("../core/_Instance.js");
 const Request = require("../core/Request.js");
 
 /**

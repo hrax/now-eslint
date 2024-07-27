@@ -1,16 +1,22 @@
 {
   "compilerOptions": {
-    "target": "es2022",
     "module": "commonjs",
-    "alwaysStrict": true,
+    "target": "es2022",
+    "outDir": "./build",
+    "typeRoots": ["./node_modules/@types", "./modules/@types"],
+    "declaration": true,
+    "sourceMap": true,
+
+    /* Strict */
     "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+
+    /* beginners settings? */
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "noImplicitAny": true,
-    "declaration": true,
-    "outDir": "./build",
   },
   "include": ["./modules/**/*", "./spec/**/*"],
   "exclude": ["node_modules", "./spec/support/*.json"]

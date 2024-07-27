@@ -1,26 +1,37 @@
-
-export type InstanceData = {
-  name: string,
-  base: string,
-  auth: {
-    type: "oauth-token" | "oauth-password",
-    clientID: string,
-    clientSecret: string,
-    token?: {
-      "access_token": string,
-      "refresh_token": string,
-      "scope": string,
-      "token_type": string,
-      "expires_in": number,
-      "loaded_at": Date
-    }
-  }
-}
+import { InstanceConfig } from "../@types/instance-extended";
 
 export default class InstanceManager {
-  #instance: InstanceData;
+  private instance: InstanceConfig = {
+    name: "",
+    baseUrl: "",
+    auth: {
+      type: "oauth-token",
+      clientID: "",
+      clientSecret: "",
+      lastRetrieved: 0,
+      token: {
+        access_token: "",
+        refresh_token: "",
+        scope: "",
+        token_type: "",
+        expires_in: 0
+      }
+    }
+  };
 
-  constructor(instance: InstanceData) {
-    this.#instance = instance;
+  static load(path: string): InstanceManager | null {
+    return null;
+  }
+
+  static save(instance: InstanceManager): void {
+
+  }
+
+  constructor(instance: InstanceConfig) {
+    this.setInstanceData(instance);
+  }
+
+  setInstanceData(instance: InstanceConfig): void {
+    this.instance = instance;
   }
 }
