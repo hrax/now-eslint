@@ -7,12 +7,10 @@
     "declaration": true,
     "sourceMap": true,
 
-    /* Strict */
     "strict": true,
     "alwaysStrict": true,
     "noImplicitAny": true,
 
-    /* beginners settings? */
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,

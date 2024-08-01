@@ -1,6 +1,5 @@
-import http, { RequestOptions } from "https";
-import agent, { HttpsProxyAgent } from "https-proxy-agent";
-import Assert from "../util/Assert.js";
+import https from "https";
+import agentS from "https-proxy-agent";
 import { IncomingMessage } from "http";
 
 export enum ResponseStatus {
@@ -15,50 +14,6 @@ export enum ResponseStatus {
 
 } */
 
-export class Response {
-  readonly http: IncomingMessage | null;
-  readonly data: string;
-  constructor(httpResponse: IncomingMessage | null, data: string) {
-    this.http = httpResponse;
-    this.data = data;
-  }
-
-  private static isStatus(message: IncomingMessage | null, status: ResponseStatus) {
-    if (message == null) {
-      return false;
-    }
-    return message.statusCode === status;
-  }
-  
-  static isOK(response: Response): boolean {
-    return Response.isStatus(response.http, ResponseStatus.OK);
-  }
-
-  static isNotFound(response: Response): boolean {
-    return Response.isStatus(response.http, ResponseStatus.NOT_FOUND);
-  }
-  
-  static isUnauthorized(response: Response): boolean {
-    return Response.isStatus(response.http, ResponseStatus.UNAUTHORIZED);
-  }
-  
-  static isForbidden(response: Response): boolean {
-    return Response.isStatus(response.http, ResponseStatus.FORBIDDEN);
-  }
-  
-  static isError(response: Response): boolean {
-    return Response.isStatus(response.http, ResponseStatus.ERROR);
-  }
-}
-
-export class ResponseError extends Error {
-  readonly response: Response;
-  constructor(message: string, response: Response, e?: any) {
-    super(message, e);
-    this.response = response;
-  }
-}
-
 /**
  * https.request wrapper
  * 
@@ -68,12 +23,14 @@ export class ResponseError extends Error {
  * (so null out fields if they are not provided in the request), while PATCH means replace only specified fields.
  * For the Table API, however, PUT and PATCH mean the same thing.  PUT and PATCH modify only the fields specified in the request.
  */
-export default class Request {
+export class Request {
 
   static readonly ENCODING: BufferEncoding = "utf8";
 
-  static createProxy(proxy: string): HttpsProxyAgent {
-    return new HttpsProxyAgent(proxy);
+  static readonly TIMEOUT: number = 10000;
+
+  static createHttpsProxy(proxy: URL): agentS.HttpsProxyAgent<string> {
+    return new agentS.HttpsProxyAgent(proxy);
   }
 
   /**
@@ -84,23 +41,27 @@ export default class Request {
    * @param body 
    * @returns 
    */
-  static async request(url: URL, options: RequestOptions, body?: string): Promise<Response> {
+  static async execute(url: URL, options: https.RequestOptions, body?: string): Promise<Response> {
     return new Promise((resolve, reject) => {
-      const request = http.request(
+      if (url.protocol !== "https:") {
+        reject(Response.empty("URL protocol must be https!"));
+      }
+      const request = https.request(
         url,
         options,
-        (res: IncomingMessage) => {
+        (message: IncomingMessage) => {
           let data = "";
-          res.setEncoding(Request.ENCODING);
+          message.setEncoding(Request.ENCODING);
+          message.setTimeout(Request.TIMEOUT);
 
-          res.on("data", (chunk: string) => {
+          message.on("data", (chunk: string) => {
             data += chunk;
           });
 
-          res.on("end", () => {
-            const response = new Response(res, data);
-            // If response status code is not 200 resolve reject promise with an error
-            if (!Response.isOK(response)) {
+          message.on("end", () => {
+            const response = new Response(message, data);
+            // If response status code is not 200 reject promise
+            if (!response.isOK()) {
               reject(response);
               return;
             }
@@ -111,15 +72,12 @@ export default class Request {
       );
 
       request.on("error", (e) => {
-        reject(`Unexpected error occured. Error: ${e}`);
+        reject(Response.empty(`Unexpected error occured. Error: ${e}`));
       });
 
       request.on('timeout', function () {
-        // Timeout happend. Server received request, but not handled it
-        // (i.e. doesn't send any response or it took to long).
-        // You don't know what happend.
         // It will emit 'error' message as well (with ECONNRESET code).
-    
+        reject(Response.empty("Request has timed out."));
         request.destroy();
       });
 
@@ -138,11 +96,77 @@ export default class Request {
    * @param body {string} optional; Request body
    * @returns {T} parsed JSON
    */
-  static async json<T>(url: URL, options: RequestOptions, body?: string): Promise<T> {
-    const {data: data} = await Request.request(url, options, body);
-    if (data == null) {
-      return null as T;
+  static async json(url: URL, options: https.RequestOptions, body?: string): Promise<any> {
+    const response: Response = await Request.execute(url, options, body);
+    if (!response.hasData()) {
+      return Promise.reject(new Error("Response body is empty."));
     }
-    return JSON.parse(data);
+
+    const parsed: any = JSON.parse(response.data);
+    if (!response.isOK()) {
+      return Promise.reject(parsed)
+    }
+    return parsed;
+  }
+
+}
+
+export class Response {
+  readonly http: IncomingMessage | null;
+  readonly data: string;
+  
+  constructor(httpResponse: IncomingMessage | null, data: string) {
+    this.http = httpResponse;
+    this.data = data;
+  }
+
+  static empty(data: string): Response {
+    return new Response(null, data);
+  }
+
+  isEmpty(): boolean {
+    return this.http == null;
+  }
+
+  hasData(): boolean {
+    return this.data !== "";
+  }
+
+  private isStatus(message: IncomingMessage | null, status: ResponseStatus) {
+    if (message == null) {
+      return false;
+    }
+    return message.statusCode === status;
+  }
+  
+  isOK(): boolean {
+    return this.isStatus(this.http, ResponseStatus.OK);
+  }
+
+  isNotFound(): boolean {
+    return this.isStatus(this.http, ResponseStatus.NOT_FOUND);
+  }
+  
+  isUnauthorized(): boolean {
+    return this.isStatus(this.http, ResponseStatus.UNAUTHORIZED);
+  }
+  
+  isForbidden(): boolean {
+    return this.isStatus(this.http, ResponseStatus.FORBIDDEN);
+  }
+  
+  isError(): boolean {
+    return this.isStatus(this.http, ResponseStatus.ERROR);
+  }
+}
+
+export class ResponseError extends Error {
+  readonly response: Response;
+  constructor(message: string, response: Response | null, e?: any) {
+    super(message, e);
+    if (response == null) {
+      response = new Response(null, "");
+    }
+    this.response = response;
   }
 }

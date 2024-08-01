@@ -1,11 +1,7 @@
-import http, { RequestOptions } from "https";
+import { RequestOptions } from "https";
 import { URLSearchParams } from "url";
-import HttpsProxyAgent from "https-proxy-agent";
-import Assert from "../util/Assert.js";
-import { Tab } from "docx";
 import OAuthClient from "./OAuthClient";
-import { InstanceAuthenticationData, InstanceConfig } from "../@types/instance-extended.js";
-import Request, { Response } from "./Request";
+import { Request, Response } from "./Request";
 
 export enum RESPONSE_STATUS {
   OK = 200,
@@ -56,33 +52,36 @@ export default class RESTClient {
       }
     };
 
-    if (oauth.token != null) {
-      if (this.oauthClient.isTokenExpired()) {
-        await this.oauthClient.refreshToken();
-        // refresh config instance with a new token
-        this.instance = this.oauthClient.getInstanceConfig();
-      }
-      options.headers!.authorization = `Bearer ${oauth.token.access_token}`;
-    }
+    await this.oauthClient.handleAuthentication(options);
 
-    const response: Response = await Request.request(url, options)
+    const response: Response = await Request.execute(url, options)
       .catch<Response>((reason: any) => {
-
-        return new Response(null, "");
+        if (reason instanceof Response) {
+          const response: Response = reason;
+          if (!response.isEmpty() && response.isUnauthorized()) {
+            return Promise.reject("Unauthorized");
+          }
+        }
+        return Promise.reject(reason);
       });
-
-    if (response.http != null) {
-      // check for error codes and reject with an error message
-      //return Promise.reject<boolean>("Reason");
-    }
     
-    return Promise.reject<boolean>("Reason");
+    return Promise.resolve(!response.isEmpty() && response.isOK() && response.hasData());
   }
+
+  
 
   /*requestUpdateXMLByUpdateSetQuery
 
   requestUpdateXMLByUpdateSetIds
 
   requestTable*/
+
+  async setupTableConfiguration(): Promise<TableConfig> {
+    return Promise.reject("To be implemented!");
+  }
+
+  async getTableConfiguration(): Promise<TableConfig> {
+    return Promise.reject("To be implemented!");
+  }
 
 }

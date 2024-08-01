@@ -1,10 +1,9 @@
 import crypto from "crypto";
 import { URL, URLSearchParams } from "url";
-import Request, { ResponseStatus, ResponseError, Response } from "./Request";
+import { Request, Response, ResponseStatus } from "./Request";
 import pkg from "../../package.json";
 import { RequestOptions } from "https";
 import { IncomingMessage } from "http";
-import { InstanceAuthenticationData, InstanceConfig, InstanceOAuthData, SNOAuthToken } from "../@types/instance-extended";
 
 const CLIENT_BASE_URL: string = "/oauth_entity.do";
 const CLIENT_LIST_BASE_URL: string = "/oauth_entity_list.do";
@@ -38,7 +37,7 @@ export class OAuthUsernamePasswordIncorrect extends Error {
 };
 
 export default class OAuthClient {
-  private instance: InstanceConfig;
+  private config: InstanceConfig;
 
   // create Server for code?
 
@@ -46,20 +45,30 @@ export default class OAuthClient {
     return crypto.randomBytes(16).toString("hex");
   }
 
-  constructor(instance: InstanceConfig) {
-    this.instance = instance;
+  static isTokenExpired(oauth: InstanceOAuthTokenData): boolean {
+    if (oauth.token == null) {
+      return true;
+    }
+    
+    const hadTokenFor = Date.now() - oauth.lastRetrieved + 10000;
+    const expiresIn = oauth.token.expires_in * 1000;
+    return hadTokenFor < expiresIn;
+  }
+
+  constructor(config: InstanceConfig) {
+    this.config = config;
   }
 
   private setToken(token: SNOAuthToken) {
-    this.instance.auth.lastRetrieved = Date.now();
-    this.instance.auth.token = token;
+    this.config.auth.lastRetrieved = Date.now();
+    this.config.auth.token = token;
   }
 
   getInstanceConfig(): InstanceConfig {
-    return this.instance;
+    return this.config;
   }
 
-  getNewClientURL(): string {
+  getNewClientURL(): URL {
     const query: Array<string> = [
       "type=client",
       `name=${pkg.name}`,
@@ -69,47 +78,37 @@ export default class OAuthClient {
       "logo_url="
     ];
 
-    const url: URL = new URL(CLIENT_BASE_URL, this.instance.baseUrl);
+    const url: URL = new URL(CLIENT_BASE_URL, this.config.baseUrl);
     url.searchParams.set("sys_id", "-1");
     url.searchParams.set("sysparm_transaction_scope", "global");
     url.searchParams.set("sysparm_query", query.join("^"));
-    return url.toString();
+    return url;
   }
 
-  getListClientURL(): string {
+  getListClientURL(): URL {
     const query: Array<string> = [
       "type=client",
       "name=" + pkg.name
     ];
-    const url: URL = new URL(CLIENT_LIST_BASE_URL, this.instance.baseUrl);
+    const url: URL = new URL(CLIENT_LIST_BASE_URL, this.config.baseUrl);
     url.searchParams.set("sys_id", "-1");
     url.searchParams.set("sysparm_transaction_scope", "global");
     url.searchParams.set("sysparm_query", query.join("^"));
-    return url.toString();
+    return url;
   }
 
-  getAuthCodeURL(state: string): string {
-    const url: URL = new URL(AUTH_BASE_URL, this.instance.baseUrl);
+  getAuthCodeURL(state: string): URL {
+    const url: URL = new URL(AUTH_BASE_URL, this.config.baseUrl);
     url.searchParams.set("response_type", "code");
     url.searchParams.set("redirect_uri", REDIRECT_URI);
-    url.searchParams.set("client_id", this.instance.auth.clientID);
+    url.searchParams.set("client_id", this.config.auth.clientID);
     url.searchParams.set("state", state);
-    return url.toString();
-  }
-
-  isTokenExpired(): boolean {
-    const oauth: InstanceOAuthData = this.instance.auth;
-    if (oauth.token == null) {
-      return true;
-    }
-    const hadTokenFor = Date.now() - oauth.lastRetrieved + 10000;
-    const expiresIn = oauth.token.expires_in * 1000;
-    return hadTokenFor < expiresIn;
+    return url;
   }
 
   async requestTokenByCode(code: string): Promise<SNOAuthToken>  {
-    const oauth: InstanceAuthenticationData = this.instance.auth;
-    const url: URL = new URL(TOKEN_BASE_URL, this.instance.baseUrl);
+    const oauth: InstanceAuthenticationData = this.config.auth;
+    const url: URL = new URL(TOKEN_BASE_URL, this.config.baseUrl);
     
     const body: URLSearchParams = new URLSearchParams();
     body.set("grant_type", "authorization_code");
@@ -126,15 +125,15 @@ export default class OAuthClient {
       }
     };
 
-    const token: SNOAuthToken = await Request.json<SNOAuthToken>(url, options, body.toString())
-      .catch<SNOAuthToken>((reason: any) => {
-        if (reason instanceof ResponseError) {
-          const response: IncomingMessage | null = (<ResponseError>reason).response.http;
-          if (response != null && response.statusCode == ResponseStatus.UNAUTHORIZED) {
-            throw new OAuthCodeExpired(<any>reason);
+    const token: SNOAuthToken = await Request.json(url, options, body.toString())
+      .catch((reason: any) => {
+        if (reason instanceof Response) {
+          const response: Response = reason;
+          if (!response.isEmpty() && response.isUnauthorized()) {
+            return Promise.reject(new OAuthCodeExpired(response.data));
           }
         }
-        throw Error(reason);
+        return Promise.reject(reason);
       });
     
     this.setToken(token);
@@ -142,8 +141,8 @@ export default class OAuthClient {
   }
 
   async requestTokenByUsername(username: string, password: string): Promise<SNOAuthToken> {
-    const oauth: InstanceAuthenticationData = this.instance.auth;
-    const url: URL = new URL(TOKEN_BASE_URL, this.instance.baseUrl);
+    const oauth: InstanceAuthenticationData = this.config.auth;
+    const url: URL = new URL(TOKEN_BASE_URL, this.config.baseUrl);
 
     const body: URLSearchParams = new URLSearchParams();
     body.set("grant_type", "password");
@@ -160,16 +159,15 @@ export default class OAuthClient {
       }
     };
 
-    const token: SNOAuthToken = await Request.json<SNOAuthToken>(url, options, body.toString())
-      .catch<SNOAuthToken>((reason: any) => {
-        if (reason instanceof ResponseError) {
-          // 401: username/password incorrect
-          const response: IncomingMessage | null = (<ResponseError>reason).response.http;
-          if (response != null && response.statusCode == ResponseStatus.UNAUTHORIZED) {
-            throw new OAuthUsernamePasswordIncorrect(<any>reason);
+    const token: SNOAuthToken = await Request.json(url, options, body.toString())
+      .catch((reason: any) => {
+        if (reason instanceof Response) {
+          const response: Response = reason;
+          if (!response.isEmpty() && response.isUnauthorized()) {
+            return Promise.reject(new OAuthUsernamePasswordIncorrect(response.data));
           }
         }
-        throw Error(reason);
+        return Promise.reject(reason);
       });
     
     this.setToken(token);
@@ -177,8 +175,8 @@ export default class OAuthClient {
   }
 
   async refreshToken(): Promise<SNOAuthToken> {
-    const oauth: InstanceAuthenticationData = this.instance.auth;
-    const url: URL = new URL(TOKEN_BASE_URL, this.instance.baseUrl);
+    const oauth: InstanceAuthenticationData = this.config.auth;
+    const url: URL = new URL(TOKEN_BASE_URL, this.config.baseUrl);
     
     const body: URLSearchParams = new URLSearchParams();
     body.set("grant_type", "refresh_token");
@@ -194,18 +192,33 @@ export default class OAuthClient {
       }
     };
 
-    const token: SNOAuthToken = await Request.json<SNOAuthToken>(url, options, body.toString())
-      .catch<SNOAuthToken>((reason: any) => {
-        if (reason instanceof ResponseError) {
-          const response: Response = (<ResponseError>reason).response;
-          if (Response.isUnauthorized(response)) {
-            throw new OAuthRefreshTokenExpired(<any>reason);
+    const token: SNOAuthToken = await Request.json(url, options, body.toString())
+      .catch((reason: any) => {
+        if (reason instanceof Response) {
+          const response: Response = reason;
+          if (!response.isEmpty() && response.isUnauthorized()) {
+            return Promise.reject(new OAuthRefreshTokenExpired(response.data));
           }
         }
-        throw Error(reason);
+        return Promise.reject(reason);
       });
     
     this.setToken(token);
     return token;
+  }
+
+  async handleAuthentication(options: RequestOptions): Promise<any> {
+    // If we do not have any token, leave it (for now)
+    if (this.config.auth.token == null) {
+      return;
+    }
+
+    if (OAuthClient.isTokenExpired(this.config.auth)) {
+      await this.refreshToken();
+    }
+    if (options.headers == null) {
+      options.headers = {};
+    }
+    options.headers.authorization = `Bearer ${this.config.auth.token!.access_token}`;
   }
 }

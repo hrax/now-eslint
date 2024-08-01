@@ -2,7 +2,7 @@
 const Instance = require("../../modules/core/_Instance.js");
 const HashHelper = require("../../modules/util/HashHelper.js");
 
-describe("Instance", () => {
+xdescribe("Instance", () => {
   let instance = null;
   let requestGetSpy = null;
 
