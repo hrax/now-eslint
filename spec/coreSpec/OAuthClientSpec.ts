@@ -1,10 +1,11 @@
 import exp from "constants";
-import OAuthClient, { OAuthCodeExpired, OAuthRefreshTokenExpired, OAuthUsernamePasswordIncorrect } from "../../modules/core/OAuthClient";
+import { OAuthClient, OAuthCodeExpired, OAuthRefreshTokenExpired, OAuthUsernamePasswordIncorrect } from "../../modules/core/OAuthClient";
 import { Request, Response } from "../../modules/core/Request";
 import { IncomingMessage } from "http";
 import { Socket } from "net";
+import { RequestOptions } from "https";
 
-describe("OAuthClient", () => {
+describe("OAuthClientSpec", () => {
   const config: InstanceConfig = {
     name: "test",
     baseUrl: "https://example.com",
@@ -24,8 +25,8 @@ describe("OAuthClient", () => {
     }
   };
 
-  describe("#isTokenExpired", () => {
-    it("token expired if token null", () => {
+  describe("token validation", () => {
+    it("should expire if token is null", () => {
       const token: InstanceOAuthTokenData = {
         clientID: "clientID",
         clientSecret: "clientSecret",
@@ -34,7 +35,7 @@ describe("OAuthClient", () => {
   
       expect(OAuthClient.isTokenExpired(token)).toBeTrue();
     });
-    it("token expired", () => {
+    it("should expire", () => {
       const token: InstanceOAuthTokenData = {
         clientID: "clientID",
         clientSecret: "clientSecret",
@@ -52,7 +53,7 @@ describe("OAuthClient", () => {
 
       expect(OAuthClient.isTokenExpired(token)).toBeTrue();
     });
-    it("token valid", () => { 
+    it("should be valid", () => { 
       const tokenValid: InstanceOAuthTokenData = {
         clientID: "clientID",
         clientSecret: "clientSecret",
@@ -72,8 +73,8 @@ describe("OAuthClient", () => {
     });
   });
 
-  describe("#requestTokenByUsername", () => {
-    it("success", async () => {
+  describe("request token by username", () => {
+    it("should resolve on 200", async () => {
       let response = Response.empty(JSON.stringify(config.auth.token!));
       spyOn(response, "isOK").and.returnValue(true);  
       spyOn(Request, "execute").and.resolveTo(response);
@@ -81,7 +82,7 @@ describe("OAuthClient", () => {
       await expectAsync(client.requestTokenByUsername("admin", "admin")).toBeResolvedTo(config.auth.token!);
     });
   
-    it("unauthorized", async () => {
+    it("should reject on 401", async () => {
       let response = Response.empty(JSON.stringify({}));
       spyOn(response, "isEmpty").and.returnValue(false);  
       spyOn(response, "isUnauthorized").and.returnValue(true);  
@@ -91,9 +92,9 @@ describe("OAuthClient", () => {
     });
   });
 
-  describe("#requestTokenByCode", () => {
+  describe("request token by code", () => {
     const code = "1234";
-    it("success", async () => {
+    it("should resolve on 200", async () => {
       let response = Response.empty(JSON.stringify(config.auth.token!));
       spyOn(response, "isOK").and.returnValue(true);  
       spyOn(Request, "execute").and.resolveTo(response);
@@ -101,7 +102,7 @@ describe("OAuthClient", () => {
       await expectAsync(client.requestTokenByCode(code)).toBeResolvedTo(config.auth.token!);
     });
 
-    it("unauthorized", async () => {
+    it("should reject on 401", async () => {
       let response = Response.empty("{}");
       spyOn(response, "isEmpty").and.returnValue(false);  
       spyOn(response, "isUnauthorized").and.returnValue(true);
@@ -111,16 +112,16 @@ describe("OAuthClient", () => {
     });
   });
 
-  describe("#refreshToken", () => {
-    it("success", async () => {
+  describe("refresh token", () => {
+    it("should resolve on 200", async () => {
       let response = Response.empty(JSON.stringify(config.auth.token!));
-      spyOn(response, "isOK").and.returnValue(true);  
+      spyOn(response, "isOK").and.returnValue(true);
       spyOn(Request, "execute").and.resolveTo(response);
       const client = new OAuthClient(config);
       await expectAsync(client.refreshToken()).toBeResolvedTo(config.auth.token!);
     });
 
-    it("unauthorized", async () => {
+    it("should reject on 401", async () => {
       let response = Response.empty("{}");
       spyOn(response, "isEmpty").and.returnValue(false);  
       spyOn(response, "isUnauthorized").and.returnValue(true);
@@ -128,5 +129,18 @@ describe("OAuthClient", () => {
       const client = new OAuthClient(config);
       await expectAsync(client.refreshToken()).toBeRejectedWith(new OAuthRefreshTokenExpired(response.data));
     });
+  });
+
+  it("should extend headers with authentication", async() => {
+    const token: SNOAuthToken = config.auth.token!;
+    const options: RequestOptions = {
+      method: "GET"
+    };
+
+    const client = new OAuthClient(config);
+    await client.handleAuthentication(options);
+
+    expect(options.headers).not.toBeUndefined();
+    expect(options.headers!.authorization).toBe(`${token.token_type} ${token.access_token}`);
   });
 })

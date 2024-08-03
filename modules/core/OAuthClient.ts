@@ -36,7 +36,7 @@ export class OAuthUsernamePasswordIncorrect extends Error {
   }
 };
 
-export default class OAuthClient {
+export class OAuthClient {
   private config: InstanceConfig;
 
   // create Server for code?
@@ -218,6 +218,6 @@ export default class OAuthClient {
     if (options.headers == null) {
       options.headers = {};
     }
-    options.headers.authorization = `Bearer ${this.config.auth.token!.access_token}`;
+    options.headers.authorization = `${this.config.auth.token!.token_type} ${this.config.auth.token!.access_token}`;
   }
 }
