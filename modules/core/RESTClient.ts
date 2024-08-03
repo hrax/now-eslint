@@ -19,11 +19,22 @@ enum TableAPI {
   USER_PREFERENCE_PATH = "/api/now/table/sys_user_preference"
 }
 
-export class RESTTableData {
-
+interface TableFieldData {
+  name: string;
+  element: string;
 }
 
-export default class RESTClient {
+interface TableParentData {
+  name: string;
+  "super_class.name": string;
+}
+
+export interface RESTResponse<T = any> {
+  result: Array<T>
+}
+
+export class RESTClient {
+  static readonly NO_PREFERENCE = "No preference";
   private instance: InstanceConfig;
   private oauthClient: OAuthClient;
 
@@ -37,7 +48,6 @@ export default class RESTClient {
    * @returns true if connection is succesfull; Rejects promise with an error message if connection fails
    */
   async testConnection(): Promise<boolean> {
-    const oauth: InstanceAuthenticationData = this.instance.auth;
     const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, this.instance.baseUrl);
     url.searchParams.set("sysparm_fields", "sys_id");
     url.searchParams.set("sysparm_limit", "1");
@@ -55,7 +65,7 @@ export default class RESTClient {
     await this.oauthClient.handleAuthentication(options);
 
     const response: Response = await Request.execute(url, options)
-      .catch<Response>((reason: any) => {
+      .catch((reason: any) => {
         if (reason instanceof Response) {
           const response: Response = reason;
           if (!response.isEmpty() && response.isUnauthorized()) {
@@ -73,15 +83,167 @@ export default class RESTClient {
   /*requestUpdateXMLByUpdateSetQuery
 
   requestUpdateXMLByUpdateSetIds
+  */
+  
+  private async getTableParentData(): Promise<RESTResponse<TableParentData>> {
+    const url: URL = new URL(TableAPI.DB_OBJECT_PATH, this.instance.baseUrl);
+    url.searchParams.set("sysparm_fields", "sys_id");
+    url.searchParams.set("sysparm_limit", "1");
+    url.searchParams.set("sysparm_no_count", "true");
+    url.searchParams.set("sysparm_suppress_pagination_header", "true");
 
-  requestTable*/
+    const options: RequestOptions = {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      }
+    };
+
+    await this.oauthClient.handleAuthentication(options);
+
+    return await Request.json(url, options)
+      .catch((reason: any) => {
+        if (reason instanceof Response) {
+          const response: Response = reason;
+          if (!response.isEmpty() && response.isUnauthorized()) {
+            return Promise.reject("Unauthorized");
+          }
+        }
+        return Promise.reject(reason);
+      });
+  }
+
+  /**
+   * Load table field data
+   * Skips tables whos name starts with wf_ or var_
+   */
+  private async getTableFieldData(): Promise<RESTResponse<TableFieldData>> {
+    const url: URL = new URL(TableAPI.DICTIONARY_PATH, this.instance.baseUrl);
+    url.searchParams.set("sysparm_fields", "sys_id");
+    url.searchParams.set("sysparm_no_count", "true");
+    url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    url.searchParams.set("sysparm_fields", "name,element");
+    url.searchParams.set("sysparm_query", "nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement");
+
+    const options: RequestOptions = {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      }
+    };
+
+    await this.oauthClient.handleAuthentication(options);
+
+    return await Request.json(url, options)
+      .catch((reason: any) => {
+        if (reason instanceof Response) {
+          const response: Response = reason;
+          if (!response.isEmpty() && response.isUnauthorized()) {
+            return Promise.reject("Unauthorized");
+          }
+        }
+        return Promise.reject(reason);
+      });
+  }
+
+  private async getTableConfigurationPreference(): Promise<TableConfig> {
+    const url: URL = new URL(TableAPI.DICTIONARY_PATH, this.instance.baseUrl);
+    url.searchParams.set("sysparm_fields", "sys_id");
+    url.searchParams.set("sysparm_no_count", "true");
+    url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    url.searchParams.set("sysparm_limit", "2");
+    url.searchParams.set("sysparm_fields", "name,value");
+    url.searchParams.set("sysparm_query", "nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement");
+
+    const options: RequestOptions = {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      }
+    };
+
+    await this.oauthClient.handleAuthentication(options);
+
+    const response: RESTResponse<TableConfig> = await Request.json(url, options)
+      .catch((reason: any) => {
+        if (reason instanceof Response) {
+          const response: Response = reason;
+          if (!response.isEmpty() && response.isUnauthorized()) {
+            return Promise.reject("Unauthorized");
+          }
+        }
+        return Promise.reject(reason);
+      });
+
+    if (response.result.length === 0) {
+      return Promise.reject(RESTClient.NO_PREFERENCE);
+    }
+
+    return response.result[0];
+  }
 
   async setupTableConfiguration(): Promise<TableConfig> {
-    return Promise.reject("To be implemented!");
+    const config: TableConfig = {
+      tables: {}
+    }
+    const getParentTree = (table: string, tables: {[ key: string]: TableParentData}, tree: Array<string>) => {
+      if (tables[table] == null) {
+        return tree;
+      }
+      const parent = tables[table]["super_class.name"];
+      tree.push(parent);
+      return getParentTree(parent, tables, tree);
+    };
+
+    // Load Table + Table Parent data
+    const tables = (await this.getTableParentData()).result.reduce((accumulator, value) => {
+      accumulator[value.name] = value;
+      return accumulator;
+    }, <{[ key: string]: TableParentData}>{});
+    // Load Table + Table field data
+    const fields: RESTResponse<TableFieldData> = await this.getTableFieldData();
+
+    // Process all loaded fields
+    fields.result.forEach((data) => {
+      // If table has not been processed yet
+      if (config.tables[data.name] == null) {
+        config.tables[data.name] = {
+          name: data.name,
+          fields: {}
+        }
+      }
+      config.tables[data.name].fields[data.element] = {
+        name: data.element
+      }
+    });
+
+    // For each configured table, find all its parents and merge fields
+    Object.keys(config.tables).forEach((table) => {
+      getParentTree(table, tables, []).forEach((parent) => {
+        if (config.tables[parent] == null) {
+          return;
+        }
+        config.tables[table].fields = Object.assign({}, config.tables[table].fields, config.tables[parent].fields);
+      });
+    })
+
+    return config;
   }
 
   async getTableConfiguration(): Promise<TableConfig> {
-    return Promise.reject("To be implemented!");
+    // Load table configuration from user preference
+    let pref: TableConfig = await this.getTableConfigurationPreference()
+      .catch((async (reason) => {
+        if (reason === RESTClient.NO_PREFERENCE) {
+          return await this.setupTableConfiguration();
+        }
+        return Promise.reject(reason);
+      }));
+
+    return pref;
   }
 
 }

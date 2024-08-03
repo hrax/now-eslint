@@ -102,11 +102,7 @@ export class Request {
       return Promise.reject(new Error("Response body is empty."));
     }
 
-    const parsed: any = JSON.parse(response.data);
-    if (!response.isOK()) {
-      return Promise.reject(parsed)
-    }
-    return parsed;
+    return response.dataAsJSON();
   }
 
 }
@@ -130,6 +126,13 @@ export class Response {
 
   hasData(): boolean {
     return this.data !== "";
+  }
+
+  dataAsJSON(): any {
+    if (!this.hasData()) {
+      return null;
+    }
+    return JSON.parse(this.data);
   }
 
   private isStatus(message: IncomingMessage | null, status: ResponseStatus) {

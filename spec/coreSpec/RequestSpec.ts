@@ -8,7 +8,7 @@ describe("Request", () => {
     const options: RequestOptions = {
       method: "GET"
     }
-    await expectAsync(Request.execute(url, options)).toBeRejectedWithError("URL protocol must be https!");
+    await expectAsync(Request.execute(url, options)).toBeRejectedWith(Response.empty("URL protocol must be https!"));
   })
 
   it("Returns response on 200 OK status code", async () => {

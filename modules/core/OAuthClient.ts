@@ -49,10 +49,9 @@ export default class OAuthClient {
     if (oauth.token == null) {
       return true;
     }
-    
     const hadTokenFor = Date.now() - oauth.lastRetrieved + 10000;
     const expiresIn = oauth.token.expires_in * 1000;
-    return hadTokenFor < expiresIn;
+    return hadTokenFor > expiresIn;
   }
 
   constructor(config: InstanceConfig) {
