@@ -86,7 +86,7 @@ export class RESTClient {
   requestUpdateXMLByUpdateSetIds
   */
   
-  async getTableParentData(): Promise<Array<TableParentData>> {
+  async loadTableParentData(): Promise<Array<TableParentData>> {
     const url: URL = new URL(TableAPI.DB_OBJECT_PATH, this.instance.baseUrl);
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
@@ -103,23 +103,14 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(options);
 
-    return (<RESTResponse<TableParentData>>await Request.json(url, options)
-      .catch((reason: any) => {
-        if (reason instanceof Response) {
-          const response: Response = reason;
-          if (!response.isEmpty() && response.isUnauthorized()) {
-            return Promise.reject(response);
-          }
-        }
-        return Promise.reject(reason);
-      })).result;
+    return (<RESTResponse<TableParentData>>await Request.json(url, options)).result;
   }
 
   /**
    * Load table field data
    * Skips tables whos name starts with wf_ or var_
    */
-  async getTableFieldData(): Promise<Array<TableFieldData>> {
+  async loadTableFieldData(): Promise<Array<TableFieldData>> {
     const url: URL = new URL(TableAPI.DICTIONARY_PATH, this.instance.baseUrl);
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
@@ -136,19 +127,10 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(options);
 
-    return (<RESTResponse<TableFieldData>>await Request.json(url, options)
-      .catch((reason: any) => {
-        if (reason instanceof Response) {
-          const response: Response = reason;
-          if (!response.isEmpty() && response.isUnauthorized()) {
-            return Promise.reject(response);
-          }
-        }
-        return Promise.reject(reason);
-      })).result;
+    return (<RESTResponse<TableFieldData>>await Request.json(url, options)).result;
   }
 
-  async getTableConfigurationPreference(): Promise<TableConfig> {
+  async loadTableConfigurationPreference(): Promise<TableConfig> {
     const prefName = `${pkg.name}/table_config`;
     const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, this.instance.baseUrl);
     url.searchParams.set("sysparm_no_count", "true");
@@ -167,16 +149,7 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(options);
 
-    const response: RESTResponse<TableConfig> = await Request.json(url, options)
-      .catch((reason: any) => {
-        if (reason instanceof Response) {
-          const response: Response = reason;
-          if (!response.isEmpty() && response.isUnauthorized()) {
-            return Promise.reject(response);
-          }
-        }
-        return Promise.reject(reason);
-      });
+    const response: RESTResponse<TableConfig> = await Request.json(url, options);
 
     if (response.result.length === 0) {
       return Promise.reject(RESTClient.NO_TABLE_CONFIG_PREF);
@@ -184,6 +157,28 @@ export class RESTClient {
 
     // There should be always at least 1, since we are loading 2
     return response.result[0];
+  }
+
+  async saveTableConfigurationPreference(config: TableConfig): Promise<any> {
+    const prefName = `${pkg.name}/table_config`;
+    const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, this.instance.baseUrl);
+
+    const options: RequestOptions = {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      }
+    };
+
+    const body = {
+      "name": prefName,
+      "value": config
+    }
+
+    await this.oauthClient.handleAuthentication(options);
+
+    await Request.execute(url, options, JSON.stringify(body));
   }
 
   async setupTableConfiguration(): Promise<TableConfig> {
@@ -200,12 +195,12 @@ export class RESTClient {
     };
 
     // Load Table + Table Parent data
-    const tables = (await this.getTableParentData()).reduce((accumulator, value) => {
+    const tables = (await this.loadTableParentData()).reduce((accumulator, value) => {
       accumulator[value.name] = value;
       return accumulator;
     }, <{[ key: string]: TableParentData}>{});
     // Load Table + Table field data
-    const fields: Array<TableFieldData> = await this.getTableFieldData();
+    const fields: Array<TableFieldData> = await this.loadTableFieldData();
 
     // Process all loaded fields
     fields.forEach((data) => {
@@ -223,6 +218,9 @@ export class RESTClient {
 
     // For each configured table, find all its parents and merge fields
     Object.keys(config.tables).forEach((table) => {
+      if (tables[table] != null && tables[table]["super_class.name"] !== "") {
+        config.tables[table].parent = tables[table]["super_class.name"];
+      }
       getParentTree(table, tables, []).forEach((parent) => {
         if (config.tables[parent] == null) {
           return;
@@ -231,12 +229,13 @@ export class RESTClient {
       });
     })
 
+    await this.saveTableConfigurationPreference(config);
     return config;
   }
 
   async getTableConfiguration(): Promise<TableConfig> {
     // Load table configuration from user preference
-    let pref: TableConfig = await this.getTableConfigurationPreference()
+    let pref: TableConfig = await this.loadTableConfigurationPreference()
       .catch((async (reason) => {
         if (reason === RESTClient.NO_TABLE_CONFIG_PREF) {
           return await this.setupTableConfiguration();
