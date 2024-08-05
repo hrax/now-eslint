@@ -1,8 +1,5 @@
-import exp from "constants";
-import { OAuthClient, OAuthCodeExpired, OAuthRefreshTokenExpired, OAuthUsernamePasswordIncorrect } from "../../modules/core/OAuthClient";
-import { Request, Response } from "../../modules/core/Request";
-import { IncomingMessage } from "http";
-import { Socket } from "net";
+import { OAuthClient, OAuthCodeExpired, OAuthRefreshTokenExpired, OAuthUsernamePasswordIncorrect } from "../../core/OAuthClient";
+import { Request, Response } from "../../core/Request";
 import { RequestOptions } from "https";
 
 describe("OAuthClientSpec", () => {

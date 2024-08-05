@@ -2,12 +2,12 @@ import https from "https";
 import agentS from "https-proxy-agent";
 import { IncomingMessage } from "http";
 
-export enum ResponseStatus {
-  OK = 200,
-  NOT_FOUND = 400,
-  UNAUTHORIZED = 401,
-  FORBIDDEN = 403,
-  ERROR = 500
+export class ResponseStatus {
+  static readonly OK = 200;
+  static readonly NOT_FOUND = 400;
+  static readonly UNAUTHORIZED = 401;
+  static readonly FORBIDDEN = 403;
+  static readonly ERROR = 500;
 };
 
 /* export type RequestOptions = HttpRequestOptions & {

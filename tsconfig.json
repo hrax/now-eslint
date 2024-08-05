@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2022",
-    "outDir": "./build",
-    "typeRoots": ["./node_modules/@types", "./modules/@types"],
+    "module": "CommonJS",
+    "target": "ES2022",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
     "declaration": true,
     "sourceMap": true,
 
@@ -16,6 +17,6 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
   },
-  "include": ["./modules/**/*", "./spec/**/*"],
-  "exclude": ["node_modules", "./spec/support/*.json"]
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "spec", "examples"]
 }

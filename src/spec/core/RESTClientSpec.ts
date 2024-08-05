@@ -1,6 +1,5 @@
-import { RequestOptions } from "https";
-import { Request, Response } from "../../modules/core/Request";
-import { RESTClient, RESTResponse, TableAPI, TableFieldData, TableParentData } from "../../modules/core/RESTClient";
+import { Request, Response } from "../../core/Request";
+import { RESTClient, RESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient";
 import { URLSearchParams } from "url";
 
 describe("RESTClientSpec", () => {
@@ -81,62 +80,6 @@ describe("RESTClientSpec", () => {
   
       const client = new RESTClient(config);
       await expectAsync(client.loadTableConfigurationPreference()).toBeRejectedWith(RESTClient.NO_TABLE_CONFIG_PREF);
-    });
-  });
-
-  describe("loading table-parent data", () => {
-    const data: Array<TableParentData> = [
-      {
-        name: "sys_script_include",
-        "super_class.name": ""
-      },
-      {
-        name: "incident",
-        "super_class.name": "task"
-      }
-    ];
-
-    const url = {
-      origin: config.baseUrl,
-      pathname: TableAPI.DB_OBJECT_PATH,
-      search: jasmine.stringContaining(new URLSearchParams("sysparm_query=nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^super_class.name!=sys_metadata^ORDERBYname").toString())
-    };
-
-    it("should resolve", async() => {
-      const response = Response.empty(JSON.stringify(_makeRESTResponse(data)));
-      spyOn(response, "isEmpty").and.returnValue(false);
-      spyOn(response, "isOK").and.returnValue(true);
-
-      spyOn(Request, "execute")
-        .withArgs(jasmine.objectContaining(url), jasmine.anything(), undefined).and.resolveTo(response);
-
-      const client = new RESTClient(config);
-      await expectAsync(client.loadTableParentData()).toBeResolvedTo(data);
-    });
-  });
-
-  describe("loading table-field data", () => {
-    const data: Array<TableFieldData> = [{
-      name: "sys_script_include",
-      element: "script"
-    }];
-
-    const url = {
-      origin: config.baseUrl,
-      pathname: TableAPI.DICTIONARY_PATH,
-      search: jasmine.stringContaining(new URLSearchParams("sysparm_query=nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement").toString())
-    };
-
-    it("should resolve", async() => {
-      const response = Response.empty(JSON.stringify(_makeRESTResponse(data)));
-      spyOn(response, "isEmpty").and.returnValue(false);
-      spyOn(response, "isOK").and.returnValue(true);
-
-      spyOn(Request, "execute")
-        .withArgs(jasmine.objectContaining(url), jasmine.anything(), undefined).and.resolveTo(response);
-
-      const client = new RESTClient(config);
-      await expectAsync(client.loadTableFieldData()).toBeResolvedTo(data);
     });
   });
 

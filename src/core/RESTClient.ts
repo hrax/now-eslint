@@ -1,8 +1,8 @@
 import { RequestOptions } from "https";
 import { URLSearchParams } from "url";
-import { OAuthClient } from "./OAuthClient";
-import { Request, Response } from "./Request";
-import pkg from "../../package.json";
+import { OAuthClient } from "./OAuthClient.js";
+import { Request, Response } from "./Request.js";
+import { Package } from "./Package.js";
 
 export enum RESPONSE_STATUS {
   OK = 200,
@@ -30,6 +30,22 @@ export interface TableParentData {
   "super_class.name": string;
 }
 
+export interface UpdateXMLData {
+  sys_id: string;
+  name: string;
+  action: string;
+  type: "INSERT_OR_UPDATE" | "DELETE";
+  target_name: string;
+  update_set: string;
+
+  sys_created_on: string;
+  sys_created_by: string;
+  sys_updated_on: string;
+  sys_updated_by: string;
+  payload: string;
+
+}
+
 export interface RESTResponse<T = any> {
   result: Array<T>
 }
@@ -50,10 +66,11 @@ export class RESTClient {
    */
   async testConnection(): Promise<boolean> {
     const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, this.instance.baseUrl);
-    url.searchParams.set("sysparm_fields", "sys_id");
     url.searchParams.set("sysparm_limit", "1");
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    // Do not load anything, just test if we can connect and load empty result
+    url.searchParams.set("sysparm_query", "sys_id=-1");
 
     const options: RequestOptions = {
       method: "GET",
@@ -73,23 +90,17 @@ export class RESTClient {
             return Promise.reject("Unauthorized");
           }
         }
-        return Promise.reject(reason);
+        return Response.empty("");
       });
     
-    return Promise.resolve(!response.isEmpty() && response.isOK() && response.hasData());
+    return !response.isEmpty() && response.isOK() && response.hasData();
   }
-
   
-
-  /*requestUpdateXMLByUpdateSetQuery
-
-  requestUpdateXMLByUpdateSetIds
-  */
-  
-  async loadTableParentData(): Promise<Array<TableParentData>> {
+  private async loadTableParentData(): Promise<Array<TableParentData>> {
     const url: URL = new URL(TableAPI.DB_OBJECT_PATH, this.instance.baseUrl);
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    url.searchParams.set("sysparm_exclude_reference_link", "true");
     url.searchParams.set("sysparm_fields", "name,super_class.name");
     url.searchParams.set("sysparm_query", "nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^super_class.name!=sys_metadata^ORDERBYname");
 
@@ -110,10 +121,11 @@ export class RESTClient {
    * Load table field data
    * Skips tables whos name starts with wf_ or var_
    */
-  async loadTableFieldData(): Promise<Array<TableFieldData>> {
+  private async loadTableFieldData(): Promise<Array<TableFieldData>> {
     const url: URL = new URL(TableAPI.DICTIONARY_PATH, this.instance.baseUrl);
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    url.searchParams.set("sysparm_exclude_reference_link", "true");
     url.searchParams.set("sysparm_fields", "name,element");
     url.searchParams.set("sysparm_query", "nameBETWEEN @varz^ORnameBETWEENvas@wfz^ORnameBETWEENwg@~^internal_type=script^ORinternal_type=script_plain^ORinternal_type=script_server^GROUPBYname^ORDERBYelement");
 
@@ -131,10 +143,11 @@ export class RESTClient {
   }
 
   async loadTableConfigurationPreference(): Promise<TableConfig> {
-    const prefName = `${pkg.name}/table_config`;
+    const prefName = `${Package.NAME}/table_config`;
     const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, this.instance.baseUrl);
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    url.searchParams.set("sysparm_exclude_reference_link", "true");
     url.searchParams.set("sysparm_limit", "2");
     url.searchParams.set("sysparm_fields", "name,value");
     url.searchParams.set("sysparm_query", `name=${prefName}^userISEMPTY^ORuserDYNAMIC90d1921e5f510100a9ad2572f2b477fe^ORDERBYDESCuser`);
@@ -159,8 +172,8 @@ export class RESTClient {
     return response.result[0];
   }
 
-  async saveTableConfigurationPreference(config: TableConfig): Promise<any> {
-    const prefName = `${pkg.name}/table_config`;
+  private async saveTableConfigurationPreference(config: TableConfig): Promise<void> {
+    const prefName = `${Package.NAME}/table_config`;
     const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, this.instance.baseUrl);
 
     const options: RequestOptions = {
@@ -246,4 +259,34 @@ export class RESTClient {
     return pref;
   }
 
+  async loadUpdateXMLByUpdateSetIds(...ids: string[]): Promise<any> {
+    if (ids.length === 0) {
+      ids.push("-1");
+    }
+
+    const url: URL = new URL(TableAPI.UPDATE_XML_PATH, this.instance.baseUrl);
+    url.searchParams.set("sysparm_no_count", "true");
+    url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    url.searchParams.set("sysparm_exclude_reference_link", "true");
+    url.searchParams.set("sysparm_fields", "name,sys_id,action,sys_created_by,sys_created_on,sys_updated_by,sys_updated_on,type,target_name,update_set,payload");
+    url.searchParams.set("sysparm_query", `ORDERBYDESCsys_updated_on^GROUPBYname^update_setIN${ids.join(",")}`);
+
+    const options: RequestOptions = {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      }
+    };
+
+    await this.oauthClient.handleAuthentication(options);
+
+    const response: RESTResponse<UpdateXMLData> = await Request.json(url, options);
+    
+    
+  }
+
+  async loadUpdateXMLByUpdateSetQuery(ids: string): Promise<any> {
+
+  }
 }

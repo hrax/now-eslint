@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { RequestOptions } from "https";
-import { Request, Response } from "../../modules/core/Request";
+import { Request, Response } from "../../core/Request";
 
 describe("Request", () => {
   it("throws exception on wrong protocol", async () => {

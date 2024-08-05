@@ -26,19 +26,16 @@
   "exports": {
     ".": "./index.js",
     "./package.json": "./package.json",
-    "./generator": "./modules/generator/index.js",
-    "./generator/index": "./modules/generator/index.js",
-    "./generator/index.js": "./modules/generator/index.js"
+    "./generator": "./dist/generator/index.js",
+    "./generator/index": "./dist/generator/index.js",
+    "./generator/index.js": "./dist/generator/index.js"
   },
   "bin": {
-    "now-eslint": "./modules/cli/now-eslint.js"
+    "now-eslint": "dist/cli/now-eslint.js"
   },
   "files": [
-    "build",
-    "resources",
-    "index.js",
+    "dist",
     "package.json",
-    "README.md",
     "LICENSE.txt"
   ],
   "repository": {
@@ -46,10 +43,12 @@
     "url": "git://github.com/hrax/now-eslint.git"
   },
   "scripts": {
+    "clean": "npx rimraf ./dist",
+    "prebuild": "npm run clean",
     "build": "npx tsc",
-    "clean": "npx tsc --build --clean",
-    "build:clean": "npm run clean && npm run build",
-    "test": "npm run build && jasmine"
+    "pretest": "npx tsc --build --force",
+    "test": "jasmine --verbose",
+    "prepublishOnly": "npm run clean && npx tsc --project tsconfig.publish.json"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.8.10",
@@ -69,6 +68,7 @@
     "eslint": ">=9.3.0",
     "eslint-plugin-jasmine": "^4.2.0",
     "jasmine": "^5.2.0",
+    "rimraf": "^6.0.1",
     "typescript": "^5.5.4"
   },
   "peerDependencies": {

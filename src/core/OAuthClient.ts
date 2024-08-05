@@ -1,9 +1,9 @@
 import crypto from "crypto";
 import { URL, URLSearchParams } from "url";
-import { Request, Response, ResponseStatus } from "./Request";
-import pkg from "../../package.json";
+import { Request, Response } from "./Request.js";
 import { RequestOptions } from "https";
 import { IncomingMessage } from "http";
+import { Package } from "./Package.js";
 
 const CLIENT_BASE_URL: string = "/oauth_entity.do";
 const CLIENT_LIST_BASE_URL: string = "/oauth_entity_list.do";
@@ -70,8 +70,8 @@ export class OAuthClient {
   getNewClientURL(): URL {
     const query: Array<string> = [
       "type=client",
-      `name=${pkg.name}`,
-      `comments=OAuth Client for ${pkg.name} v${pkg.version}`,
+      `name=${Package.NAME}`,
+      `comments=OAuth Client for ${Package.NAME} v${Package.VERSION}`,
       "refresh_token_lifespan=31536000",
       "redirect_url=" + REDIRECT_URI,
       "logo_url="
@@ -87,7 +87,7 @@ export class OAuthClient {
   getListClientURL(): URL {
     const query: Array<string> = [
       "type=client",
-      "name=" + pkg.name
+      "name=" + Package.NAME
     ];
     const url: URL = new URL(CLIENT_LIST_BASE_URL, this.config.baseUrl);
     url.searchParams.set("sys_id", "-1");
@@ -206,7 +206,7 @@ export class OAuthClient {
     return token;
   }
 
-  async handleAuthentication(options: RequestOptions): Promise<any> {
+  async handleAuthentication(options: RequestOptions): Promise<void> {
     // If we do not have any token, leave it (for now)
     if (this.config.auth.token == null) {
       return;
