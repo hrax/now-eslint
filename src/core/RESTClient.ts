@@ -1,57 +1,27 @@
 import { RequestOptions } from "https";
-import { URLSearchParams } from "url";
 import { OAuthClient } from "./OAuthClient.js";
 import { Request, Response } from "./Request.js";
 import { Package } from "./Package.js";
+import { InstanceConfig, TableConfig } from "./Profile.js";
 
-export enum RESPONSE_STATUS {
-  OK = 200,
-  NOT_FOUND = 400,
-  UNAUTHORIZED = 401,
-  FORBIDDEN = 403,
-  ERROR = 500
+export class RESPONSE_STATUS {
+  static readonly OK = 200 as const;
+  static readonly NOT_FOUND = 400 as const;
+  static readonly UNAUTHORIZED = 401 as const;
+  static readonly FORBIDDEN = 403 as const;
+  static readonly ERROR = 500 as const;
 };
 
-export enum TableAPI {
-  UPDATE_XML_PATH = "/api/now/table/sys_update_xml",
-  UPDATE_SET_PATH = "/api/now/table/sys_update_set",
-  DICTIONARY_PATH = "/api/now/table/sys_dictionary",
-  DB_OBJECT_PATH = "/api/now/table/sys_db_object",
-  USER_PREFERENCE_PATH = "/api/now/table/sys_user_preference"
-}
-
-export interface TableFieldData {
-  name: string;
-  element: string;
-}
-
-export interface TableParentData {
-  name: string;
-  "super_class.name": string;
-}
-
-export interface UpdateXMLData {
-  sys_id: string;
-  name: string;
-  action: string;
-  type: "INSERT_OR_UPDATE" | "DELETE";
-  target_name: string;
-  update_set: string;
-
-  sys_created_on: string;
-  sys_created_by: string;
-  sys_updated_on: string;
-  sys_updated_by: string;
-  payload: string;
-
-}
-
-export interface RESTResponse<T = any> {
-  result: Array<T>
+export class TableAPI {
+  static readonly UPDATE_XML_PATH = "/api/now/table/sys_update_xml" as const;
+  static readonly UPDATE_SET_PATH = "/api/now/table/sys_update_set" as const;
+  static readonly DICTIONARY_PATH = "/api/now/table/sys_dictionary" as const;
+  static readonly DB_OBJECT_PATH = "/api/now/table/sys_db_object" as const;
+  static readonly USER_PREFERENCE_PATH = "/api/now/table/sys_user_preference" as const;
 }
 
 export class RESTClient {
-  static readonly NO_TABLE_CONFIG_PREF = "No Table Config preference!";
+  static readonly NO_TABLE_CONFIG_PREF = "No Table Config preference!" as const;
   private instance: InstanceConfig;
   private oauthClient: OAuthClient;
 
@@ -114,7 +84,7 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(options);
 
-    return (<RESTResponse<TableParentData>>await Request.json(url, options)).result;
+    return (<JSONRESTResponse<TableParentData>>await Request.json(url, options)).result;
   }
 
   /**
@@ -139,7 +109,7 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(options);
 
-    return (<RESTResponse<TableFieldData>>await Request.json(url, options)).result;
+    return (<JSONRESTResponse<TableFieldData>>await Request.json(url, options)).result;
   }
 
   async loadTableConfigurationPreference(): Promise<TableConfig> {
@@ -162,7 +132,7 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(options);
 
-    const response: RESTResponse<TableConfig> = await Request.json(url, options);
+    const response: JSONRESTResponse<TableConfig> = await Request.json(url, options);
 
     if (response.result.length === 0) {
       return Promise.reject(RESTClient.NO_TABLE_CONFIG_PREF);
@@ -281,7 +251,7 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(options);
 
-    const response: RESTResponse<UpdateXMLData> = await Request.json(url, options);
+    const response: JSONRESTResponse<UpdateXMLData> = await Request.json(url, options);
     
     
   }
@@ -289,4 +259,34 @@ export class RESTClient {
   async loadUpdateXMLByUpdateSetQuery(ids: string): Promise<any> {
 
   }
+}
+
+export interface TableFieldData {
+  name: string;
+  element: string;
+}
+
+export interface TableParentData {
+  name: string;
+  "super_class.name": string;
+}
+
+export interface UpdateXMLData {
+  sys_id: string;
+  name: string;
+  action: string;
+  type: "INSERT_OR_UPDATE" | "DELETE";
+  target_name: string;
+  update_set: string;
+
+  sys_created_on: string;
+  sys_created_by: string;
+  sys_updated_on: string;
+  sys_updated_by: string;
+  payload: string;
+
+}
+
+export interface JSONRESTResponse<T = any> {
+  result: Array<T>
 }

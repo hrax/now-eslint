@@ -1,6 +1,8 @@
 import { OAuthClient, OAuthCodeExpired, OAuthRefreshTokenExpired, OAuthUsernamePasswordIncorrect } from "../../core/OAuthClient";
+import { InstanceConfig, InstanceOAuthTokenData } from "../../core/Profile";
 import { Request, Response } from "../../core/Request";
 import { RequestOptions } from "https";
+import { SNOAuthToken } from "../../core/sn";
 
 describe("OAuthClientSpec", () => {
   const config: InstanceConfig = {

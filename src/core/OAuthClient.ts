@@ -2,8 +2,9 @@ import crypto from "crypto";
 import { URL, URLSearchParams } from "url";
 import { Request, Response } from "./Request.js";
 import { RequestOptions } from "https";
-import { IncomingMessage } from "http";
 import { Package } from "./Package.js";
+import { SNOAuthToken } from "./sn.js";
+import { InstanceAuthenticationData, InstanceConfig, InstanceOAuthTokenData } from "./Profile.js";
 
 const CLIENT_BASE_URL: string = "/oauth_entity.do";
 const CLIENT_LIST_BASE_URL: string = "/oauth_entity_list.do";
@@ -96,7 +97,10 @@ export class OAuthClient {
     return url;
   }
 
-  getAuthCodeURL(state: string): URL {
+  getAuthCodeURL(state?: string): URL {
+    if (state == null) {
+      state = OAuthClient.generateRandomState();
+    }
     const url: URL = new URL(AUTH_BASE_URL, this.config.baseUrl);
     url.searchParams.set("response_type", "code");
     url.searchParams.set("redirect_uri", REDIRECT_URI);

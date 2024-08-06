@@ -1,5 +1,6 @@
+import { InstanceConfig, TableConfig } from "../../core/Profile";
 import { Request, Response } from "../../core/Request";
-import { RESTClient, RESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient";
+import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient";
 import { URLSearchParams } from "url";
 
 describe("RESTClientSpec", () => {
@@ -22,8 +23,8 @@ describe("RESTClientSpec", () => {
     }
   };
 
-  const _makeRESTResponse = function<T = any>(data?: T | Array<T>): RESTResponse<T> {
-    const response: RESTResponse<T> = {
+  const _makeRESTResponse = function<T = any>(data?: T | Array<T>): JSONRESTResponse<T> {
+    const response: JSONRESTResponse<T> = {
       result: []
     };
     if (data != null) {
