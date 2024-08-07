@@ -2,7 +2,7 @@ import { RequestOptions } from "https";
 import { OAuthClient } from "./OAuthClient.js";
 import { Request, Response } from "./Request.js";
 import { Package } from "./Package.js";
-import { InstanceConfig, TableConfig } from "./Profile.js";
+import { InstanceConfig, TableConfig } from "./ProfileManager.js";
 
 export class RESPONSE_STATUS {
   static readonly OK = 200 as const;

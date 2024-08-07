@@ -1,5 +1,5 @@
 import { OAuthClient, OAuthCodeExpired, OAuthRefreshTokenExpired, OAuthUsernamePasswordIncorrect } from "../../core/OAuthClient";
-import { InstanceConfig, InstanceOAuthTokenData } from "../../core/Profile";
+import { InstanceConfig, InstanceOAuthTokenData } from "../../core/ProfileManager";
 import { Request, Response } from "../../core/Request";
 import { RequestOptions } from "https";
 import { SNOAuthToken } from "../../core/sn";

@@ -1,4 +1,4 @@
-import { InstanceConfig, TableConfig } from "../../core/Profile";
+import { InstanceConfig, TableConfig } from "../../core/ProfileManager";
 import { Request, Response } from "../../core/Request";
 import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient";
 import { URLSearchParams } from "url";
