@@ -1,4 +1,5 @@
-import { InstanceConfig, TableConfig } from "../../core/ProfileManager";
+import { OAuthClient } from "../../core/OAuthClient";
+import { InstanceConfig, Profile, TableConfig } from "../../core/ProfileManager";
 import { Request, Response } from "../../core/Request";
 import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient";
 import { URLSearchParams } from "url";
@@ -22,6 +23,9 @@ describe("RESTClientSpec", () => {
       }
     }
   };
+  const profile: Profile = new Profile(config);
+  const oauthClient: OAuthClient = new OAuthClient();
+
 
   const _makeRESTResponse = function<T = any>(data?: T | Array<T>): JSONRESTResponse<T> {
     const response: JSONRESTResponse<T> = {
@@ -66,8 +70,8 @@ describe("RESTClientSpec", () => {
 
       requestExecuteSpy.withArgs(jasmine.objectContaining(url), jasmine.anything(), undefined).and.resolveTo(response);
   
-      const client = new RESTClient(config);
-      await expectAsync(client.loadTableConfigurationPreference()).toBeResolvedTo(tablePref);
+      const client = new RESTClient(oauthClient);
+      await expectAsync(client.loadTableConfigurationPreference(profile)).toBeResolvedTo(tablePref);
     });
 
     it("should reject if does not exists", async() => {
@@ -79,8 +83,8 @@ describe("RESTClientSpec", () => {
 
       requestExecuteSpy.withArgs(jasmine.objectContaining(url), jasmine.anything(), undefined).and.resolveTo(response);
   
-      const client = new RESTClient(config);
-      await expectAsync(client.loadTableConfigurationPreference()).toBeRejectedWith(RESTClient.NO_TABLE_CONFIG_PREF);
+      const client = new RESTClient(oauthClient);
+      await expectAsync(client.loadTableConfigurationPreference(profile)).toBeRejectedWith(RESTClient.NO_TABLE_CONFIG_PREF);
     });
   });
 
@@ -178,8 +182,8 @@ describe("RESTClientSpec", () => {
         .withArgs(jasmine.objectContaining(upUrl), jasmine.objectContaining({
           "method": "POST"
         }), jasmine.anything()).and.resolveTo(tfResponse);
-      const client = new RESTClient(config);
-      await expectAsync(client.setupTableConfiguration()).toBeResolvedTo(data);
+      const client = new RESTClient(oauthClient);
+      await expectAsync(client.setupTableConfiguration(profile)).toBeResolvedTo(data);
       // 2 pulls + 1 push
       expect(requestExecuteSpy).toHaveBeenCalledTimes(3);
     });

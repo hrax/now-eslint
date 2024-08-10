@@ -1,9 +1,9 @@
-import { RESTClient } from "./RESTClient";
-
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { SNOAuthToken, SNTable } from "./sn";
+
+import { RESTClient } from "./RESTClient.js";
+import { SNOAuthToken, SNTable } from "./sn.js";
 
 class Constants {
   static readonly PROFILES_FOLDER_NAME = ".now-eslint-profiles";
@@ -32,12 +32,7 @@ export class ProfileManager {
     return path.normalize(`${ProfileManager.profileHomeDirPath(name)}/${file}`);
   }
 
-  // Singleton instance
-  constructor() {
-
-  }
-
-  listProfiles(): Array<ProfileInfo> {
+  static listProfiles(): Array<ProfileInfo> {
     const home = ProfileManager.profilesHomeDirPath();
     return fs.readdirSync(home).filter((file) => {
       return fs.statSync(path.normalize(`${home}/${file}`)).isDirectory() && fs.existsSync(ProfileManager.pathFor(file, Constants.PROFILE_CONFIG_FILE_NAME));
@@ -51,39 +46,123 @@ export class ProfileManager {
       }
     });
   }
+
+  private static createFolderIfNotExists(path: string): void {
+    if (!fs.existsSync(path)) {
+      fs.mkdirSync(path, {
+        recursive: true
+      });
+    }
+  }
   
-  purgeProfiles(): void {
+  static purgeProfiles(): void {
     const home = ProfileManager.profilesHomeDirPath();
     fs.rmdirSync(home, {recursive: true});
   }
 
-  loadProfile(): any {
-
+  static fromData(data: InstanceConfig): Profile {
+    return new Profile(data);
   }
 
-  saveProfile(): any {
+  static async loadProfile(name: string, client: RESTClient): Promise<Profile | null> {
+    const home = ProfileManager.profileHomeDirPath(name);
+    if (!fs.existsSync(home)) {
+      return null;
+    }
+    const configFilePath = ProfileManager.pathFor(name, Constants.PROFILE_CONFIG_FILE_NAME);
+    if (!fs.existsSync(configFilePath)) {
+      return null;
+    }
+    const configFileData = fs.readFileSync(configFilePath, "utf8");
 
+    const profile = ProfileManager.fromData(JSON.parse(configFileData));
+    profile.setRESTClient(client);
+    await profile.fetchTableConfiguration();
+    return profile;
   }
 
-  purgeProfile(): any {
+  static saveProfile(profile: Profile): void {
+    const home = ProfileManager.profileHomeDirPath(profile.getName())
+    ProfileManager.createFolderIfNotExists(home);
+    const config = profile.getConfig();
+    const configPath = ProfileManager.pathFor(profile.getName(), Constants.PROFILE_CONFIG_FILE_NAME);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
+  }
 
+  static updateProfileConfig(profile: Profile): void {
+    const home = ProfileManager.profileHomeDirPath(profile.getName())
+    ProfileManager.createFolderIfNotExists(home);
+    const config = profile.getConfig();
+    const configPath = ProfileManager.pathFor(profile.getName(), Constants.PROFILE_CONFIG_FILE_NAME);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
+  }
+
+  static purgeProfile(profile: Profile): void {
+    const home = ProfileManager.profileHomeDirPath(profile.getName());
+    fs.rmdirSync(home, {recursive: true});
   }
 
 }
 
 export class Profile {
   private config: InstanceConfig;
-  private client: RESTClient;
+  private client: RESTClient | null = null;
   private tables: TableConfig | null = null;
 
   constructor(options: InstanceConfig) {
     this.config = options;
-    this.client = new RESTClient(this.config);
+  }
+
+  setRESTClient(client: RESTClient): void {
+    this.client = client;
+  }
+
+  getName(): string {
+    return this.config.name;
+  }
+
+  getBaseUrl(): string {
+    return this.config.baseUrl;
+  }
+
+  getClientID(): string {
+    return this.config.auth.clientID;
+  }
+
+  getClientSecret(): string {
+    return this.config.auth.clientSecret;
+  }
+
+  getLastRetrieved(): number {
+    return this.config.auth.lastRetrieved;
+  }
+
+  getConfig(): InstanceConfig {
+    return this.config;
+  }
+
+  getInstanceOAuthTokenData(): InstanceOAuthTokenData {
+    return this.config.auth;
+  }
+
+  getToken(): SNOAuthToken | null | undefined {
+    return this.config.auth.token;
+  }
+
+  refreshToken(token: SNOAuthToken) {
+    this.config.auth.lastRetrieved = Date.now();
+    this.config.auth.token = token;
+  }
+
+  getTableConfiguration(): TableConfig | null {
+    return this.tables
   }
 
   // TODO: better name, load all other profile files/table setup
-  async fetch(): Promise<void> {
-    this.tables = await this.client.getTableConfiguration();
+  async fetchTableConfiguration(): Promise<void> {
+    if (this.client != null) {
+      this.tables = await this.client.getTableConfiguration(this);
+    }
   }
 
 }

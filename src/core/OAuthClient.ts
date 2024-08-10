@@ -4,7 +4,7 @@ import { Request, Response } from "./Request.js";
 import { RequestOptions } from "https";
 import { Package } from "./Package.js";
 import { SNOAuthToken } from "./sn.js";
-import { InstanceAuthenticationData, InstanceConfig, InstanceOAuthTokenData } from "./ProfileManager.js";
+import { InstanceAuthenticationData, InstanceConfig, InstanceOAuthTokenData, Profile, ProfileManager } from "./ProfileManager.js";
 
 const CLIENT_BASE_URL: string = "/oauth_entity.do";
 const CLIENT_LIST_BASE_URL: string = "/oauth_entity_list.do";
@@ -38,8 +38,6 @@ export class OAuthUsernamePasswordIncorrect extends Error {
 };
 
 export class OAuthClient {
-  private config: InstanceConfig;
-
   // create Server for code?
 
   static generateRandomState(): string {
@@ -55,20 +53,7 @@ export class OAuthClient {
     return hadTokenFor > expiresIn;
   }
 
-  constructor(config: InstanceConfig) {
-    this.config = config;
-  }
-
-  private setToken(token: SNOAuthToken) {
-    this.config.auth.lastRetrieved = Date.now();
-    this.config.auth.token = token;
-  }
-
-  getInstanceConfig(): InstanceConfig {
-    return this.config;
-  }
-
-  getNewClientURL(): URL {
+  getNewClientURL(profile: Profile): URL {
     const query: Array<string> = [
       "type=client",
       `name=${Package.NAME}`,
@@ -78,47 +63,46 @@ export class OAuthClient {
       "logo_url="
     ];
 
-    const url: URL = new URL(CLIENT_BASE_URL, this.config.baseUrl);
+    const url: URL = new URL(CLIENT_BASE_URL, profile.getBaseUrl());
     url.searchParams.set("sys_id", "-1");
     url.searchParams.set("sysparm_transaction_scope", "global");
     url.searchParams.set("sysparm_query", query.join("^"));
     return url;
   }
 
-  getListClientURL(): URL {
+  getListClientURL(profile: Profile): URL {
     const query: Array<string> = [
       "type=client",
       "name=" + Package.NAME
     ];
-    const url: URL = new URL(CLIENT_LIST_BASE_URL, this.config.baseUrl);
+    const url: URL = new URL(CLIENT_LIST_BASE_URL, profile.getBaseUrl());
     url.searchParams.set("sys_id", "-1");
     url.searchParams.set("sysparm_transaction_scope", "global");
     url.searchParams.set("sysparm_query", query.join("^"));
     return url;
   }
 
-  getAuthCodeURL(state?: string): URL {
+  getAuthCodeURL(profile: Profile, state?: string): URL {
     if (state == null) {
       state = OAuthClient.generateRandomState();
     }
-    const url: URL = new URL(AUTH_BASE_URL, this.config.baseUrl);
+    const url: URL = new URL(AUTH_BASE_URL, profile.getBaseUrl());
     url.searchParams.set("response_type", "code");
     url.searchParams.set("redirect_uri", REDIRECT_URI);
-    url.searchParams.set("client_id", this.config.auth.clientID);
+    url.searchParams.set("client_id", profile.getClientID());
     url.searchParams.set("state", state);
     return url;
   }
 
-  async requestTokenByCode(code: string): Promise<SNOAuthToken>  {
-    const oauth: InstanceAuthenticationData = this.config.auth;
-    const url: URL = new URL(TOKEN_BASE_URL, this.config.baseUrl);
+  async requestTokenByCode(profile: Profile, code: string): Promise<SNOAuthToken>  {
+    const url: URL = new URL(TOKEN_BASE_URL, profile.getBaseUrl());
     
     const body: URLSearchParams = new URLSearchParams();
     body.set("grant_type", "authorization_code");
     body.set("code", code);
     //body.set("redirect_uri", REDIRECT_URI);
-    body.set("client_id", oauth.clientID);
-    body.set("client_secret", oauth.clientSecret);
+    body.set("client_id", profile.getClientID());
+    body.set("client_secret", profile.getClientSecret());
 
     const options: RequestOptions = {
       method: "POST",
@@ -139,20 +123,19 @@ export class OAuthClient {
         return Promise.reject(reason);
       });
     
-    this.setToken(token);
+    profile.refreshToken(token);
     return token;
   }
 
-  async requestTokenByUsername(username: string, password: string): Promise<SNOAuthToken> {
-    const oauth: InstanceAuthenticationData = this.config.auth;
-    const url: URL = new URL(TOKEN_BASE_URL, this.config.baseUrl);
+  async requestTokenByUsername(profile: Profile, username: string, password: string): Promise<SNOAuthToken> {
+    const url: URL = new URL(TOKEN_BASE_URL, profile.getBaseUrl());
 
     const body: URLSearchParams = new URLSearchParams();
     body.set("grant_type", "password");
     body.set("username", username);
     body.set("password", password);
-    body.set("client_id", oauth.clientID);
-    body.set("client_secret", oauth.clientSecret);
+    body.set("client_id", profile.getClientID());
+    body.set("client_secret", profile.getClientSecret());
 
     const options: RequestOptions = {
       method: "POST",
@@ -173,19 +156,18 @@ export class OAuthClient {
         return Promise.reject(reason);
       });
     
-    this.setToken(token);
+    profile.refreshToken(token);
     return token;
   }
 
-  async refreshToken(): Promise<SNOAuthToken> {
-    const oauth: InstanceAuthenticationData = this.config.auth;
-    const url: URL = new URL(TOKEN_BASE_URL, this.config.baseUrl);
+  async refreshToken(profile: Profile): Promise<SNOAuthToken> {
+    const url: URL = new URL(TOKEN_BASE_URL, profile.getBaseUrl());
     
     const body: URLSearchParams = new URLSearchParams();
     body.set("grant_type", "refresh_token");
-    body.set("refresh_token", oauth.token!.refresh_token);
-    body.set("client_id", oauth.clientID);
-    body.set("client_secret", oauth.clientSecret);
+    body.set("refresh_token", profile.getInstanceOAuthTokenData().token!.refresh_token);
+    body.set("client_id", profile.getClientID());
+    body.set("client_secret", profile.getClientSecret());
 
     const options: RequestOptions = {
       method: "POST",
@@ -206,22 +188,24 @@ export class OAuthClient {
         return Promise.reject(reason);
       });
     
-    this.setToken(token);
+    profile.refreshToken(token);
     return token;
   }
 
-  async handleAuthentication(options: RequestOptions): Promise<void> {
+  async handleAuthentication(profile: Profile, options: RequestOptions): Promise<void> {
     // If we do not have any token, leave it (for now)
-    if (this.config.auth.token == null) {
+    if (profile.getInstanceOAuthTokenData().token == null) {
       return;
     }
 
-    if (OAuthClient.isTokenExpired(this.config.auth)) {
-      await this.refreshToken();
+    if (OAuthClient.isTokenExpired(profile.getInstanceOAuthTokenData())) {
+      await this.refreshToken(profile);
+      // Update profile file with new token
+      ProfileManager.updateProfileConfig(profile);
     }
     if (options.headers == null) {
       options.headers = {};
     }
-    options.headers.authorization = `${this.config.auth.token!.token_type} ${this.config.auth.token!.access_token}`;
+    options.headers.authorization = `${profile.getInstanceOAuthTokenData().token!.token_type} ${profile.getInstanceOAuthTokenData().token!.access_token}`;
   }
 }
