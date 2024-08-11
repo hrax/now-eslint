@@ -1,9 +1,11 @@
 import { when } from "jest-when";
-import { OAuthClient } from "../../core/OAuthClient";
-import { InstanceConfig, Profile, TableConfig } from "../../core/ProfileManager";
-import { Request, Response } from "../../core/Request";
-import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient";
+import { jesthelpers } from "../helpers.js";
 import { URLSearchParams } from "url";
+import { OAuthClient } from "../../core/OAuthClient.js";
+import { InstanceConfig, Profile, TableConfig } from "../../core/ProfileManager.js";
+import { Request, Response } from "../../core/Request.js";
+import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient.js";
+import { SNUpdateXMLData } from "../../core/sn.js";
 
 describe("RESTClientSpec", () => {
   const config: InstanceConfig = {
@@ -69,6 +71,7 @@ describe("RESTClientSpec", () => {
       jest.spyOn(response, "isOK").mockReturnValue(true);
 
       when(requestExecuteSpy)
+        .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
         .calledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
   
       const client = new RESTClient(oauthClient);
@@ -83,6 +86,7 @@ describe("RESTClientSpec", () => {
       jest.spyOn(response, "isOK").mockReturnValue(true);
 
       when(requestExecuteSpy)
+        .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
         .calledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
   
       const client = new RESTClient(oauthClient);
@@ -177,6 +181,7 @@ describe("RESTClientSpec", () => {
 
       const requestExecuteSpy = jest.spyOn(Request, "execute");
       when(requestExecuteSpy)
+        .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
         // pull table-parent
         .calledWith(expect.objectContaining(tpUrl), expect.anything(), undefined).mockResolvedValue(tpResponse)
         // pull table-field
@@ -192,4 +197,63 @@ describe("RESTClientSpec", () => {
       expect(requestExecuteSpy).toHaveBeenCalledTimes(3);
     });
   });
+
+  describe("loading update set changes", () => {
+    it("should load by update set ids", async() => {
+      const responseBody: Array<SNUpdateXMLData> = [
+        {
+          action: "INSERT_OR_UPDATE",
+          application: "global",
+          name: "name1",
+          payload: "",
+          payloadHash: 0,
+          sys_created_by: "admin",
+          sys_created_on: "1970-01-01 00:00:00",
+          sys_id: "-1",
+          sys_mod_count: 2,
+          sys_updated_by: "admin",
+          sys_updated_on: "1970-01-02 00:00:00",
+          target_name: "target1",
+          type: "Script Include",
+          update_set: "1"
+        },
+        {
+          action: "INSERT_OR_UPDATE",
+          application: "global",
+          name: "name2",
+          payload: "",
+          payloadHash: 0,
+          sys_created_by: "admin",
+          sys_created_on: "1970-01-01 00:00:00",
+          sys_id: "-2",
+          sys_mod_count: 2,
+          sys_updated_by: "admin",
+          sys_updated_on: "1970-01-02 00:00:00",
+          target_name: "target2",
+          type: "Script Include",
+          update_set: "2"
+        }
+      ];
+      const url = {
+        origin: profile.getBaseUrl(),
+        pathname: TableAPI.UPDATE_XML_PATH,
+        search: expect.stringContaining(encodeURIComponent("update_setIN1,2,3"))
+      };
+
+      const response = Response.empty(JSON.stringify(_makeRESTResponse(responseBody)));
+      jest.spyOn(response, "isEmpty").mockReturnValue(false);
+      jest.spyOn(response, "isOK").mockReturnValue(true);
+
+      const executeSpy = jest.spyOn(Request, "execute");
+      when(executeSpy)
+        .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
+        .calledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
+
+      const client = new RESTClient(oauthClient);
+      await expect(client.loadUpdateXMLByUpdateSetIds(profile, "1","2","3")).resolves.toStrictEqual(responseBody);
+    });
+
+    it.todo("should load by update set query");
+  });
+  
 });

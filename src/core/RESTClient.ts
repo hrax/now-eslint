@@ -3,6 +3,7 @@ import { OAuthClient } from "./OAuthClient.js";
 import { Request, Response } from "./Request.js";
 import { Package } from "./Package.js";
 import { InstanceConfig, Profile, TableConfig } from "./ProfileManager.js";
+import { SNUpdateXMLData } from "./sn.js";
 
 export class RESPONSE_STATUS {
   static readonly OK = 200 as const;
@@ -227,7 +228,7 @@ export class RESTClient {
     return pref;
   }
 
-  async loadUpdateXMLByUpdateSetIds(profile: Profile, ...ids: string[]): Promise<any> {
+  async loadUpdateXMLByUpdateSetIds(profile: Profile, ...ids: string[]): Promise<Array<SNUpdateXMLData>> {
     if (ids.length === 0) {
       ids.push("-1");
     }
@@ -249,9 +250,7 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(profile, options);
 
-    const response: JSONRESTResponse<UpdateXMLData> = await Request.json(url, options);
-    
-    
+    return (<JSONRESTResponse<SNUpdateXMLData>> await Request.json(url, options)).result;
   }
 
   async loadUpdateXMLByUpdateSetQuery(profile: Profile, ids: string): Promise<any> {
@@ -267,22 +266,6 @@ export interface TableFieldData {
 export interface TableParentData {
   name: string;
   "super_class.name": string;
-}
-
-export interface UpdateXMLData {
-  sys_id: string;
-  name: string;
-  action: string;
-  type: "INSERT_OR_UPDATE" | "DELETE";
-  target_name: string;
-  update_set: string;
-
-  sys_created_on: string;
-  sys_created_by: string;
-  sys_updated_on: string;
-  sys_updated_by: string;
-  payload: string;
-
 }
 
 export interface JSONRESTResponse<T = any> {

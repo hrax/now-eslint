@@ -1,82 +1,50 @@
 /* eslint-disable */
-const {ESLint} = require("eslint");
+import { ESLint } from "eslint";
 
-const Assert = require("../util/Assert.js");
-const HashHelper = require("../util/HashHelper.js");
-const RESTHelper = require("../util/RestHelper.js");
-const XPathHelper = require("../util/XPathHelper.js");
-const UpdateXMLScan = require("./UpdateXMLScan.js");
+import Assert from "../util/Assert.js";
+import HashHelper from "../util/HashHelper.js";
+import { UpdateXMLScan } from "./UpdateXMLScan.js";
 // const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
 // const JSONReportGenerator = require("../generator/JSONReportGenerator.js");
-const AbstractReportGenerator = require("../generator/AbstractReportGenerator.js");
+import AbstractReportGenerator from "../generator/AbstractReportGenerator.js";
+import { Profile } from "../core/ProfileManager.js";
+import { escape } from "querystring";
+import { RESTClient } from "../core/RESTClient.js";
 
-class Linter {
+export interface LinterOptions {
+  title: string;
+  query: string;
+};
+
+export class Linter {
+
+  private profile: Profile;
+  private options: LinterOptions;
+  private client: RESTClient;
+  private eslint: ESLint = new ESLint();
+  private changes: Map<string, UpdateXMLScan> = new Map();
+  private metrics: Map<string, any> = new Map();
+
   /**
    * 
    * @param {Profile} profile 
    * @param {Object} options 
    */
-  constructor(profile, options) {
-    Assert.notNull(options, "Options must be specified.");
-    Assert.notEmpty(options.title, "Title in options needs to be specified.");
-    Assert.notEmpty(options.query, "Query in options needs to be specified.");
-
-    Object.defineProperty(this, "options", {
-      writable: false,
-      configurable: false,
-      enumerable: true,
-      value: Object.assign({
-        "query": "",
-        "title": "Service Now ESLint Report"
-      }, options || {})
-    });
-    Object.freeze(this.options);
-
-    Object.defineProperty(this, "changes", {
-      writable: false,
-      configurable: false,
-      enumerable: true,
-      value: new Map()
-    });
-    
-    Object.defineProperty(this, "metrics", {
-      writable: false,
-      configurable: false,
-      enumerable: true,
-      value: new Map()
-    });
-    
-    Object.defineProperty(this, "profile", {
-      writable: false,
-      configurable: false,
-      enumerable: true,
-      value: profile
-    });
-
-    Object.defineProperty(this, "instance", {
-      writable: false,
-      configurable: false,
-      enumerable: true,
-      value: this.profile.createInstance()
-    });
-
-    Object.defineProperty(this, "eslint", {
-      writable: false,
-      configurable: false,
-      enumerable: true,
-      value: new ESLint(Object.fromEntries(this.profile.eslint.entries()))
-    });
+  constructor(profile: Profile, client: RESTClient, options: LinterOptions) {
+    this.profile = profile;
+    this.client = client;
+    this.options = options;
   }
 
   /**
    * Fetch update set changes from the instance. Resets loaded changes & metrics on each call!
    * @returns {void}
    */
-  async fetch() {
+  async fetch(): Promise<void> {
     this.changes.clear();
     this.metrics.clear();
 
-    const response = await this.instance.requestUpdateXMLByUpdateSetQuery(this.options.query);
+    /* const response = await this.client.requestUpdateXMLByUpdateSetQuery(this.options.query);
 
     // Get records from the response
     response.result.forEach((record) => {
@@ -87,7 +55,7 @@ class Linter {
       } else {
         this.changes.get(scan.name).incrementUpdateCount();
       }
-    });
+    }); */
   }
 
   /**

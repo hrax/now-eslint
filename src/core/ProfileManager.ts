@@ -3,7 +3,7 @@ import os from "os";
 import path from "path";
 
 import { RESTClient } from "./RESTClient.js";
-import { SNOAuthToken, SNTable } from "./sn.js";
+import { SNOAuthTokenData, SNTable } from "./sn.js";
 
 class Constants {
   static readonly PROFILES_FOLDER_NAME = ".now-eslint-profiles";
@@ -145,11 +145,11 @@ export class Profile {
     return this.config.auth;
   }
 
-  getToken(): SNOAuthToken | null | undefined {
+  getToken(): SNOAuthTokenData | null | undefined {
     return this.config.auth.token;
   }
 
-  refreshToken(token: SNOAuthToken) {
+  refreshToken(token: SNOAuthTokenData) {
     this.config.auth.lastRetrieved = Date.now();
     this.config.auth.token = token;
   }
@@ -178,7 +178,7 @@ export interface InstanceOAuthTokenData {
   clientID: string;
   clientSecret: string;
   lastRetrieved: number;
-  token?: SNOAuthToken | null;
+  token?: SNOAuthTokenData | null;
 }
 
 export interface InstanceUserData {

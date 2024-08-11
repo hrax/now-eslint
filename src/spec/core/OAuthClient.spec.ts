@@ -2,7 +2,7 @@ import { OAuthClient, OAuthCodeExpired, OAuthRefreshTokenExpired, OAuthUsernameP
 import { InstanceConfig, InstanceOAuthTokenData, Profile } from "../../core/ProfileManager";
 import { Request, Response } from "../../core/Request";
 import { RequestOptions } from "https";
-import { SNOAuthToken } from "../../core/sn";
+import { SNOAuthTokenData } from "../../core/sn";
 
 describe("OAuthClientSpec", () => {
   const config: InstanceConfig = {
@@ -136,7 +136,7 @@ describe("OAuthClientSpec", () => {
   });
 
   it("should extend headers with authentication", async() => {
-    const token: SNOAuthToken = config.auth.token!;
+    const token: SNOAuthTokenData = config.auth.token!;
     const options: RequestOptions = {
       method: "GET"
     };

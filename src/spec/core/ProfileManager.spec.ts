@@ -4,6 +4,7 @@ import { InstanceConfig, Profile, ProfileInfo, ProfileManager, TableConfig } fro
 import { RESTClient } from "../../core/RESTClient";
 import { OAuthClient } from "../../core/OAuthClient";
 import { when } from "jest-when";
+import { jesthelpers } from "../helpers";
 
 describe("ProfileManagerSpec", () => {
   const dev1Profile = {
@@ -53,14 +54,17 @@ describe("ProfileManagerSpec", () => {
     jest.spyOn(ProfileManager, "pathFor").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
     
     when(jest.spyOn(fs, "readdirSync"))
-    // @ts-ignore
+      .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
+      // @ts-ignore
       .calledWith(profilesHomePath).mockReturnValue(["dev1", "dev2"]);
+    
     // @ts-ignore
     jest.spyOn(fs, "statSync").mockImplementation((path) => {
       return dirStats;
     })
     jest.spyOn(fs, "existsSync").mockReturnValue(true);
     when(jest.spyOn(fs, "readFileSync"))
+      .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
       .calledWith(`${profilesHomePath}/dev1/profile.json`, "utf8").mockReturnValue(JSON.stringify(expected[0]))
       .calledWith(`${profilesHomePath}/dev2/profile.json`, "utf8").mockReturnValue(JSON.stringify(expected[1]));
 
@@ -90,6 +94,7 @@ describe("ProfileManagerSpec", () => {
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true);
     when(jest.spyOn(fs, "readFileSync"))
+      .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
       .calledWith(`${profilesHomePath}/${profileName}/profile.json`, "utf8").mockReturnValue(JSON.stringify(dev1Profile));
 
     // need to stub profile.loadTableConfiguration...

@@ -3,7 +3,7 @@ import { URL, URLSearchParams } from "url";
 import { Request, Response } from "./Request.js";
 import { RequestOptions } from "https";
 import { Package } from "./Package.js";
-import { SNOAuthToken } from "./sn.js";
+import { SNOAuthTokenData } from "./sn.js";
 import { InstanceAuthenticationData, InstanceConfig, InstanceOAuthTokenData, Profile, ProfileManager } from "./ProfileManager.js";
 
 const CLIENT_BASE_URL: string = "/oauth_entity.do";
@@ -94,7 +94,7 @@ export class OAuthClient {
     return url;
   }
 
-  async requestTokenByCode(profile: Profile, code: string): Promise<SNOAuthToken>  {
+  async requestTokenByCode(profile: Profile, code: string): Promise<SNOAuthTokenData>  {
     const url: URL = new URL(TOKEN_BASE_URL, profile.getBaseUrl());
     
     const body: URLSearchParams = new URLSearchParams();
@@ -112,7 +112,7 @@ export class OAuthClient {
       }
     };
 
-    const token: SNOAuthToken = await Request.json(url, options, body.toString())
+    const token: SNOAuthTokenData = await Request.json(url, options, body.toString())
       .catch((reason: any) => {
         if (reason instanceof Response) {
           const response: Response = reason;
@@ -127,7 +127,7 @@ export class OAuthClient {
     return token;
   }
 
-  async requestTokenByUsername(profile: Profile, username: string, password: string): Promise<SNOAuthToken> {
+  async requestTokenByUsername(profile: Profile, username: string, password: string): Promise<SNOAuthTokenData> {
     const url: URL = new URL(TOKEN_BASE_URL, profile.getBaseUrl());
 
     const body: URLSearchParams = new URLSearchParams();
@@ -145,7 +145,7 @@ export class OAuthClient {
       }
     };
 
-    const token: SNOAuthToken = await Request.json(url, options, body.toString())
+    const token: SNOAuthTokenData = await Request.json(url, options, body.toString())
       .catch((reason: any) => {
         if (reason instanceof Response) {
           const response: Response = reason;
@@ -160,7 +160,7 @@ export class OAuthClient {
     return token;
   }
 
-  async refreshToken(profile: Profile): Promise<SNOAuthToken> {
+  async refreshToken(profile: Profile): Promise<SNOAuthTokenData> {
     const url: URL = new URL(TOKEN_BASE_URL, profile.getBaseUrl());
     
     const body: URLSearchParams = new URLSearchParams();
@@ -177,7 +177,7 @@ export class OAuthClient {
       }
     };
 
-    const token: SNOAuthToken = await Request.json(url, options, body.toString())
+    const token: SNOAuthTokenData = await Request.json(url, options, body.toString())
       .catch((reason: any) => {
         if (reason instanceof Response) {
           const response: Response = reason;
