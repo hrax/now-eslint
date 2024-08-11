@@ -33,7 +33,7 @@ describe("OAuthClientSpec", () => {
         lastRetrieved: 0
       };
   
-      expect(OAuthClient.isTokenExpired(token)).toBeTrue();
+      expect(OAuthClient.isTokenExpired(token)).toBeTruthy();
     });
     it("should expire", () => {
       const token: InstanceOAuthTokenData = {
@@ -51,7 +51,7 @@ describe("OAuthClientSpec", () => {
         }
       };
 
-      expect(OAuthClient.isTokenExpired(token)).toBeTrue();
+      expect(OAuthClient.isTokenExpired(token)).toBe(true);
     });
     it("should be valid", () => { 
       const tokenValid: InstanceOAuthTokenData = {
@@ -69,28 +69,28 @@ describe("OAuthClientSpec", () => {
         }
       };
 
-      expect(OAuthClient.isTokenExpired(tokenValid)).toBeFalse();
+      expect(OAuthClient.isTokenExpired(tokenValid)).toBe(false);;
     });
   });
 
   describe("request token by username", () => {
     it("should resolve on 200", async () => {
       let response = Response.empty(JSON.stringify(config.auth.token!));
-      spyOn(response, "isOK").and.returnValue(true);  
-      spyOn(Request, "execute").and.resolveTo(response);
+      jest.spyOn(response, "isOK").mockReturnValue(true);
+      jest.spyOn(Request, "execute").mockResolvedValue(response);
       
       const client = new OAuthClient();
-      await expectAsync(client.requestTokenByUsername(profile, "admin", "admin")).toBeResolvedTo(config.auth.token!);
+      await expect(client.requestTokenByUsername(profile, "admin", "admin")).resolves.toStrictEqual(config.auth.token!);
     });
   
     it("should reject on 401", async () => {
       let response = Response.empty(JSON.stringify({}));
-      spyOn(response, "isEmpty").and.returnValue(false);  
-      spyOn(response, "isUnauthorized").and.returnValue(true);  
-      spyOn(Request, "execute").and.rejectWith(response);
+      jest.spyOn(response, "isEmpty").mockReturnValue(false);  
+      jest.spyOn(response, "isUnauthorized").mockReturnValue(true);  
+      jest.spyOn(Request, "execute").mockRejectedValue(response);
 
       const client = new OAuthClient();
-      await expectAsync(client.requestTokenByUsername(profile, "admin", "admin")).toBeRejectedWith(new OAuthUsernamePasswordIncorrect(response.data));
+      await expect(client.requestTokenByUsername(profile, "admin", "admin")).rejects.toStrictEqual(new OAuthUsernamePasswordIncorrect(response.data));
     });
   });
 
@@ -98,40 +98,40 @@ describe("OAuthClientSpec", () => {
     const code = "1234";
     it("should resolve on 200", async () => {
       let response = Response.empty(JSON.stringify(config.auth.token!));
-      spyOn(response, "isOK").and.returnValue(true);  
-      spyOn(Request, "execute").and.resolveTo(response);
+      jest.spyOn(response, "isOK").mockReturnValue(true);  
+      jest.spyOn(Request, "execute").mockResolvedValue(response);
 
       const client = new OAuthClient();
-      await expectAsync(client.requestTokenByCode(profile, code)).toBeResolvedTo(config.auth.token!);
+      await expect(client.requestTokenByCode(profile, code)).resolves.toStrictEqual(config.auth.token!);
     });
 
     it("should reject on 401", async () => {
       let response = Response.empty("{}");
-      spyOn(response, "isEmpty").and.returnValue(false);  
-      spyOn(response, "isUnauthorized").and.returnValue(true);
-      spyOn(Request, "execute").and.rejectWith(response);
+      jest.spyOn(response, "isEmpty").mockReturnValue(false);  
+      jest.spyOn(response, "isUnauthorized").mockReturnValue(true);
+      jest.spyOn(Request, "execute").mockRejectedValue(response);
 
       const client = new OAuthClient();
-      await expectAsync(client.requestTokenByCode(profile, code)).toBeRejectedWith(new OAuthCodeExpired(response.data));
+      await expect(client.requestTokenByCode(profile, code)).rejects.toStrictEqual(new OAuthCodeExpired(response.data));
     });
   });
 
   describe("refresh token", () => {
     it("should resolve on 200", async () => {
       let response = Response.empty(JSON.stringify(config.auth.token!));
-      spyOn(response, "isOK").and.returnValue(true);
-      spyOn(Request, "execute").and.resolveTo(response);
+      jest.spyOn(response, "isOK").mockReturnValue(true);
+      jest.spyOn(Request, "execute").mockResolvedValue(response);
       const client = new OAuthClient();
-      await expectAsync(client.refreshToken(profile)).toBeResolvedTo(config.auth.token!);
+      await expect(client.refreshToken(profile)).resolves.toStrictEqual(config.auth.token!);
     });
 
     it("should reject on 401", async () => {
       let response = Response.empty("{}");
-      spyOn(response, "isEmpty").and.returnValue(false);  
-      spyOn(response, "isUnauthorized").and.returnValue(true);
-      spyOn(Request, "execute").and.rejectWith(response);
+      jest.spyOn(response, "isEmpty").mockReturnValue(false);  
+      jest.spyOn(response, "isUnauthorized").mockReturnValue(true);
+      jest.spyOn(Request, "execute").mockRejectedValue(response);
       const client = new OAuthClient();
-      await expectAsync(client.refreshToken(profile)).toBeRejectedWith(new OAuthRefreshTokenExpired(response.data));
+      await expect(client.refreshToken(profile)).rejects.toStrictEqual(new OAuthRefreshTokenExpired(response.data));
     });
   });
 

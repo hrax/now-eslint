@@ -1,3 +1,4 @@
+import { when } from "jest-when";
 import { OAuthClient } from "../../core/OAuthClient";
 import { InstanceConfig, Profile, TableConfig } from "../../core/ProfileManager";
 import { Request, Response } from "../../core/Request";
@@ -25,7 +26,6 @@ describe("RESTClientSpec", () => {
   };
   const profile: Profile = new Profile(config);
   const oauthClient: OAuthClient = new OAuthClient();
-
 
   const _makeRESTResponse = function<T = any>(data?: T | Array<T>): JSONRESTResponse<T> {
     const response: JSONRESTResponse<T> = {
@@ -58,33 +58,35 @@ describe("RESTClientSpec", () => {
     const url = {
       origin: config.baseUrl,
       pathname: TableAPI.USER_PREFERENCE_PATH,
-      search: jasmine.stringContaining(new URLSearchParams("sysparm_query=name=@hrax/now-eslint/table_config^userISEMPTY^ORuserDYNAMIC90d1921e5f510100a9ad2572f2b477fe^ORDERBYDESCuser").toString())
+      search: expect.stringContaining(new URLSearchParams("sysparm_query=name=@hrax/now-eslint/table_config^userISEMPTY^ORuserDYNAMIC90d1921e5f510100a9ad2572f2b477fe^ORDERBYDESCuser").toString())
     };
 
     it("should succeed if exists", async() => {
-      const requestExecuteSpy = spyOn(Request, "execute");  
+      const requestExecuteSpy = jest.spyOn(Request, "execute");  
       const response = Response.empty(JSON.stringify(_makeRESTResponse(tablePref)));
 
-      spyOn(response, "isEmpty").and.returnValue(false);
-      spyOn(response, "isOK").and.returnValue(true);
+      jest.spyOn(response, "isEmpty").mockReturnValue(false);
+      jest.spyOn(response, "isOK").mockReturnValue(true);
 
-      requestExecuteSpy.withArgs(jasmine.objectContaining(url), jasmine.anything(), undefined).and.resolveTo(response);
+      when(requestExecuteSpy)
+        .calledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
   
       const client = new RESTClient(oauthClient);
-      await expectAsync(client.loadTableConfigurationPreference(profile)).toBeResolvedTo(tablePref);
+      await expect(client.loadTableConfigurationPreference(profile)).resolves.toStrictEqual(tablePref);
     });
 
     it("should reject if does not exists", async() => {
-      const requestExecuteSpy = spyOn(Request, "execute");  
+      const requestExecuteSpy = jest.spyOn(Request, "execute");
       const response = Response.empty(JSON.stringify(_makeRESTResponse()));
 
-      spyOn(response, "isEmpty").and.returnValue(false);
-      spyOn(response, "isOK").and.returnValue(true);
+      jest.spyOn(response, "isEmpty").mockReturnValue(false);
+      jest.spyOn(response, "isOK").mockReturnValue(true);
 
-      requestExecuteSpy.withArgs(jasmine.objectContaining(url), jasmine.anything(), undefined).and.resolveTo(response);
+      when(requestExecuteSpy)
+        .calledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
   
       const client = new RESTClient(oauthClient);
-      await expectAsync(client.loadTableConfigurationPreference(profile)).toBeRejectedWith(RESTClient.NO_TABLE_CONFIG_PREF);
+      await expect(client.loadTableConfigurationPreference(profile)).rejects.toEqual(RESTClient.NO_TABLE_CONFIG_PREF);
     });
   });
 
@@ -166,24 +168,26 @@ describe("RESTClientSpec", () => {
     };
     it("should load, prepare and save the config", async() => {
       const tpResponse = Response.empty(JSON.stringify(_makeRESTResponse(tpData)));
-      spyOn(tpResponse, "isEmpty").and.returnValue(false);
-      spyOn(tpResponse, "isOK").and.returnValue(true);
+      jest.spyOn(tpResponse, "isEmpty").mockReturnValue(false);
+      jest.spyOn(tpResponse, "isOK").mockReturnValue(true);
 
       const tfResponse = Response.empty(JSON.stringify(_makeRESTResponse(tfData)));
-      spyOn(tfResponse, "isEmpty").and.returnValue(false);
-      spyOn(tfResponse, "isOK").and.returnValue(true);
+      jest.spyOn(tfResponse, "isEmpty").mockReturnValue(false);
+      jest.spyOn(tfResponse, "isOK").mockReturnValue(true);
 
-      const requestExecuteSpy = spyOn(Request, "execute")
+      const requestExecuteSpy = jest.spyOn(Request, "execute");
+      when(requestExecuteSpy)
         // pull table-parent
-        .withArgs(jasmine.objectContaining(tpUrl), jasmine.anything(), undefined).and.resolveTo(tpResponse)
+        .calledWith(expect.objectContaining(tpUrl), expect.anything(), undefined).mockResolvedValue(tpResponse)
         // pull table-field
-        .withArgs(jasmine.objectContaining(tfUrl), jasmine.anything(), undefined).and.resolveTo(tfResponse)
+        .calledWith(expect.objectContaining(tfUrl), expect.anything(), undefined).mockResolvedValue(tfResponse)
         // push preference
-        .withArgs(jasmine.objectContaining(upUrl), jasmine.objectContaining({
+        .calledWith(expect.objectContaining(upUrl), expect.objectContaining({
           "method": "POST"
-        }), jasmine.anything()).and.resolveTo(tfResponse);
+        }), expect.anything()).mockResolvedValue(tfResponse);
       const client = new RESTClient(oauthClient);
-      await expectAsync(client.setupTableConfiguration(profile)).toBeResolvedTo(data);
+      
+      await expect(client.setupTableConfiguration(profile)).resolves.toStrictEqual(data);
       // 2 pulls + 1 push
       expect(requestExecuteSpy).toHaveBeenCalledTimes(3);
     });

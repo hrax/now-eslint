@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { RequestOptions } from "https";
 import { Request, Response } from "../../core/Request";
 
@@ -8,7 +7,7 @@ describe("Request", () => {
     const options: RequestOptions = {
       method: "GET"
     }
-    await expectAsync(Request.execute(url, options)).toBeRejectedWith(Response.empty("URL protocol must be https!"));
+    await expect(Request.execute(url, options)).rejects.toStrictEqual(Response.empty("URL protocol must be https!"));
   })
 
   it("Returns response on 200 OK status code", async () => {
@@ -18,8 +17,8 @@ describe("Request", () => {
     }
 
     const response = await Request.execute(url, options);
-    expect(response.isEmpty()).toBeFalse();
-    expect(response.isOK()).toBeTrue();
-    expect(response.hasData()).toBeTrue();
+    expect(response.isEmpty()).toBe(false);
+    expect(response.isOK()).toBe(true);
+    expect(response.hasData()).toBe(true);
   });
 });
