@@ -1,7 +1,7 @@
 import { RequestOptions } from "https";
-import { Request, Response } from "../../core/Request";
+import { Request, Response } from "../../src/core/Request";
 
-describe("Request", () => {
+describe("RequestSpec", () => {
   it("throws exception on wrong protocol", async () => {
     const url = new URL("http://example.com");
     const options: RequestOptions = {

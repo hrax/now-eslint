@@ -19,8 +19,8 @@ export class Linter {
   private options: LinterOptions;
   private client: RESTClient;
   private eslint: ESLint = new ESLint();
-  private changes: Map<string, UpdateXMLScan> = new Map();
-  private metrics: Map<string, any> = new Map();
+  changes: Map<string, UpdateXMLScan> = new Map();
+  metrics: Map<string, any> = new Map();
 
   /**
    * 

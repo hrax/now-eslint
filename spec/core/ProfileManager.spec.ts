@@ -1,8 +1,8 @@
 import fs, { Stats } from "fs";
 import path from "path";
-import { InstanceConfig, Profile, ProfileInfo, ProfileManager, TableConfig } from "../../core/ProfileManager";
-import { RESTClient } from "../../core/RESTClient";
-import { OAuthClient } from "../../core/OAuthClient";
+import { InstanceConfig, Profile, ProfileInfo, ProfileManager, TableConfig } from "../../src/core/ProfileManager";
+import { RESTClient } from "../../src/core/RESTClient";
+import { OAuthClient } from "../../src/core/OAuthClient";
 import { resetAllWhenMocks, when } from "jest-when";
 import { jesthelpers } from "../helpers";
 
