@@ -1,15 +1,12 @@
 /* eslint-disable */
 import { ESLint } from "eslint";
 
-import Assert from "../util/Assert.js";
-import HashHelper from "../util/HashHelper.js";
 import { UpdateXMLScan } from "./UpdateXMLScan.js";
-// const PDFReportGenerator = require("../generator/PDFReportGenerator.js");
-// const JSONReportGenerator = require("../generator/JSONReportGenerator.js");
 import AbstractReportGenerator from "../generator/AbstractReportGenerator.js";
 import { Profile } from "../core/ProfileManager.js";
-import { escape } from "querystring";
 import { RESTClient } from "../core/RESTClient.js";
+import { DOMParser } from "@xmldom/xmldom";
+import { xmlhelpers } from "../util/helpers.js";
 
 export interface LinterOptions {
   title: string;
@@ -44,18 +41,17 @@ export class Linter {
     this.changes.clear();
     this.metrics.clear();
 
-    /* const response = await this.client.requestUpdateXMLByUpdateSetQuery(this.options.query);
-
+    const changes = await this.client.loadUpdateXMLByUpdateSetQuery(this.profile, this.options.query);
     // Get records from the response
-    response.result.forEach((record) => {
-      const data = RESTHelper.transformUpdateXMLToData(record);
-      const scan = new UpdateXMLScan(data);
+    changes.forEach((change) => {
+      const scan = new UpdateXMLScan(change);
+      scan.parsePayload();
       if (!this.changes.has(scan.name)) {
         this.changes.set(scan.name, scan);
       } else {
-        this.changes.get(scan.name).incrementUpdateCount();
+        this.changes.get(scan.name)!.updates += change.sys_mod_count;
       }
-    }); */
+    });
   }
 
   /**
@@ -65,23 +61,24 @@ export class Linter {
    * @see #fetch()
    * @return {void}
    */
-  async lint() {
+  async lint(): Promise<void> {
     const updateSetIDs = new Set();
+    const config = this.profile.getTableConfiguration();
 
     // Check the changes against configured lint tables
     this.changes.forEach((scan, name) => {
-      if (scan.status !== "SCAN") {
+      if (scan.status() !== "SCAN") {
         return;
       }
       
       const table = scan.targetTable;
-      if (!this.profile.tables.has(table)) {
+      if (config!.tables[table] == null) {
         scan.ignore();
         return;
       }
 
-      const fields = this.profile.tables.get(table).fields || null;
-      if (fields == null || fields.length === 0) {
+      const fields = config!.tables[table].fields || null;
+      if (fields == null || Object.keys(fields).length === 0) {
         scan.manual();
         return;
       }
@@ -98,24 +95,25 @@ export class Linter {
           }
         } */
 
+      const document = new DOMParser().parseFromString(scan.payload);
       // For each configured field run lint
-      fields.forEach(async (field) => {
-        const data = XPathHelper.parseFieldValue(table, field, scan.payload);
+      Object.values(fields).forEach(async (field) => {
+        const data = xmlhelpers.parsePayloadTableFieldValue(table, field.name, document);
         if (data == null || data === "") {
           scan.skip();
           return;
         }
         
         // data is default value
-        if (this.profile.tables.get(table).defaults && this.profile.tables.get(table).defaults[field] && HashHelper.matches(data, this.profile.tables.get(table).defaults[field])) {
+        /* if (config!.tables.get(table).defaults && this.profile.tables.get(table).defaults[field] && HashHelper.matches(data, this.profile.tables.get(table).defaults[field])) {
           scan.skip();
           return;
-        }
+        } */
         
         const report = await this.eslint.lintText(data);
         if (report.length) {
-          report[0].filePath = "<" + scan.name + "@" + field + ">";
-          scan.reports.set(field, report[0]);
+          report[0].filePath = scan.reportPathForField(field.name);
+          scan.reports.set(field.name, report[0]);
         }
       });
     });
@@ -129,18 +127,18 @@ export class Linter {
     // Calculate metrics
     this.changes.forEach((scan, name) => {
       // Status metrics
-      if (this.metrics.get("byStatus")[scan.status] == null) {
-        this.metrics.get("byStatus")[scan.status] = 0;
+      if (this.metrics.get("byStatus")[scan.status()] == null) {
+        this.metrics.get("byStatus")[scan.status()] = 0;
       }
-      this.metrics.get("byStatus")[scan.status]++;
+      this.metrics.get("byStatus")[scan.status()]++;
 
       // Changes metrics
-      this.metrics.set("totalChanges", this.metrics.get("totalChanges") + parseInt(scan.updates));
+      this.metrics.set("totalChanges", this.metrics.get("totalChanges") + scan.updates);
       
       // Update Sets
-      updateSetIDs.add(scan.updateSet);
+      updateSetIDs.add(scan.updateSetID);
     });
-    this.metrics.set("uniqueChanges", this.changes.length);
+    this.metrics.set("uniqueChanges", this.changes.size);
     this.metrics.set("totalUpdateSets", updateSetIDs.size);
   }
 
@@ -152,32 +150,8 @@ export class Linter {
     await this.lint();
   }
 
-  /**
-   * Serialize the current state of the report and its changes into a JSON object.
-   * @returns {Object}
-   */
-  toJSON() {
-      const data = {
-        domain: this.profile.domain,
-        username: this.profile.username,
-        title: this.options.title,
-        query: this.options.query,
-        changes: Array.from(this.changes.entries()),
-        resources: Object.fromEntries(this.profile.resources.entries()),
-        metrics: Object.fromEntries(this.metrics.entries())
-      };
-
-    // Lazy deep copy
-    return JSON.parse(JSON.stringify(data));
-  }
-
-  report(path, fileName, generator) {
-    Assert.notEmpty(path, "path cannot be empty.");
-    Assert.notEmpty(fileName, "fileName cannot be empty.");
-    Assert.notNull(generator, "generator cannot be null.");
-    Assert.isInstance(generator, AbstractReportGenerator, "provided generator needs to be instance of AbstractReportGenerator");
-
-    const data = Object.assign({}, this.toJSON());
+  report(path: string, fileName: string, generator: AbstractReportGenerator) {
+    const data = {};
     generator.save(path, fileName, data);
   }
 }

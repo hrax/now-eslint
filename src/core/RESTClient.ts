@@ -255,7 +255,7 @@ export class RESTClient {
     return (<JSONRESTResponse<SNUpdateXMLData>> await Request.json(url, options)).result;
   }
 
-  async loadUpdateXMLByUpdateSetQuery(profile: Profile, query: string): Promise<Array<SNUpdateSetData>> {
+  async loadUpdateXMLByUpdateSetQuery(profile: Profile, query: string): Promise<Array<SNUpdateXMLData>> {
     if (query == null || query === "") {
       query = "sys_id=-1";
     }

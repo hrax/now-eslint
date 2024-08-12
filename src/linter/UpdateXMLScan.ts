@@ -30,8 +30,32 @@ export type UpdateXMLScanStatus =
 
 export class UpdateXMLScan extends SNUpdateXML {
 
+  private _status: UpdateXMLScanStatus = "SCAN";
+
+  reports: Map<string, any> = new Map();
+
   constructor(data?: SNUpdateXMLData) {
     super(data);
+  }
+
+  status(): UpdateXMLScanStatus {
+    return this._status;
+  }
+
+  ignore(): void {
+    this._status = "IGNORED";
+  }
+
+  manual(): void {
+    this._status = "MANUAL";
+  }
+
+  skip(): void {
+    this._status = "SKIPPED";
+  }
+
+  reportPathForField(field: string): string {
+    return `<${this.updateSetID}/${this.targetTable}/${field}.js>`;
   }
 
 }

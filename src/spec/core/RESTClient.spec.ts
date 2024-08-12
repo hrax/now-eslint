@@ -5,7 +5,7 @@ import { OAuthClient } from "../../core/OAuthClient.js";
 import { InstanceConfig, Profile, TableConfig } from "../../core/ProfileManager.js";
 import { Request, Response } from "../../core/Request.js";
 import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient.js";
-import { SNUpdateSetData, SNUpdateXMLData } from "../../core/sn.js";
+import { SNTable, SNUpdateSetData, SNUpdateXMLData } from "../../core/sn.js";
 
 describe("RESTClientSpec", () => {
   const config: InstanceConfig = {
