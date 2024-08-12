@@ -3,7 +3,7 @@ import { OAuthClient } from "./OAuthClient.js";
 import { Request, Response } from "./Request.js";
 import { Package } from "./Package.js";
 import { InstanceConfig, Profile, TableConfig } from "./ProfileManager.js";
-import { SNUpdateXMLData } from "./sn.js";
+import { SNUpdateSetData, SNUpdateXMLData } from "./sn.js";
 
 export class RESPONSE_STATUS {
   static readonly OK = 200 as const;
@@ -211,6 +211,8 @@ export class RESTClient {
       });
     })
 
+    // remove wf_workflow configuration
+    delete config.tables["wf_workflow"];
     await this.saveTableConfigurationPreference(profile, config);
     return config;
   }
@@ -253,8 +255,30 @@ export class RESTClient {
     return (<JSONRESTResponse<SNUpdateXMLData>> await Request.json(url, options)).result;
   }
 
-  async loadUpdateXMLByUpdateSetQuery(profile: Profile, ids: string): Promise<any> {
+  async loadUpdateXMLByUpdateSetQuery(profile: Profile, query: string): Promise<Array<SNUpdateSetData>> {
+    if (query == null || query === "") {
+      query = "sys_id=-1";
+    }
 
+    const url: URL = new URL(TableAPI.UPDATE_SET_PATH, profile.getBaseUrl());
+    url.searchParams.set("sysparm_no_count", "true");
+    url.searchParams.set("sysparm_suppress_pagination_header", "true");
+    url.searchParams.set("sysparm_exclude_reference_link", "true");
+    url.searchParams.set("sysparm_fields", "sys_id");
+    url.searchParams.set("sysparm_query", `ORDERBYDESCsys_updated_on^GROUPBYname^${query}`);
+
+    const options: RequestOptions = {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      }
+    };
+
+    await this.oauthClient.handleAuthentication(profile, options);
+
+    const ids = (<JSONRESTResponse<SNUpdateSetData>> await Request.json(url, options)).result.map((item) => item.sys_id);
+    return await this.loadUpdateXMLByUpdateSetIds(profile, ...ids);
   }
 }
 

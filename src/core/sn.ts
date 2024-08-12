@@ -49,6 +49,10 @@ export interface SNUpdateXMLData {
   payloadHash: number;
 }
 
+export interface SNUpdateSetData {
+  sys_id: string;
+}
+
 export class SNUpdateXML {
   ID: string = "-1";
   name: string = "";

@@ -1,11 +1,11 @@
-import { when } from "jest-when";
+import { resetAllWhenMocks, when } from "jest-when";
 import { jesthelpers } from "../helpers.js";
 import { URLSearchParams } from "url";
 import { OAuthClient } from "../../core/OAuthClient.js";
 import { InstanceConfig, Profile, TableConfig } from "../../core/ProfileManager.js";
 import { Request, Response } from "../../core/Request.js";
 import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../core/RESTClient.js";
-import { SNUpdateXMLData } from "../../core/sn.js";
+import { SNUpdateSetData, SNUpdateXMLData } from "../../core/sn.js";
 
 describe("RESTClientSpec", () => {
   const config: InstanceConfig = {
@@ -42,6 +42,10 @@ describe("RESTClientSpec", () => {
     }
     return response;
   }
+
+  beforeEach(() => {
+    resetAllWhenMocks();
+  });
 
   describe("loading config from user preference", () => {
     const tablePref: TableConfig = {
@@ -199,41 +203,42 @@ describe("RESTClientSpec", () => {
   });
 
   describe("loading update set changes", () => {
-    it("should load by update set ids", async() => {
-      const responseBody: Array<SNUpdateXMLData> = [
-        {
-          action: "INSERT_OR_UPDATE",
-          application: "global",
-          name: "name1",
-          payload: "",
-          payloadHash: 0,
-          sys_created_by: "admin",
-          sys_created_on: "1970-01-01 00:00:00",
-          sys_id: "-1",
-          sys_mod_count: 2,
-          sys_updated_by: "admin",
-          sys_updated_on: "1970-01-02 00:00:00",
-          target_name: "target1",
-          type: "Script Include",
-          update_set: "1"
-        },
-        {
-          action: "INSERT_OR_UPDATE",
-          application: "global",
-          name: "name2",
-          payload: "",
-          payloadHash: 0,
-          sys_created_by: "admin",
-          sys_created_on: "1970-01-01 00:00:00",
-          sys_id: "-2",
-          sys_mod_count: 2,
-          sys_updated_by: "admin",
-          sys_updated_on: "1970-01-02 00:00:00",
-          target_name: "target2",
-          type: "Script Include",
-          update_set: "2"
-        }
-      ];
+    const responseBody: Array<SNUpdateXMLData> = [
+      {
+        action: "INSERT_OR_UPDATE",
+        application: "global",
+        name: "name1",
+        payload: "",
+        payloadHash: 0,
+        sys_created_by: "admin",
+        sys_created_on: "1970-01-01 00:00:00",
+        sys_id: "-1",
+        sys_mod_count: 2,
+        sys_updated_by: "admin",
+        sys_updated_on: "1970-01-02 00:00:00",
+        target_name: "target1",
+        type: "Script Include",
+        update_set: "1"
+      },
+      {
+        action: "INSERT_OR_UPDATE",
+        application: "global",
+        name: "name2",
+        payload: "",
+        payloadHash: 0,
+        sys_created_by: "admin",
+        sys_created_on: "1970-01-01 00:00:00",
+        sys_id: "-2",
+        sys_mod_count: 2,
+        sys_updated_by: "admin",
+        sys_updated_on: "1970-01-02 00:00:00",
+        target_name: "target2",
+        type: "Script Include",
+        update_set: "2"
+      }
+    ];
+
+    it("should load by update set ids", async() => {  
       const url = {
         origin: profile.getBaseUrl(),
         pathname: TableAPI.UPDATE_XML_PATH,
@@ -246,14 +251,51 @@ describe("RESTClientSpec", () => {
 
       const executeSpy = jest.spyOn(Request, "execute");
       when(executeSpy)
-        .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
-        .calledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
+        // .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
+        .expectCalledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
 
       const client = new RESTClient(oauthClient);
       await expect(client.loadUpdateXMLByUpdateSetIds(profile, "1","2","3")).resolves.toStrictEqual(responseBody);
     });
 
-    it.todo("should load by update set query");
+    it("should load by update set query", async() => {
+      const setResponseBody: Array<SNUpdateSetData> = [
+        {
+          sys_id: "1"
+        },
+        {
+          sys_id: "2"
+        }
+      ]
+
+      const setURL = {
+        origin: profile.getBaseUrl(),
+        pathname: TableAPI.UPDATE_SET_PATH,
+        search: expect.stringContaining(encodeURIComponent("sys_idIN1,2"))
+      };
+      const xmlURL = {
+        origin: profile.getBaseUrl(),
+        pathname: TableAPI.UPDATE_XML_PATH,
+        search: expect.stringContaining(encodeURIComponent("update_setIN1,2"))
+      };
+
+      const setResponse = Response.empty(JSON.stringify(_makeRESTResponse(setResponseBody)));
+      jest.spyOn(setResponse, "isEmpty").mockReturnValue(false);
+      jest.spyOn(setResponse, "isOK").mockReturnValue(true);
+
+      const xmlResponse = Response.empty(JSON.stringify(_makeRESTResponse(responseBody)));
+      jest.spyOn(xmlResponse, "isEmpty").mockReturnValue(false);
+      jest.spyOn(xmlResponse, "isOK").mockReturnValue(true);
+
+      const executeSpy = jest.spyOn(Request, "execute");
+      when(executeSpy)
+        .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
+        .calledWith(expect.objectContaining(setURL), expect.anything(), undefined).mockResolvedValue(setResponse)
+        .calledWith(expect.objectContaining(xmlURL), expect.anything(), undefined).mockResolvedValue(xmlResponse);
+
+      const client = new RESTClient(oauthClient);
+      await expect(client.loadUpdateXMLByUpdateSetQuery(profile, "sys_idIN1,2")).resolves.toStrictEqual(responseBody);
+    });
   });
   
 });

@@ -3,7 +3,7 @@ import path from "path";
 import { InstanceConfig, Profile, ProfileInfo, ProfileManager, TableConfig } from "../../core/ProfileManager";
 import { RESTClient } from "../../core/RESTClient";
 import { OAuthClient } from "../../core/OAuthClient";
-import { when } from "jest-when";
+import { resetAllWhenMocks, when } from "jest-when";
 import { jesthelpers } from "../helpers";
 
 describe("ProfileManagerSpec", () => {
@@ -15,6 +15,10 @@ describe("ProfileManagerSpec", () => {
     name: "dev2",
     baseUrl: "https://dev2.example.com"
   };
+  
+  beforeEach(() => {
+    resetAllWhenMocks();
+  })
 
   it("should list all available profiles", () => {
     const expected: Array<ProfileInfo> = [dev1Profile,dev2Profile];
