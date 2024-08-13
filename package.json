@@ -22,9 +22,7 @@
     "name": "Gregor Magdolen",
     "url": "https://hrax.dev"
   },
-  "main": "index.js",
   "exports": {
-    ".": "./index.js",
     "./package.json": "./package.json",
     "./generator": "./dist/generator/index.js",
     "./generator/index": "./dist/generator/index.js",
@@ -62,18 +60,23 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
+    "@eslint/js": ">=9.3.0",
     "@jest/globals": "^29.7.0",
+    "@stylistic/eslint-plugin-js": "^2.6.2",
     "@types/eslint": "^9.6.0",
+    "@types/eslint__js": "^8.42.3",
     "@types/jest": "^29.5.12",
     "@types/jest-when": "^3.5.5",
     "@types/node": "^22.0.0",
     "eslint": ">=9.3.0",
+    "globals": ">=15.9.0",
     "jest": "^29.7.0",
     "jest-when": "^3.6.0",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.1.0"
   },
   "peerDependencies": {
     "eslint": ">=9.3.0"
