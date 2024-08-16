@@ -1,7 +1,5 @@
-const { name, version, description } = require("../../package.json");
+import { name, version, description } from "../../package.json";
 
-export class Package {
-  static readonly NAME = name;
-  static readonly VERSION = version;
-  static readonly DESCRIPTION = description;
-}
+export const PACKAGE_NAME = name;
+export const PACKAGE_VERSION = version;
+export const PACKAGE_DESCRIPTION = description;

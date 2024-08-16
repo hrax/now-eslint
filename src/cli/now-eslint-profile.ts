@@ -1,33 +1,33 @@
 /* eslint-disable no-console */
+import dotenv from "dotenv";
+import commander from "commander";
+import colors from "colors/safe";
+import prompt from "prompt";
+
+import * as helpers from "./helpers.js";
+import { ProfileManager, OAuthType } from "../core/ProfileManager.js";
+import { profileCreateAction } from "./actions/profile-actions.js";
+
 // Initialize dotenv
 try {
-  require("dotenv").config();
-// eslint-disable-next-line no-empty
-} catch (e) {}
-
-// Load commander
-const commander = require("commander");
-const program = new commander.Command();
-
-// Load prompt & safe colors
-const colors = require("colors/safe");
-const prompt = require("prompt");
-const helpers = require("./helpers.js");
-
-// Load local libraries
-const Profile = require("../linter/Profile.js");
-
-// Configure global constants
-const PROFILE_HOME = Profile.profilesHomeDirPath();
+  dotenv.config();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty, @stylistic/js/brace-style
+} catch (err) {}
 
 // Setup prompt
 prompt.message = "";
 prompt.delimiter = "";
 
+// Configure global constants
+const PROFILE_HOME = ProfileManager.profilesHomeDirPath();
+const OAUTH_TYPE_TOKEN: OAuthType = "oauth-token";
+
+
 const debugWorkingDir = () => {
   helpers.outputKeyValue("Working profiles home directory", `${PROFILE_HOME}`, true);
 };
 
+const program = new commander.Command();
 // Program setup; program is never meant to be run directly only as a subcommand
 program.name("now-eslint profile")
   .description("CLI to create and update now-eslint profiles")
@@ -35,12 +35,13 @@ program.name("now-eslint profile")
   .showHelpAfterError();
 
 // Default subcommand to create new profile
-const create = program.command("create", {isDefault: true})
+program.command("create", {isDefault: true})
   .description("create new profile for the ServiceNow instance (default)")
   .argument("<name>", `name of the profile; ${helpers.PROFILE_HELP}`, helpers.validateProfileName)
   .option("-d, --domain <domain>", `the URL to the ServiceNow instance; ${helpers.DOMAIN_HELP}`, helpers.validateDomain)
-  .option("-u, --username <username>", "username used to connect")
   .option("--proxy", "proxy connection configuration")
+  // .option("-t --token", "Authentication type OAuth token via OAuth code")
+  // .option("-u --user", "Authentication type OAuth token via username and password")
   .option("-f, --force", "force override if profile with the name exists")
   .addHelpText("after", `
   
@@ -51,97 +52,9 @@ const create = program.command("create", {isDefault: true})
   sys_db_object
 
   Example call:
-  now-eslint profile create <profileName> -d "https://example.service-now.com" -u admin
-  now-eslint profile create <profileName> -d "https://example.service-now.com" -u admin --proxy`);
-
-
-create.action(async function(name, options) {
-  debugWorkingDir();
-
-  if (Profile.exists(name) && options.force !== true) {
-    program.error(`Profile with name '${name}' already exists, use --force option to override`, {exitCode: 1});
-  }
-
-  const schema = {
-    properties: {
-      domain: {
-        description: colors.yellow("Enter the URL to the ServiceNow instance"),
-        pattern: helpers.DOMAIN_REGEXP,
-        message: colors.red(helpers.DOMAIN_ERROR),
-        required: true,
-        default: options.domain,
-        ask: () => {
-          return options.domain == null;
-        }
-      },
-      username: {
-        description: colors.yellow("Enter username"),
-        required: true,
-        default: options.username,
-        ask: () => {
-          return options.username == null;
-        }
-      },
-      password: {
-        description: colors.yellow("Enter password"),
-        required: true,
-        hidden: true,
-        replace: "*"
-      },
-      proxy: {
-        description: colors.yellow("Enter proxy connection string e.g. http://username:password@domain:port"),
-        required: true,
-        ask: () => {
-          return options.proxy === true;
-        }
-      }
-    }
-  };
-  
-  prompt.start();
-
-  prompt.get(schema, async function(err, result) {
-    if (err) {
-      program.error(err, {exitCode: 1});
-    }
-
-    const data = {
-      "name": `${name}`,
-      "domain": `${result.domain}`,
-      "username": `${result.username}`,
-      "password": `${result.password}`,
-      "proxy": result.useProxy ? `${result.proxy}` : null
-    };
-
-    const profile = new Profile(data);
-    const instance = profile.createInstance();
-
-    helpers.outputInfo(`Testing connection to the instance at '${profile.domain}' using username '${profile.username}'...\n`);
-
-    const message = "Unable to connect to the instance, please verify the instance url, username, password and role access.";
-    try {
-      const connected = await instance.testConnection();
-      if (!connected) {
-        program.error(message, {exitCode: 1});
-      }
-
-      helpers.outputInfo(`Succesfully connected to the instance at '${profile.domain}'.\n`);
-    } catch (err) {
-      helpers.outputError(message);
-      program.error(err, {exitCode: 1});
-    }
-
-    helpers.outputInfo("Generating table configuration...\n");
-    await profile.loadInstanceTables();
-    // Force skip workflow version parsing; TODO: custom XML parsing setup
-    profile.tables["wf_workflow_version"] = null;
-
-    helpers.outputInfo("Saving the profile...\n");
-    Profile.save(profile, options.force === true);
-
-    helpers.outputInfo("Profile setup completed.");
-  });
-});
+  now-eslint profile create <profileName> -d "https://example.service-now.com" 
+  now-eslint profile create <profileName> -d "https://example.service-now.com" --proxy`)
+  .action(profileCreateAction);
 
 // subcommand to debug configuration of saved profile
 const debug = program.command("debug")

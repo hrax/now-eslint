@@ -1,28 +1,19 @@
 import { RequestOptions } from "https";
 import { OAuthClient } from "./OAuthClient.js";
 import { Request, Response } from "./Request.js";
-import { Package } from "./Package.js";
-import { InstanceConfig, Profile, TableConfig } from "./ProfileManager.js";
+import { PACKAGE_NAME } from "./Package.js";
+import { Profile, TableConfig } from "./ProfileManager.js";
 import { SNUpdateSetData, SNUpdateXMLData } from "./sn.js";
 
-export class RESPONSE_STATUS {
-  static readonly OK = 200 as const;
-  static readonly NOT_FOUND = 400 as const;
-  static readonly UNAUTHORIZED = 401 as const;
-  static readonly FORBIDDEN = 403 as const;
-  static readonly ERROR = 500 as const;
-};
+export const PATH_API_TABLE_UPDATE_XML = "/api/now/table/sys_update_xml" as const;
+export const PATH_API_TABLE_UPDATE_SET = "/api/now/table/sys_update_set" as const;
+export const PATH_API_TABLE_DICTIONARY = "/api/now/table/sys_dictionary" as const;
+export const PATH_API_TABLE_DB_OBJECT = "/api/now/table/sys_db_object" as const;
+export const PATH_API_TABLE_USER_PREFERENCE = "/api/now/table/sys_user_preference" as const;
 
-export class TableAPI {
-  static readonly UPDATE_XML_PATH = "/api/now/table/sys_update_xml" as const;
-  static readonly UPDATE_SET_PATH = "/api/now/table/sys_update_set" as const;
-  static readonly DICTIONARY_PATH = "/api/now/table/sys_dictionary" as const;
-  static readonly DB_OBJECT_PATH = "/api/now/table/sys_db_object" as const;
-  static readonly USER_PREFERENCE_PATH = "/api/now/table/sys_user_preference" as const;
-}
+export const NO_TABLE_CONFIG_PREF = "No Table Config preference!" as const;
 
 export class RESTClient {
-  static readonly NO_TABLE_CONFIG_PREF = "No Table Config preference!" as const;
   private oauthClient: OAuthClient;
 
   constructor(oauthClient: OAuthClient) {
@@ -34,7 +25,7 @@ export class RESTClient {
    * @returns true if connection is succesfull; Rejects promise with an error message if connection fails
    */
   async testConnection(profile: Profile): Promise<boolean> {
-    const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, profile.getBaseUrl());
+    const url: URL = new URL(PATH_API_TABLE_USER_PREFERENCE, profile.getBaseUrl());
     url.searchParams.set("sysparm_limit", "1");
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
@@ -52,21 +43,21 @@ export class RESTClient {
     await this.oauthClient.handleAuthentication(profile, options);
 
     const response: Response = await Request.execute(url, options)
-      .catch((reason: any) => {
+      .catch((reason: unknown) => {
         if (reason instanceof Response) {
           const response: Response = reason;
           if (!response.isEmpty() && response.isUnauthorized()) {
             return Promise.reject("Unauthorized");
           }
         }
-        return Response.empty("");
+        return Promise.reject(reason);
       });
     
     return !response.isEmpty() && response.isOK() && response.hasData();
   }
   
-  private async loadTableParentData(profile: Profile): Promise<Array<TableParentData>> {
-    const url: URL = new URL(TableAPI.DB_OBJECT_PATH, profile.getBaseUrl());
+  private async loadTableParentData(profile: Profile): Promise<TableParentData[]> {
+    const url: URL = new URL(PATH_API_TABLE_DB_OBJECT, profile.getBaseUrl());
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
     url.searchParams.set("sysparm_exclude_reference_link", "true");
@@ -83,15 +74,15 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(profile, options);
 
-    return (<JSONRESTResponse<TableParentData>>await Request.json(url, options)).result;
+    return (await Request.json(url, options) as JSONRESTResponse<TableParentData>).result;
   }
 
   /**
    * Load table field data
    * Skips tables whos name starts with wf_ or var_
    */
-  private async loadTableFieldData(profile: Profile): Promise<Array<TableFieldData>> {
-    const url: URL = new URL(TableAPI.DICTIONARY_PATH, profile.getBaseUrl());
+  private async loadTableFieldData(profile: Profile): Promise<TableFieldData[]> {
+    const url: URL = new URL(PATH_API_TABLE_DICTIONARY, profile.getBaseUrl());
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
     url.searchParams.set("sysparm_exclude_reference_link", "true");
@@ -108,12 +99,12 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(profile, options);
 
-    return (<JSONRESTResponse<TableFieldData>>await Request.json(url, options)).result;
+    return (await Request.json(url, options) as JSONRESTResponse<TableFieldData>).result;
   }
 
   async loadTableConfigurationPreference(profile: Profile): Promise<TableConfig> {
-    const prefName = `${Package.NAME}/table_config`;
-    const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, profile.getBaseUrl());
+    const prefName = `${PACKAGE_NAME}/table_config`;
+    const url: URL = new URL(PATH_API_TABLE_USER_PREFERENCE, profile.getBaseUrl());
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
     url.searchParams.set("sysparm_exclude_reference_link", "true");
@@ -131,10 +122,10 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(profile, options);
 
-    const response: JSONRESTResponse<TableConfig> = await Request.json(url, options);
+    const response = await Request.json(url, options) as JSONRESTResponse<TableConfig>;
 
     if (response.result.length === 0) {
-      return Promise.reject(RESTClient.NO_TABLE_CONFIG_PREF);
+      return Promise.reject(NO_TABLE_CONFIG_PREF);
     }
 
     // There should be always at least 1, since we are loading 2
@@ -142,8 +133,8 @@ export class RESTClient {
   }
 
   private async saveTableConfigurationPreference(profile: Profile, config: TableConfig): Promise<void> {
-    const prefName = `${Package.NAME}/table_config`;
-    const url: URL = new URL(TableAPI.USER_PREFERENCE_PATH, profile.getBaseUrl());
+    const prefName = `${PACKAGE_NAME}/table_config`;
+    const url: URL = new URL(PATH_API_TABLE_USER_PREFERENCE, profile.getBaseUrl());
 
     const options: RequestOptions = {
       method: "POST",
@@ -156,7 +147,7 @@ export class RESTClient {
     const body = {
       "name": prefName,
       "value": config
-    }
+    };
 
     await this.oauthClient.handleAuthentication(profile, options);
 
@@ -166,8 +157,10 @@ export class RESTClient {
   async setupTableConfiguration(profile: Profile): Promise<TableConfig> {
     const config: TableConfig = {
       tables: {}
-    }
-    const getParentTree = (table: string, tables: {[ key: string]: TableParentData}, tree: Array<string>) => {
+    };
+
+    // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+    const getParentTree = (table: string, tables: {[ key: string]: TableParentData}, tree: string[]) => {
       if (tables[table] == null) {
         return tree;
       }
@@ -180,9 +173,10 @@ export class RESTClient {
     const tables = (await this.loadTableParentData(profile)).reduce((accumulator, value) => {
       accumulator[value.name] = value;
       return accumulator;
-    }, <{[ key: string]: TableParentData}>{});
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/consistent-indexed-object-style
+    }, <{[key: string]: TableParentData}>{});
     // Load Table + Table field data
-    const fields: Array<TableFieldData> = await this.loadTableFieldData(profile);
+    const fields = await this.loadTableFieldData(profile);
 
     // Process all loaded fields
     fields.forEach((data) => {
@@ -191,11 +185,11 @@ export class RESTClient {
         config.tables[data.name] = {
           name: data.name,
           fields: {}
-        }
+        };
       }
       config.tables[data.name].fields[data.element] = {
         name: data.element
-      }
+      };
     });
 
     // For each configured table, find all its parents and merge fields
@@ -209,19 +203,20 @@ export class RESTClient {
         }
         config.tables[table].fields = Object.assign({}, config.tables[table].fields, config.tables[parent].fields);
       });
-    })
+    });
 
-    // remove wf_workflow configuration
+    // Remove wf_workflow configuration
     delete config.tables["wf_workflow"];
+
     await this.saveTableConfigurationPreference(profile, config);
     return config;
   }
 
   async getTableConfiguration(profile: Profile): Promise<TableConfig> {
     // Load table configuration from user preference
-    let pref: TableConfig = await this.loadTableConfigurationPreference(profile)
-      .catch((async (reason) => {
-        if (reason === RESTClient.NO_TABLE_CONFIG_PREF) {
+    const pref: TableConfig = await this.loadTableConfigurationPreference(profile)
+      .catch((async(reason) => {
+        if (reason === NO_TABLE_CONFIG_PREF) {
           return await this.setupTableConfiguration(profile);
         }
         return Promise.reject(reason);
@@ -230,12 +225,12 @@ export class RESTClient {
     return pref;
   }
 
-  async loadUpdateXMLByUpdateSetIds(profile: Profile, ...ids: string[]): Promise<Array<SNUpdateXMLData>> {
+  async loadUpdateXMLByUpdateSetIds(profile: Profile, ...ids: string[]): Promise<SNUpdateXMLData[]> {
     if (ids.length === 0) {
       ids.push("-1");
     }
 
-    const url: URL = new URL(TableAPI.UPDATE_XML_PATH, profile.getBaseUrl());
+    const url: URL = new URL(PATH_API_TABLE_UPDATE_XML, profile.getBaseUrl());
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
     url.searchParams.set("sysparm_exclude_reference_link", "true");
@@ -252,15 +247,15 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(profile, options);
 
-    return (<JSONRESTResponse<SNUpdateXMLData>> await Request.json(url, options)).result;
+    return (await Request.json(url, options) as JSONRESTResponse<SNUpdateXMLData>).result;
   }
 
-  async loadUpdateXMLByUpdateSetQuery(profile: Profile, query: string): Promise<Array<SNUpdateXMLData>> {
+  async loadUpdateXMLByUpdateSetQuery(profile: Profile, query: string): Promise<SNUpdateXMLData[]> {
     if (query == null || query === "") {
       query = "sys_id=-1";
     }
 
-    const url: URL = new URL(TableAPI.UPDATE_SET_PATH, profile.getBaseUrl());
+    const url: URL = new URL(PATH_API_TABLE_UPDATE_SET, profile.getBaseUrl());
     url.searchParams.set("sysparm_no_count", "true");
     url.searchParams.set("sysparm_suppress_pagination_header", "true");
     url.searchParams.set("sysparm_exclude_reference_link", "true");
@@ -277,7 +272,9 @@ export class RESTClient {
 
     await this.oauthClient.handleAuthentication(profile, options);
 
-    const ids = (<JSONRESTResponse<SNUpdateSetData>> await Request.json(url, options)).result.map((item) => item.sys_id);
+    const ids = (await Request.json(url, options) as JSONRESTResponse<SNUpdateSetData>).result
+      .map((item) => item.sys_id);
+
     return await this.loadUpdateXMLByUpdateSetIds(profile, ...ids);
   }
 }
@@ -292,6 +289,7 @@ export interface TableParentData {
   "super_class.name": string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface JSONRESTResponse<T = any> {
-  result: Array<T>
+  result: T[]
 }

@@ -1,6 +1,7 @@
 import fs, { Stats } from "fs";
 import path from "path";
-import { InstanceConfig, Profile, ProfileInfo, ProfileManager, TableConfig } from "../../src/core/ProfileManager";
+import * as ProfileManager from "../../src/core/ProfileManager";
+import { InstanceConfig, Profile, ProfileInfo } from "../../src/core/ProfileManager";
 import { RESTClient } from "../../src/core/RESTClient";
 import { OAuthClient } from "../../src/core/OAuthClient";
 import { resetAllWhenMocks, when } from "jest-when";
@@ -18,10 +19,10 @@ describe("ProfileManagerSpec", () => {
   
   beforeEach(() => {
     resetAllWhenMocks();
-  })
+  });
 
   it("should list all available profiles", () => {
-    const expected: Array<ProfileInfo> = [dev1Profile,dev2Profile];
+    const expected: ProfileInfo[] = [dev1Profile, dev2Profile];
 
     // Blank stats impl
     const dirStats: Stats = {
@@ -50,12 +51,12 @@ describe("ProfileManagerSpec", () => {
       rdev: 0,
       size: 0,
       uid: 0
-    }
+    };
 
     const profilesHomePath = "#profilesHome";
     jest.spyOn(path, "normalize").mockImplementation((path) => path);
-    jest.spyOn(ProfileManager, "profilesHomeDirPath").mockReturnValue(profilesHomePath);
-    jest.spyOn(ProfileManager, "pathFor").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
+    jest.spyOn(ProfileManager, "homeDirPath").mockReturnValue(profilesHomePath);
+    jest.spyOn(ProfileManager, "profileFilePath").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
     
     when(jest.spyOn(fs, "readdirSync"))
       .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
@@ -63,45 +64,45 @@ describe("ProfileManagerSpec", () => {
       .calledWith(profilesHomePath).mockReturnValue(["dev1", "dev2"]);
     
     // @ts-ignore
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     jest.spyOn(fs, "statSync").mockImplementation((path) => {
       return dirStats;
-    })
+    });
     jest.spyOn(fs, "existsSync").mockReturnValue(true);
     when(jest.spyOn(fs, "readFileSync"))
       .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
       .calledWith(`${profilesHomePath}/dev1/profile.json`, "utf8").mockReturnValue(JSON.stringify(expected[0]))
       .calledWith(`${profilesHomePath}/dev2/profile.json`, "utf8").mockReturnValue(JSON.stringify(expected[1]));
 
-    const profiles: Array<ProfileInfo> = ProfileManager.listProfiles();
+    const profiles: ProfileInfo[] = ProfileManager.listProfiles();
     
     expect(profiles).toStrictEqual(expected);
   });
 
-   it("should purge all existing profiles", () => {
+  it("should purge all existing profiles", () => {
     const profilesHomePath = "#profilesHome";
-    const profilesHomeDirPathSpy = jest.spyOn(ProfileManager, "profilesHomeDirPath").mockReturnValue(profilesHomePath);
+    const profilesHomeDirPathSpy = jest.spyOn(ProfileManager, "homeDirPath").mockReturnValue(profilesHomePath);
 
     const rmSpy = jest.spyOn(fs, "rmdirSync").mockReturnValue(undefined);
     ProfileManager.purgeProfiles();
 
     expect(profilesHomeDirPathSpy).toHaveBeenCalled();
-    expect(rmSpy).toHaveBeenCalledWith(profilesHomePath, {recursive: true})
+    expect(rmSpy).toHaveBeenCalledWith(profilesHomePath, {recursive: true});
   });
 
-  it("should load selected profile", async () => {
+  it("should load selected profile", async() => {
     const profilesHomePath = "#profilesHome";
     const profileName = "dev1";
 
     jest.spyOn(path, "normalize").mockImplementation((path) => path);
-    jest.spyOn(ProfileManager, "profilesHomeDirPath").mockReturnValue(profilesHomePath);
-    jest.spyOn(ProfileManager, "pathFor").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
+    jest.spyOn(ProfileManager, "homeDirPath").mockReturnValue(profilesHomePath);
+    jest.spyOn(ProfileManager, "profileFilePath").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true);
     when(jest.spyOn(fs, "readFileSync"))
       .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
       .calledWith(`${profilesHomePath}/${profileName}/profile.json`, "utf8").mockReturnValue(JSON.stringify(dev1Profile));
 
-    // need to stub profile.loadTableConfiguration...
     const oauthClient = new OAuthClient();
     const restClient = new RESTClient(oauthClient);
 
@@ -131,8 +132,8 @@ describe("ProfileManagerSpec", () => {
     const profilesHomePath = "#profilesHome";
     
     jest.spyOn(path, "normalize").mockImplementation((path) => path);
-    jest.spyOn(ProfileManager, "profilesHomeDirPath").mockReturnValue(profilesHomePath);
-    jest.spyOn(ProfileManager, "pathFor").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
+    jest.spyOn(ProfileManager, "homeDirPath").mockReturnValue(profilesHomePath);
+    jest.spyOn(ProfileManager, "profileFilePath").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true);
     const writeSpy = jest.spyOn(fs, "writeFileSync").mockReturnValue(undefined);
@@ -158,8 +159,8 @@ describe("ProfileManagerSpec", () => {
     const profilesHomePath = "#profilesHome";
     
     jest.spyOn(path, "normalize").mockImplementation((path) => path);
-    jest.spyOn(ProfileManager, "profilesHomeDirPath").mockReturnValue(profilesHomePath);
-    jest.spyOn(ProfileManager, "pathFor").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
+    jest.spyOn(ProfileManager, "homeDirPath").mockReturnValue(profilesHomePath);
+    jest.spyOn(ProfileManager, "profileFilePath").mockImplementation((name, file) => `${profilesHomePath}/${name}/${file}`);
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true);
     const writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(undefined);
@@ -185,7 +186,7 @@ describe("ProfileManagerSpec", () => {
     const profilesHomePath = "#profilesHome";
     
     jest.spyOn(path, "normalize").mockImplementation((path) => path);
-    jest.spyOn(ProfileManager, "profilesHomeDirPath").mockReturnValue(profilesHomePath);
+    jest.spyOn(ProfileManager, "homeDirPath").mockReturnValue(profilesHomePath);
 
     const rmSpy = jest.spyOn(fs, "rmdirSync").mockReturnValue(undefined);
 

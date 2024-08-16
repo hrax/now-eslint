@@ -1,42 +1,38 @@
-import { SNUpdateXML, SNUpdateXMLData } from "../core/sn";
+import { SNUpdateXML } from "../core/sn.js";
 
-export type UpdateXMLScanStatus = 
+export type UpdateXMLScanStatus =
    // Do not lint (deleted record)
   "DELETED" |
 
   // Do not lint (not configured table)
-  "IGNORED" | 
+  "IGNORED" |
 
   // Do not lint, should be checked manually (has no fields to check, but still configured)
-  "MANUAL" | 
+  "MANUAL" |
 
   // JSON payload initialized can be scanned based on configuration
-  "SCAN" | 
+  "SCAN" |
 
   // JSON payload detected as inactive; mark, do not lint
-  "INACTIVE" | 
+  "INACTIVE" |
 
   // Should be linted but does not contain anything to lint
-  "SKIPPED" | 
+  "SKIPPED" |
 
   // Linted, at least one error found
-  "ERROR" | 
+  "ERROR" |
 
   // Linted, at least one warning found
-  "WARNING" | 
+  "WARNING" |
 
   // Linted, no warnings or erros found
   "OK";
 
 export class UpdateXMLScan extends SNUpdateXML {
-
   private _status: UpdateXMLScanStatus = "SCAN";
 
+  // eslint-disable-next-line @typescript-eslint/consistent-generic-constructors, @typescript-eslint/no-explicit-any
   reports: Map<string, any> = new Map();
-
-  constructor(data?: SNUpdateXMLData) {
-    super(data);
-  }
 
   status(): UpdateXMLScanStatus {
     return this._status;
@@ -57,5 +53,4 @@ export class UpdateXMLScan extends SNUpdateXML {
   reportPathForField(field: string): string {
     return `<${this.updateSetID}/${this.targetTable}/${field}.js>`;
   }
-
 }

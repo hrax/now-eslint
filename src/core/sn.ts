@@ -1,6 +1,5 @@
 import { DOMParser } from "@xmldom/xmldom";
-import * as xpath from "xpath";
-import { xmlhelpers } from "../util/helpers";
+import { xmlhelpers } from "../util/xmlhelpers";
 
 export interface SNOAuthTokenData {
   access_token: string;
@@ -21,11 +20,13 @@ export interface SNField {
   default?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/consistent-indexed-object-style
+export type SNFieldMap = {[key: string]: SNField};
 export interface SNTable {
   name: string;
   label?: string;
   parent?: string;
-  fields: {[key: string]: SNField}
+  fields: SNFieldMap;
 }
 
 export type SNUpdateXMLAction = "INSERT_OR_UPDATE" | "DELETE";
@@ -54,25 +55,26 @@ export interface SNUpdateSetData {
 }
 
 export class SNUpdateXML {
-  ID: string = "-1";
-  name: string = "";
-  application: string = "global";
+  // eslint-disable-next-line id-length
+  ID = "-1";
+  name = "";
+  application = "global";
   action: SNUpdateXMLAction = "INSERT_OR_UPDATE";
-  type: string = "";
-  targetName: string = "";
-  updateSetID: string = "";
+  type = "";
+  targetName = "";
+  updateSetID = "";
 
-  createdOn: string = "";
-  createdBy: string = "";
-  updatedOn: string = "";
-  updatedBy: string = "";
-  updates: number = 0;
+  createdOn = "";
+  createdBy = "";
+  updatedOn = "";
+  updatedBy = "";
+  updates = 0;
 
-  payload: string = "";
-  payloadHash: number = 0;
+  payload = "";
+  payloadHash = 0;
 
-  targetTable: string = "";
-  targetID: string = "-1";
+  targetTable = "";
+  targetID = "-1";
 
   constructor(data?: SNUpdateXMLData) {
     if (data != null) {
@@ -83,7 +85,7 @@ export class SNUpdateXML {
       this.type = data.type;
       this.targetName = data.target_name;
       this.updateSetID = data.update_set;
-      this.createdOn = data.sys_created_by
+      this.createdOn = data.sys_created_by;
       this.createdBy = data.sys_created_by;
       this.updatedOn = data.sys_updated_on;
       this.updatedBy = data.sys_updated_by;
@@ -101,8 +103,9 @@ export class SNUpdateXML {
 
     const document = new DOMParser().parseFromString(this.payload);
     this.targetTable = xmlhelpers.parsePayloadTableName(document);
-    if (this.targetTable !== "") {
-      this.targetID = xmlhelpers.parsePayloadTableFieldValue(this.targetTable, "sys_id", document);
+    if (this.targetTable === "") {
+      return;
     }
+    this.targetID = xmlhelpers.parsePayloadTableFieldValue(this.targetTable, "sys_id", document);
   }
 }

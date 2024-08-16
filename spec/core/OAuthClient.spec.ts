@@ -147,4 +147,4 @@ describe("OAuthClientSpec", () => {
     expect(options.headers).not.toBeUndefined();
     expect(options.headers!.authorization).toBe(`${token.token_type} ${token.access_token}`);
   });
-})
+});

@@ -11,7 +11,7 @@ import eslint from "@eslint/js";
  * Globals
  * npm i globals@15.3.0 --save-dev
  */
-// import { builtin, node, commonjs, es2022 } from "globals";
+import globals from "globals";
 
 /**
  * Plugins
@@ -19,7 +19,7 @@ import eslint from "@eslint/js";
  */
 import pluginStylisticJs from "@stylistic/eslint-plugin-js";
 
-import tseslint from 'typescript-eslint';
+import tseslint from "typescript-eslint";
 
 export default [
   eslint.configs.recommended,
@@ -27,6 +27,14 @@ export default [
   ...tseslint.configs.stylistic,
   {
     name: "core",
+    languageOptions: {
+      globals: {
+        ...globals.builtin,
+        ...globals.node,
+        ...globals.commonjs,
+        ...globals.es2022
+      }
+    },
     rules: {
       "block-scoped-var": "error",
       "camelcase": ["error", {properties: "always"}],
@@ -36,7 +44,7 @@ export default [
       "default-case": "error",
       "eqeqeq": ["error", "always", {null: "ignore"}],
       "for-direction": "error",
-      "id-length": ["error", {min: 3, properties: "never", exceptions: ["c", "i", "j", "k", "l", "x", "y", "z", "e", "ex"]}],
+      "id-length": ["error", {min: 3, properties: "never", exceptions: ["c", "i", "j", "k", "l", "x", "y", "z", "e", "ex", "fs", "os"]}],
       "max-depth": ["warn", 4],
       "no-array-constructor": "error",
       "no-bitwise": ["error"],
@@ -47,7 +55,7 @@ export default [
       "no-eval": "error",
       "no-iterator": "error",
       "no-lonely-if": "error",
-      "no-magic-numbers": ["error", {ignore: [-1, 0, 1], ignoreArrayIndexes: true}],
+      "no-magic-numbers": ["error", {ignore: [-1, 0, 1, 2, 1000], ignoreArrayIndexes: true}],
       "no-multi-assign": "error",
       "no-nested-ternary": "error",
       "no-object-constructor": "error",
@@ -67,7 +75,7 @@ export default [
       "@stylistic/js/array-bracket-spacing": ["error", "never"],
       "@stylistic/js/array-bracket-newline": ["error", {multiline: true}],
       "@stylistic/js/array-element-newline": ["error", "consistent"],
-      "@stylistic/js/brace-style": ["error", "stroustrup"],
+      "@stylistic/js/brace-style": ["error", "1tbs"],
       "@stylistic/js/comma-dangle": ["error", "never"],
       "@stylistic/js/comma-spacing": ["error", {before: false, after: true}],
       "@stylistic/js/comma-style": ["error", "last"],
@@ -82,14 +90,14 @@ export default [
       "@stylistic/js/multiline-comment-style": ["warn", "starred-block"],
       "@stylistic/js/multiline-ternary": ["error", "never"],
       "@stylistic/js/new-parens": ["error"],
-      "@stylistic/js/newline-per-chained-call": ["error"],
+      // "@stylistic/js/newline-per-chained-call": ["error"],
       "@stylistic/js/no-mixed-operators": "error",
       "@stylistic/js/no-mixed-spaces-and-tabs": "error",
       "@stylistic/js/no-multiple-empty-lines": "error",
       "@stylistic/js/no-trailing-spaces": ["error", {ignoreComments: true, skipBlankLines: true}],
       "@stylistic/js/no-whitespace-before-property": "error",
       "@stylistic/js/object-curly-newline": ["error", {consistent: true}],
-      "@stylistic/js/object-curly-spacing": ["error", "never"],
+      // "@stylistic/js/object-curly-spacing": ["error", "never"],
       "@stylistic/js/object-property-newline": ["error", {allowAllPropertiesOnSameLine: true}],
       "@stylistic/js/operator-linebreak": ["error", "after"],
       "@stylistic/js/padded-blocks": ["error", "never"],
@@ -107,6 +115,12 @@ export default [
       "@stylistic/js/dot-location": ["error", "property"],
       "@stylistic/js/no-floating-decimal": "error",
       "@stylistic/js/wrap-iife": ["error", "inside"]
+    }
+  },
+  {
+    name: "ts",
+    rules: {
+
     }
   },
   // ESLint config file ONLY!

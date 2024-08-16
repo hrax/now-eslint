@@ -6,7 +6,7 @@ import AbstractReportGenerator from "../generator/AbstractReportGenerator.js";
 import { Profile } from "../core/ProfileManager.js";
 import { RESTClient } from "../core/RESTClient.js";
 import { DOMParser } from "@xmldom/xmldom";
-import { xmlhelpers } from "../util/helpers.js";
+import { xmlhelpers } from "../util/xmlhelpers.js";
 
 export interface LinterOptions {
   title: string;
@@ -155,5 +155,3 @@ export class Linter {
     generator.save(path, fileName, data);
   }
 }
-
-module.exports = Linter;
