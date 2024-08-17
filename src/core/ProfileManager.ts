@@ -3,7 +3,7 @@ import os from "os";
 import path from "path";
 
 import { RESTClient } from "./RESTClient.js";
-import { SNOAuthTokenData, SNTable } from "./sn.js";
+import { SNOAuthTokenData, SNTableMap } from "./sn.js";
 
 const JSON_INDENT = 2;
 const PROFILES_FOLDER_NAME = ".now-eslint-profiles" as const;
@@ -205,8 +205,6 @@ export interface InstanceConfig extends InstanceConnectionData, ProfileInfo {
   auth: InstanceAuthenticationData;
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style, @typescript-eslint/consistent-type-definitions
-export type SNTableMap = {[key: string]: SNTable};
 export interface TableConfig {
   tables: SNTableMap;
 }

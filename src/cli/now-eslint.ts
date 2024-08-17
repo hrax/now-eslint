@@ -4,15 +4,15 @@ import { outputError } from "./helpers.js";
 import { PACKAGE_VERSION } from "../core/Package.js";
 
 try {
-  const program = new Command();
-  program.name("now-eslint")
+  const program = new Command()
+    .name("now-eslint")
     .description("CLI to ESLint Service Now update sets")
-    .version(PACKAGE_VERSION, "-v, --version", "output the current version")
-    .executableDir("../src/cli")
+    .version(PACKAGE_VERSION, "-v, --version", "current version")
+    .executableDir("./")
     .configureOutput({outputError: outputError});
   
-  program.command("profile", "ServiceNow profile command");
-  program.command("report", "ServiceNow report command (default)", {isDefault: true});
+  program.command("profile");
+  program.command("report", {isDefault: true});
   
   program.parseAsync(process.argv);
 } catch (err) {

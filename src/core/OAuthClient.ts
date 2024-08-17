@@ -4,7 +4,8 @@ import { Request, Response } from "./Request.js";
 import { RequestOptions } from "https";
 import { PACKAGE_NAME, PACKAGE_VERSION } from "./Package.js";
 import { SNOAuthTokenData } from "./sn.js";
-import { InstanceOAuthTokenData, Profile, ProfileManager } from "./ProfileManager.js";
+import * as ProfileManager from "./ProfileManager.js";
+import { InstanceOAuthTokenData, Profile } from "./ProfileManager.js";
 
 const CLIENT_BASE_URL = "/oauth_entity.do" as const;
 const CLIENT_LIST_BASE_URL = "/oauth_entity_list.do" as const;

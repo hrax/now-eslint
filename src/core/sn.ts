@@ -1,5 +1,5 @@
 import { DOMParser } from "@xmldom/xmldom";
-import { xmlhelpers } from "../util/xmlhelpers";
+import * as xmlhelpers from "../util/xmlhelpers";
 
 export interface SNOAuthTokenData {
   access_token: string;
@@ -19,15 +19,21 @@ export interface SNField {
   label?: string;
   default?: string;
 }
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+export interface SNFieldMap {
+  [name: string]: SNField
+};
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/consistent-indexed-object-style
-export type SNFieldMap = {[key: string]: SNField};
 export interface SNTable {
   name: string;
   label?: string;
   parent?: string;
   fields: SNFieldMap;
 }
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+export interface SNTableMap {
+  [name: string]: SNTable
+};
 
 export type SNUpdateXMLAction = "INSERT_OR_UPDATE" | "DELETE";
 

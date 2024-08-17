@@ -6,7 +6,8 @@ import AbstractReportGenerator from "../generator/AbstractReportGenerator.js";
 import { Profile } from "../core/ProfileManager.js";
 import { RESTClient } from "../core/RESTClient.js";
 import { DOMParser } from "@xmldom/xmldom";
-import { xmlhelpers } from "../util/xmlhelpers.js";
+import * as xmlhelpers from "../util/xmlhelpers.js";
+import { SNField } from "../core/sn.js";
 
 export interface LinterOptions {
   title: string;
@@ -97,7 +98,7 @@ export class Linter {
 
       const document = new DOMParser().parseFromString(scan.payload);
       // For each configured field run lint
-      Object.values(fields).forEach(async (field) => {
+      Object.values(fields).forEach(async (field: SNField) => {
         const data = xmlhelpers.parsePayloadTableFieldValue(table, field.name, document);
         if (data == null || data === "") {
           scan.skip();
