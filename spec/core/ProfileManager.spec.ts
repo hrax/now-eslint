@@ -37,13 +37,13 @@ describe("ProfileManagerSpec", () => {
       dev: 0,
       gid: 0,
       ino: 0,
-      isBlockDevice: function(){return false},
-      isCharacterDevice: function(){return false},
-      isDirectory: function(){return true},
-      isFIFO: function(){return false},
-      isFile: function(){return false},
-      isSocket: function(){return false},
-      isSymbolicLink: function(){return false},
+      isBlockDevice: () => false,
+      isCharacterDevice: () => false,
+      isDirectory: () => true,
+      isFIFO: () => false,
+      isFile: () => false,
+      isSocket: () => false,
+      isSymbolicLink: () => false,
       mode: 0,
       mtime: new Date(),
       mtimeMs: Date.now(),
@@ -60,10 +60,9 @@ describe("ProfileManagerSpec", () => {
     
     when(jest.spyOn(fs, "readdirSync"))
       .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
-      // @ts-ignore
+      // @ts-expect-error wrong signature picked up
       .calledWith(profilesHomePath).mockReturnValue(["dev1", "dev2"]);
     
-    // @ts-ignore
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     jest.spyOn(fs, "statSync").mockImplementation((path) => {
       return dirStats;
@@ -194,7 +193,6 @@ describe("ProfileManagerSpec", () => {
 
     expect(rmSpy).toHaveBeenCalledTimes(1);
   });
-
 });
 
 // describe("Profile", () => {

@@ -6,7 +6,7 @@ describe("RequestSpec", () => {
     const url = new URL("http://example.com");
     const options: RequestOptions = {
       method: "GET"
-    }
+    };
     await expect(Request.execute(url, options)).rejects.toStrictEqual(Response.empty("URL protocol must be https!"));
   });
 
@@ -14,7 +14,7 @@ describe("RequestSpec", () => {
     const url = new URL("https://example.com");
     const options: RequestOptions = {
       method: "GET"
-    }
+    };
 
     const response = await Request.execute(url, options);
     expect(response.isEmpty()).toBe(false);

@@ -44,8 +44,7 @@ export function debug(options: any): void {
 };
 
 export function forceOption(): Option {
-  return new Option("--force")
-    .default(false);
+  return new Option("--force");
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isForce(options: any): boolean {

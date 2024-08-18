@@ -12,6 +12,7 @@ import eslint from "@eslint/js";
  * npm i globals@15.3.0 --save-dev
  */
 import globals from "globals";
+import jest from "eslint-plugin-jest";
 
 /**
  * Plugins
@@ -118,10 +119,13 @@ export default [
     }
   },
   {
-    name: "ts",
-    rules: {
-
-    }
+    name: "jest",
+    languageOptions: {
+      globals: {
+        ...jest.environments.globals.globals
+      }
+    },
+    files: ["**/*.spec.ts"]
   },
   // ESLint config file ONLY!
   {

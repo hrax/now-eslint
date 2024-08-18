@@ -1,11 +1,13 @@
+/* eslint-disable camelcase */
 import { resetAllWhenMocks, when } from "jest-when";
 import { jesthelpers } from "../helpers.js";
 import { URLSearchParams } from "url";
 import { OAuthClient } from "../../src/core/OAuthClient.js";
 import { InstanceConfig, Profile, TableConfig } from "../../src/core/ProfileManager.js";
 import { Request, Response } from "../../src/core/Request.js";
-import { RESTClient, JSONRESTResponse, TableAPI, TableFieldData, TableParentData } from "../../src/core/RESTClient.js";
-import { SNTable, SNUpdateSetData, SNUpdateXMLData } from "../../src/core/sn.js";
+import * as restclient from "../../src/core/RESTClient.js";
+import { RESTClient, JSONRESTResponse, TableFieldData, TableParentData } from "../../src/core/RESTClient.js";
+import { SNUpdateSetData, SNUpdateXMLData } from "../../src/core/sn.js";
 
 describe("RESTClientSpec", () => {
   const config: InstanceConfig = {
@@ -21,7 +23,6 @@ describe("RESTClientSpec", () => {
         refresh_token: "bbb",
         scope: "",
         token_type: "Bearer",
-        // seconds
         expires_in: 60
       }
     }
@@ -29,7 +30,8 @@ describe("RESTClientSpec", () => {
   const profile: Profile = new Profile(config);
   const oauthClient: OAuthClient = new OAuthClient();
 
-  const _makeRESTResponse = function<T = any>(data?: T | Array<T>): JSONRESTResponse<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const _makeRESTResponse = function<T = any>(data?: T | T[]): JSONRESTResponse<T> {
     const response: JSONRESTResponse<T> = {
       result: []
     };
@@ -41,7 +43,7 @@ describe("RESTClientSpec", () => {
       response.result.push(data);
     }
     return response;
-  }
+  };
 
   beforeEach(() => {
     resetAllWhenMocks();
@@ -63,12 +65,12 @@ describe("RESTClientSpec", () => {
   
     const url = {
       origin: config.baseUrl,
-      pathname: TableAPI.USER_PREFERENCE_PATH,
+      pathname: restclient.PATH_API_TABLE_USER_PREFERENCE,
       search: expect.stringContaining(new URLSearchParams("sysparm_query=name=@hrax/now-eslint/table_config^userISEMPTY^ORuserDYNAMIC90d1921e5f510100a9ad2572f2b477fe^ORDERBYDESCuser").toString())
     };
 
     it("should succeed if exists", async() => {
-      const requestExecuteSpy = jest.spyOn(Request, "execute");  
+      const requestExecuteSpy = jest.spyOn(Request, "execute");
       const response = Response.empty(JSON.stringify(_makeRESTResponse(tablePref)));
 
       jest.spyOn(response, "isEmpty").mockReturnValue(false);
@@ -94,12 +96,12 @@ describe("RESTClientSpec", () => {
         .calledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
   
       const client = new RESTClient(oauthClient);
-      await expect(client.loadTableConfigurationPreference(profile)).rejects.toEqual(RESTClient.NO_TABLE_CONFIG_PREF);
+      await expect(client.loadTableConfigurationPreference(profile)).rejects.toEqual(restclient.NO_TABLE_CONFIG_PREF);
     });
   });
 
   describe("setting up table config", () => {
-    const tpData: Array<TableParentData> = [
+    const tpData: TableParentData[] = [
       {
         name: "sys_script_include",
         "super_class.name": ""
@@ -117,18 +119,20 @@ describe("RESTClientSpec", () => {
         "super_class.name": "task"
       }
     ];
-    const tfData: Array<TableFieldData> = [{
-      name: "sys_script_include",
-      element: "script"
-    },
-    {
-      name: "sys_script",
-      element: "condition"
-    },
-    {
-      name: "sys_script_client",
-      element: "script"
-    }];
+    const tfData: TableFieldData[] = [
+      {
+        name: "sys_script_include",
+        element: "script"
+      },
+      {
+        name: "sys_script",
+        element: "condition"
+      },
+      {
+        name: "sys_script_client",
+        element: "script"
+      }
+    ];
     const data: TableConfig = {
       tables: {
         "sys_script_include": {
@@ -160,19 +164,19 @@ describe("RESTClientSpec", () => {
           }
         }
       }
-    }
+    };
 
     const tpUrl = {
       origin: config.baseUrl,
-      pathname: TableAPI.DB_OBJECT_PATH
+      pathname: restclient.PATH_API_TABLE_DB_OBJECT
     };
     const tfUrl = {
       origin: config.baseUrl,
-      pathname: TableAPI.DICTIONARY_PATH
+      pathname: restclient.PATH_API_TABLE_DICTIONARY
     };
     const upUrl = {
       origin: config.baseUrl,
-      pathname: TableAPI.USER_PREFERENCE_PATH
+      pathname: restclient.PATH_API_TABLE_USER_PREFERENCE
     };
     it("should load, prepare and save the config", async() => {
       const tpResponse = Response.empty(JSON.stringify(_makeRESTResponse(tpData)));
@@ -186,11 +190,11 @@ describe("RESTClientSpec", () => {
       const requestExecuteSpy = jest.spyOn(Request, "execute");
       when(requestExecuteSpy)
         .defaultImplementation(jesthelpers.defaultWhenImplementationThrow)
-        // pull table-parent
+        // Pull table-parent
         .calledWith(expect.objectContaining(tpUrl), expect.anything(), undefined).mockResolvedValue(tpResponse)
-        // pull table-field
+        // Pull table-field
         .calledWith(expect.objectContaining(tfUrl), expect.anything(), undefined).mockResolvedValue(tfResponse)
-        // push preference
+        // Push preference
         .calledWith(expect.objectContaining(upUrl), expect.objectContaining({
           "method": "POST"
         }), expect.anything()).mockResolvedValue(tfResponse);
@@ -198,12 +202,13 @@ describe("RESTClientSpec", () => {
       
       await expect(client.setupTableConfiguration(profile)).resolves.toStrictEqual(data);
       // 2 pulls + 1 push
+      // eslint-disable-next-line no-magic-numbers
       expect(requestExecuteSpy).toHaveBeenCalledTimes(3);
     });
   });
 
   describe("loading update set changes", () => {
-    const responseBody: Array<SNUpdateXMLData> = [
+    const responseBody: SNUpdateXMLData[] = [
       {
         action: "INSERT_OR_UPDATE",
         application: "global",
@@ -238,10 +243,10 @@ describe("RESTClientSpec", () => {
       }
     ];
 
-    it("should load by update set ids", async() => {  
+    it("should load by update set ids", async() => {
       const url = {
         origin: profile.getBaseUrl(),
-        pathname: TableAPI.UPDATE_XML_PATH,
+        pathname: restclient.PATH_API_TABLE_UPDATE_XML,
         search: expect.stringContaining(encodeURIComponent("update_setIN1,2,3"))
       };
 
@@ -255,27 +260,27 @@ describe("RESTClientSpec", () => {
         .expectCalledWith(expect.objectContaining(url), expect.anything(), undefined).mockResolvedValue(response);
 
       const client = new RESTClient(oauthClient);
-      await expect(client.loadUpdateXMLByUpdateSetIds(profile, "1","2","3")).resolves.toStrictEqual(responseBody);
+      await expect(client.loadUpdateXMLByUpdateSetIds(profile, "1", "2", "3")).resolves.toStrictEqual(responseBody);
     });
 
     it("should load by update set query", async() => {
-      const setResponseBody: Array<SNUpdateSetData> = [
+      const setResponseBody: SNUpdateSetData[] = [
         {
           sys_id: "1"
         },
         {
           sys_id: "2"
         }
-      ]
+      ];
 
       const setURL = {
         origin: profile.getBaseUrl(),
-        pathname: TableAPI.UPDATE_SET_PATH,
+        pathname: restclient.PATH_API_TABLE_UPDATE_SET,
         search: expect.stringContaining(encodeURIComponent("sys_idIN1,2"))
       };
       const xmlURL = {
         origin: profile.getBaseUrl(),
-        pathname: TableAPI.UPDATE_XML_PATH,
+        pathname: restclient.PATH_API_TABLE_UPDATE_XML,
         search: expect.stringContaining(encodeURIComponent("update_setIN1,2"))
       };
 
@@ -297,5 +302,4 @@ describe("RESTClientSpec", () => {
       await expect(client.loadUpdateXMLByUpdateSetQuery(profile, "sys_idIN1,2")).resolves.toStrictEqual(responseBody);
     });
   });
-  
 });

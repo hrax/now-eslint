@@ -1,5 +1,5 @@
 import fs from "fs";
-import { UpdateXMLScan } from "../../src/linter/UpdateXMLScan.js"
+import { UpdateXMLScan } from "../../src/linter/UpdateXMLScan.js";
 import { Linter } from "../../src/linter/Linter.js";
 import { Profile } from "../../src/core/ProfileManager.js";
 
