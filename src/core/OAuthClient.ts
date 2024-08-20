@@ -4,7 +4,7 @@ import { Request, Response } from "./Request.js";
 import { RequestOptions } from "https";
 import { PACKAGE_NAME, PACKAGE_VERSION } from "./Package.js";
 import { SNOAuthTokenData } from "./sn.js";
-import * as ProfileManager from "./ProfileManager.js";
+import profileManager from "./ProfileManager.js";
 import { InstanceOAuthTokenData, Profile } from "./ProfileManager.js";
 
 const CLIENT_BASE_URL = "/oauth_entity.do" as const;
@@ -42,7 +42,7 @@ export class OAuthClient {
     return hadTokenFor > expiresIn;
   }
 
-  getNewClientURL(profile: Profile): URL {
+  getNewClientURL(baseUrl: string): URL {
     const query = [
       "type=client",
       `name=${PACKAGE_NAME}`,
@@ -52,9 +52,9 @@ export class OAuthClient {
       "logo_url="
     ];
 
-    const url = new URL(CLIENT_BASE_URL, profile.getBaseUrl());
+    const url = new URL(CLIENT_BASE_URL, baseUrl);
     url.searchParams.set("sys_id", "-1");
-    url.searchParams.set("sysparm_transaction_scope", "global");
+    // FIXME: url.searchParams.set("sysparm_transaction_scope", "global");
     url.searchParams.set("sysparm_query", query.join("^"));
     return url;
   }
@@ -190,7 +190,7 @@ export class OAuthClient {
     if (OAuthClient.isTokenExpired(profile.getInstanceOAuthTokenData())) {
       await this.refreshToken(profile);
       // Update profile file with new token
-      ProfileManager.updateProfileConfig(profile);
+      profileManager.updateProfileConfig(profile);
     }
     if (options.headers == null) {
       options.headers = {};

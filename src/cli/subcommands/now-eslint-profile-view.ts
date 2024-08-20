@@ -1,8 +1,12 @@
-import commander from "commander";
+import * as commander from "commander";
 
 import * as helpers from "../helpers.js";
+import { CommandLogger } from "../helpers/CommandLogger.js";
 
 const viewCommand = new commander.Command("view")
+  .configureOutput({
+    outputError: CommandLogger.outputWarning
+  })
   .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", helpers.validateProfileName)
   .option("-t, --test-connection", "test connection to the instance")
   .action(async function(name, options) {

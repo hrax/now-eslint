@@ -1,5 +1,5 @@
 import { DOMParser } from "@xmldom/xmldom";
-import * as xmlhelpers from "../util/xmlhelpers";
+import * as xmlhelpers from "../util/xmlhelpers.js";
 
 export interface SNOAuthTokenData {
   access_token: string;

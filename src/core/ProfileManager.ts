@@ -20,93 +20,107 @@ const createFolderIfNotExists = function(path: string): void {
   }
 };
 
+const homeDirPath = function() {
+  return path.normalize(process.env.NOW_ESLINT_PROFILE_HOME || PROFILES_HOME_DIR_PATH);
+};
+
+export class ProfileManager {
+  private homePath: string;
+  constructor(homePath: string, force = false) {
+    this.homePath = path.normalize(homePath);
+    if (force === true) {
+      createFolderIfNotExists(homePath);
+    }
+  }
+
+  getHomePath() {
+    return this.homePath;
+  };
+
+  getProfilePath(name: string) {
+    return path.normalize(`${this.getHomePath()}/${name}/`);
+  };
+
+  getProfileFilePath(name: string, file: ProfileFileName): string {
+    return path.normalize(`${this.getProfilePath(name)}/${file}`);
+  };
+
+  profileExists(name: string) {
+    return fs.existsSync(this.getProfilePath(name));
+  };
+
+  listProfiles(): ProfileInfo[] {
+    const home = this.getHomePath();
+    return fs.readdirSync(home)
+      .filter((file) => {
+        return fs.statSync(path.normalize(`${home}/${file}`)).isDirectory() && fs.existsSync(this.getProfileFilePath(file, PROFILE_CONFIG_FILE_NAME));
+      })
+      .map<ProfileInfo>((profile) => {
+        const configPath = this.getProfileFilePath(profile, PROFILE_CONFIG_FILE_NAME);
+        const content = fs.readFileSync(configPath, "utf8");
+        const config: ProfileInfo = JSON.parse(content);
+        return {
+          name: profile,
+          baseUrl: config.baseUrl
+        };
+      });
+  };
+
+  purgeProfiles(): void {
+    fs.rmdirSync(this.getHomePath(), {recursive: true});
+  };
+
+  fromData(data: InstanceConfig): Profile {
+    return new Profile(data);
+  };
+
+  async loadProfile(name: string, client: RESTClient): Promise<Profile | null> {
+    const home = this.getProfilePath(name);
+    if (!fs.existsSync(home)) {
+      return null;
+    }
+    const configFilePath = this.getProfileFilePath(name, PROFILE_CONFIG_FILE_NAME);
+    if (!fs.existsSync(configFilePath)) {
+      return null;
+    }
+    const configFileData = fs.readFileSync(configFilePath, "utf8");
+  
+    const profile = this.fromData(JSON.parse(configFileData));
+    profile.setRESTClient(client);
+    await profile.fetchTableConfiguration();
+    return profile;
+  };
+  
+  saveProfile(profile: Profile): void {
+    const home = this.getProfilePath(profile.getName());
+    createFolderIfNotExists(home);
+    const config = profile.getConfig();
+    const configPath = this.getProfileFilePath(profile.getName(), PROFILE_CONFIG_FILE_NAME);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, JSON_INDENT), "utf8");
+  };
+  
+  updateProfileConfig(profile: Profile): void {
+    // FIXME: for now 100% same as save, redirect
+    this.saveProfile(profile);
+  };
+  
+  purgeProfile(profile: Profile): void {
+    const home = this.getProfilePath(profile.getName());
+    fs.rmdirSync(home, {recursive: true});
+  };
+}
+
+
+const profileManager = new ProfileManager(homeDirPath(), true);
+export default profileManager;
+
 /*
  * Manages everything around profiles - home folder, profile home and additional files
  * list, load, save, purgeAll, purge
  */
 
-export const profileExists = function(name: string) {
-  return fs.existsSync(profileDirPath(name));
-};
-
 export const isProfileNameValid = function(name: string): boolean {
   return PROFILE_NAME_REGEXP.test(name);
-};
-
-export const homeDirPath = function() {
-  return path.normalize(process.env.NOW_ESLINT_PROFILE_HOME || PROFILES_HOME_DIR_PATH);
-};
-
-export const profileDirPath = function(name: string): string {
-  return path.normalize(`${homeDirPath()}/${name}/`);
-};
-
-export const profileFilePath = function(name: string, file: ProfileFileName): string {
-  return path.normalize(`${profileDirPath(name)}/${file}`);
-};
-
-export const listProfiles = function(): ProfileInfo[] {
-  const home = homeDirPath();
-  return fs.readdirSync(home)
-    .filter((file) => {
-      return fs.statSync(path.normalize(`${home}/${file}`)).isDirectory() && fs.existsSync(profileFilePath(file, PROFILE_CONFIG_FILE_NAME));
-    })
-    .map<ProfileInfo>((profile) => {
-      const configPath = profileFilePath(profile, PROFILE_CONFIG_FILE_NAME);
-      const content = fs.readFileSync(configPath, "utf8");
-      const config: ProfileInfo = JSON.parse(content);
-      return {
-        name: profile,
-        baseUrl: config.baseUrl
-      };
-    });
-};
-
-export const purgeProfiles = function(): void {
-  const home = homeDirPath();
-  fs.rmdirSync(home, {recursive: true});
-};
-
-export const fromData = function(data: InstanceConfig): Profile {
-  return new Profile(data);
-};
-
-export const loadProfile = async function(name: string, client: RESTClient): Promise<Profile | null> {
-  const home = profileDirPath(name);
-  if (!fs.existsSync(home)) {
-    return null;
-  }
-  const configFilePath = profileFilePath(name, PROFILE_CONFIG_FILE_NAME);
-  if (!fs.existsSync(configFilePath)) {
-    return null;
-  }
-  const configFileData = fs.readFileSync(configFilePath, "utf8");
-
-  const profile = fromData(JSON.parse(configFileData));
-  profile.setRESTClient(client);
-  await profile.fetchTableConfiguration();
-  return profile;
-};
-
-export const saveProfile = function(profile: Profile): void {
-  const home = profileDirPath(profile.getName());
-  createFolderIfNotExists(home);
-  const config = profile.getConfig();
-  const configPath = profileFilePath(profile.getName(), PROFILE_CONFIG_FILE_NAME);
-  fs.writeFileSync(configPath, JSON.stringify(config, null, JSON_INDENT), "utf8");
-};
-
-export const updateProfileConfig = function(profile: Profile): void {
-  const home = profileDirPath(profile.getName());
-  createFolderIfNotExists(home);
-  const config = profile.getConfig();
-  const configPath = profileFilePath(profile.getName(), PROFILE_CONFIG_FILE_NAME);
-  fs.writeFileSync(configPath, JSON.stringify(config, null, JSON_INDENT), "utf8");
-};
-
-export const purgeProfile = function(profile: Profile): void {
-  const home = profileDirPath(profile.getName());
-  fs.rmdirSync(home, {recursive: true});
 };
 
 export class Profile {

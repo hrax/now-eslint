@@ -1,4 +1,4 @@
-import commander from "commander";
+import * as commander from "commander";
 import { createCommand } from "./now-eslint-profile-create.js";
 import { viewCommand } from "./now-eslint-profile-view.js";
 import { purgeCommand } from "./now-eslint-profile-purge.js";

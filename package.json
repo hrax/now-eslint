@@ -54,6 +54,7 @@
     "docx": "^8.5.0",
     "dotenv": "^16.4.5",
     "https-proxy-agent": "^7.0.5",
+    "open": "^10.1.0",
     "pdfmake": "^0.2.10",
     "prompts": "^2.4.2",
     "xpath": "^0.0.34"
@@ -84,7 +85,7 @@
   "peerDependencies": {
     "eslint": ">=9.3.0"
   },
-  "type": "commonjs",
+  "type": "module",
   "engines": {
     "node": ">=22"
   }

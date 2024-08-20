@@ -1,5 +1,6 @@
-import { name, version, description } from "../../package.json";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import pkg = require("../../package.json");
 
-export const PACKAGE_NAME = name;
-export const PACKAGE_VERSION = version;
-export const PACKAGE_DESCRIPTION = description;
+export const PACKAGE_NAME = pkg.name;
+export const PACKAGE_VERSION = pkg.version;
+export const PACKAGE_DESCRIPTION = pkg.description;

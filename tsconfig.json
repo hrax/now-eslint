@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "NodeNext",
     "target": "ES2022",
+    "moduleResolution": "NodeNext",
     "outDir": "./dist",
     "rootDir": "./src",
     "typeRoots": ["./node_modules/@types", "./src/@types"],
@@ -12,6 +13,7 @@
     "alwaysStrict": true,
     "noImplicitAny": true,
 
+    "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": true,
