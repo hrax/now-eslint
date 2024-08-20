@@ -1,11 +1,11 @@
 /* eslint-disable */
 import { ESLint } from "eslint";
+import { DOMParser } from "@xmldom/xmldom";
 
 import { UpdateXMLScan } from "./UpdateXMLScan.js";
 import AbstractReportGenerator from "../generator/AbstractReportGenerator.js";
 import { Profile } from "../core/ProfileManager.js";
 import { RESTClient } from "../core/RESTClient.js";
-import { DOMParser } from "@xmldom/xmldom";
 import * as xmlhelpers from "../util/xmlhelpers.js";
 import { SNField } from "../core/sn.js";
 

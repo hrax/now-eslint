@@ -74,7 +74,7 @@ export class ProfileManager {
     return new Profile(data);
   };
 
-  async loadProfile(name: string, client: RESTClient): Promise<Profile | null> {
+  async loadProfile(name: string, client?: RESTClient): Promise<Profile | null> {
     const home = this.getProfilePath(name);
     if (!fs.existsSync(home)) {
       return null;
@@ -86,8 +86,10 @@ export class ProfileManager {
     const configFileData = fs.readFileSync(configFilePath, "utf8");
   
     const profile = this.fromData(JSON.parse(configFileData));
-    profile.setRESTClient(client);
-    await profile.fetchTableConfiguration();
+    if (client != null) {
+      profile.setRESTClient(client);
+      await profile.fetchTableConfiguration();
+    }
     return profile;
   };
   
@@ -158,6 +160,10 @@ export class Profile {
 
   getConfig(): InstanceConfig {
     return this.config;
+  }
+
+  getOAuthType(): OAuthType {
+    return this.config.auth.type;
   }
 
   getInstanceOAuthTokenData(): InstanceOAuthTokenData {

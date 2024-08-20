@@ -10,7 +10,7 @@ const purgeCommand = new commander.Command("purge")
     outputError: CommandLogger.outputWarning
   })
   .description("purge single existing ServiceNow instance profile")
-  .argument("<name>", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", helpers.validateProfileName)
+  .argument("[name]", "name of the profile to set up (lowecase/uppercase letters, numbers, underscore and dash)", helpers.validateProfileName)
   .addOption(CommandLogger.debugOption())
   .addOption(helpers.forceOption())
   .action(async function(name, options) {

@@ -198,3 +198,6 @@ export class OAuthClient {
     options.headers.authorization = `${profile.getInstanceOAuthTokenData().token?.token_type} ${profile.getInstanceOAuthTokenData().token?.access_token}`;
   }
 }
+
+const oauthClient = new OAuthClient();
+export default oauthClient;

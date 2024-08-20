@@ -1,11 +1,12 @@
 import * as commander from "commander";
 import * as helpers from "../helpers.js";
 import { CommandLogger } from "../helpers/CommandLogger.js";
-import prompts, { PromptObject, Options } from "prompts";
+import prompts, { PromptObject } from "prompts";
 import profileManager from "../../core/ProfileManager.js";
-import { RESTClient } from "../../core/RESTClient.js";
-import { OAuthClient } from "../../core/OAuthClient.js";
+// import { RESTClient } from "../../core/RESTClient.js";
+import oauthClient from "../../core/OAuthClient.js";
 import open, { apps } from "open";
+import colors from "colors/safe.js";
 
 
 const log = new CommandLogger();
@@ -27,8 +28,6 @@ createCommand.action(async function(name, options) {
   log.debug(`Current working directory: ${process.cwd()}`);
   log.debug(`Profile home directory: ${profileManager.getHomePath()}`);
   log.verbose(`Setting up profile with name '${name}'\n`);
-
-  const oauth = new OAuthClient();
 
   const questions: PromptObject[] = [
     {
@@ -73,7 +72,7 @@ createCommand.action(async function(name, options) {
     },
     {
       type: "text",
-      name: "clienid",
+      name: "clientid",
       message: "Please enter OAuth client ID"
     },
     {
@@ -101,7 +100,7 @@ createCommand.action(async function(name, options) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async onSubmit(prompt, answer, answers: any) {
       if (prompt.name === "createclient" && answer === true) {
-        const newClient = oauth.getNewClientURL(answers.baseurl);
+        const newClient = oauthClient.getNewClientURL(answers.baseurl);
         log.verbose("Trying to open browser to create OAuth client");
         log.verbose(newClient.toString());
         await open(newClient.toString(), {app: {name: apps.browser}});
@@ -118,9 +117,10 @@ createCommand.action(async function(name, options) {
   const profile = profileManager.fromData({
     name: name,
     baseUrl: response.baseurl,
+    proxyUrl: options.proxy ? response.proxy : undefined,
     auth: {
       type: response.oauthtype,
-      clientID: response.clienid,
+      clientID: response.clientid,
       clientSecret: response.clientsecret,
       lastRetrieved: 0
     }
@@ -129,7 +129,7 @@ createCommand.action(async function(name, options) {
   if (response.oauthtype === "oauth-password") {
     log.warning("Using username/password combination to authenticate with Service Now instance.");
     log.warning("Remember that provided user has to be logged on the instance and have interactive session.");
-    log.warning("!!! Username and password are not saved, to change user or authentication type run `profile reauth` !!!");
+    log.warning(`!!! ${colors.underline("Username and password are not saved")}, to change user or authentication type run \`profile reauth\` !!!`);
 
     // TODO: handle errors
     // await oauth.requestTokenByUsername(profile, response.username, response.password);
