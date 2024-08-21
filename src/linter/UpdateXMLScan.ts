@@ -34,23 +34,60 @@ export class UpdateXMLScan extends SNUpdateXML {
   // eslint-disable-next-line @typescript-eslint/consistent-generic-constructors, @typescript-eslint/no-explicit-any
   reports: Map<string, any> = new Map();
 
-  status(): UpdateXMLScanStatus {
+  getStatus(): UpdateXMLScanStatus {
     return this._status;
   }
 
-  ignore(): void {
+  setIgnore(): void {
     this._status = "IGNORED";
   }
 
-  manual(): void {
+  setManual(): void {
     this._status = "MANUAL";
   }
 
-  skip(): void {
+  setSkip(): void {
     this._status = "SKIPPED";
+  }
+
+  getReportsWarningCount(): number {
+    if (this.reports == null || this.reports.size === 0) {
+      return 0;
+    }
+    let count = 0;
+    this.reports.forEach((value) => count = count + (value.warningCount ?? 0));
+    return count;
+  }
+
+  hasReportsWarnings(): boolean {
+    return this.getReportsWarningCount() !== 0;
+  }
+
+  getReportsErrorCount(): number {
+    if (this.reports == null || this.reports.size === 0) {
+      return 0;
+    }
+    let count = 0;
+    this.reports.forEach((value) => count = count + (value.errorCount ?? 0));
+    return count;
+  }
+
+  hasReportsErrors(): boolean {
+    return this.getReportsErrorCount() !== 0;
   }
 
   reportPathForField(field: string): string {
     return `<${this.updateSetID}/${this.targetTable}/${field}.js>`;
+  }
+
+  toJSON() {
+    return Object.assign({}, super.toJSON(), {
+      warningCount: this.getReportsWarningCount(),
+      errorCount: this.getReportsErrorCount(),
+      hasWarning: this.hasReportsWarnings(),
+      hasError: this.hasReportsErrors(),
+      status: this.getStatus(),
+      reports: Array.from(this.reports.entries())
+    });
   }
 }

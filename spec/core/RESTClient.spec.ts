@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { resetAllWhenMocks, when } from "jest-when";
-import { jesthelpers } from "../helpers.js";
+import * as jesthelpers from "../helpers.js";
 import { URLSearchParams } from "url";
 import { OAuthClient } from "../../src/core/OAuthClient.js";
 import { InstanceConfig, Profile, TableConfig } from "../../src/core/ProfileManager.js";

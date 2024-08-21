@@ -5,7 +5,7 @@ import { InstanceConfig, Profile, ProfileInfo } from "../../src/core/ProfileMana
 import { RESTClient } from "../../src/core/RESTClient";
 import { OAuthClient } from "../../src/core/OAuthClient";
 import { resetAllWhenMocks, when } from "jest-when";
-import { jesthelpers } from "../helpers";
+import * as jesthelpers from "../helpers";
 
 describe("ProfileManagerSpec", () => {
   const dev1Profile = {

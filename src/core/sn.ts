@@ -114,4 +114,8 @@ export class SNUpdateXML {
     }
     this.targetID = xmlhelpers.parsePayloadTableFieldValue(this.targetTable, "sys_id", document);
   }
+
+  toJSON() {
+    return {};
+  }
 }
