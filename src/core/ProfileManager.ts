@@ -183,10 +183,14 @@ export class Profile {
     return this.tables;
   }
 
+  setTableConfiguration(config: TableConfig) {
+    this.tables = config;
+  }
+
   // TODO: better name, load all other profile files/table setup
   async fetchTableConfiguration(): Promise<void> {
     if (this.client != null) {
-      this.tables = await this.client.getTableConfiguration(this);
+      this.setTableConfiguration(await this.client.getTableConfiguration(this));
     }
   }
 }

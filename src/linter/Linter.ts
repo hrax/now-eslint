@@ -4,7 +4,7 @@ import { DOMParser } from "@xmldom/xmldom";
 
 import { UpdateXMLScan } from "./UpdateXMLScan.js";
 import AbstractReportGenerator from "../generator/AbstractReportGenerator.js";
-import { Profile } from "../core/ProfileManager.js";
+import profileManager, { Profile } from "../core/ProfileManager.js";
 import { RESTClient } from "../core/RESTClient.js";
 import * as xmlhelpers from "../util/xmlhelpers.js";
 import { SNField } from "../core/sn.js";
@@ -14,14 +14,21 @@ export interface LinterOptions {
   query: string;
 };
 
+export type LinterMetricType = "byStatus" | "totalChanges" | "uniqueChanges" | "totalUpdateSets";
+
 export class Linter {
+
+  static readonly METRIC_BY_STATUS: LinterMetricType = "byStatus";
+  static readonly METRIC_TOTAL_CHANGES: LinterMetricType = "totalChanges";
+  static readonly METRIC_UNIQUE_CHANGES: LinterMetricType = "uniqueChanges";
+  static readonly METRIC_TOTAL_UPDATE_SETS: LinterMetricType = "totalUpdateSets";
 
   private profile: Profile;
   private options: LinterOptions;
   private client: RESTClient;
   private eslint: ESLint = new ESLint();
-  changes: Map<string, UpdateXMLScan> = new Map();
-  metrics: Map<string, any> = new Map();
+  changes: Map<string, UpdateXMLScan> = new Map<string, UpdateXMLScan>();
+  metrics: Map<LinterMetricType, any> = new Map<LinterMetricType, any>();
 
   /**
    * 
@@ -32,6 +39,10 @@ export class Linter {
     this.profile = profile;
     this.client = client;
     this.options = options;
+  }
+
+  getESLint(): ESLint {
+    return this.eslint;
   }
 
   /**
@@ -68,19 +79,19 @@ export class Linter {
 
     // Check the changes against configured lint tables
     this.changes.forEach((scan, name) => {
-      if (scan.status() !== "SCAN") {
+      if (scan.getStatus() !== "SCAN") {
         return;
       }
       
       const table = scan.targetTable;
-      if (config!.tables[table] == null) {
-        scan.ignore();
+      if (config?.tables[table] == null) {
+        scan.setIgnore();
         return;
       }
 
-      const fields = config!.tables[table].fields || null;
+      const fields = config?.tables[table].fields ?? null;
       if (fields == null || Object.keys(fields).length === 0) {
-        scan.manual();
+        scan.setManual();
         return;
       }
 
@@ -101,7 +112,7 @@ export class Linter {
       Object.values(fields).forEach(async (field: SNField) => {
         const data = xmlhelpers.parsePayloadTableFieldValue(table, field.name, document);
         if (data == null || data === "") {
-          scan.skip();
+          scan.setSkip();
           return;
         }
         
@@ -114,33 +125,33 @@ export class Linter {
         const report = await this.eslint.lintText(data);
         if (report.length) {
           report[0].filePath = scan.reportPathForField(field.name);
-          scan.reports.set(field.name, report[0]);
+          scan.setReport(field.name, report[0]);
         }
       });
     });
       
     // Metrics
-    this.metrics.set("byStatus", {});
-    this.metrics.set("totalChanges", 0);
-    this.metrics.set("uniqueChanges", 0);
-    this.metrics.set("totalUpdateSets", 0);
+    this.metrics.set(Linter.METRIC_BY_STATUS, {});
+    this.metrics.set(Linter.METRIC_TOTAL_CHANGES, 0);
+    this.metrics.set(Linter.METRIC_UNIQUE_CHANGES, 0);
+    this.metrics.set(Linter.METRIC_TOTAL_UPDATE_SETS, 0);
     
     // Calculate metrics
     this.changes.forEach((scan, name) => {
       // Status metrics
-      if (this.metrics.get("byStatus")[scan.status()] == null) {
-        this.metrics.get("byStatus")[scan.status()] = 0;
+      if (this.metrics.get(Linter.METRIC_BY_STATUS)[scan.getStatus()] == null) {
+        this.metrics.get(Linter.METRIC_BY_STATUS)[scan.getStatus()] = 0;
       }
-      this.metrics.get("byStatus")[scan.status()]++;
+      this.metrics.get(Linter.METRIC_BY_STATUS)[scan.getStatus()]++;
 
       // Changes metrics
-      this.metrics.set("totalChanges", this.metrics.get("totalChanges") + scan.updates);
+      this.metrics.set(Linter.METRIC_TOTAL_CHANGES, this.metrics.get(Linter.METRIC_TOTAL_CHANGES) + scan.updates);
       
       // Update Sets
       updateSetIDs.add(scan.updateSetID);
     });
-    this.metrics.set("uniqueChanges", this.changes.size);
-    this.metrics.set("totalUpdateSets", updateSetIDs.size);
+    this.metrics.set(Linter.METRIC_UNIQUE_CHANGES, this.changes.size);
+    this.metrics.set(Linter.METRIC_TOTAL_UPDATE_SETS, updateSetIDs.size);
   }
 
   /**

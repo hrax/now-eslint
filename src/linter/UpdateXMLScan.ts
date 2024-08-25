@@ -1,3 +1,4 @@
+import { ESLint } from "eslint";
 import { SNUpdateXML } from "../core/sn.js";
 
 export type UpdateXMLScanStatus =
@@ -29,25 +30,39 @@ export type UpdateXMLScanStatus =
   "OK";
 
 export class UpdateXMLScan extends SNUpdateXML {
-  private _status: UpdateXMLScanStatus = "SCAN";
-
-  // eslint-disable-next-line @typescript-eslint/consistent-generic-constructors, @typescript-eslint/no-explicit-any
-  reports: Map<string, any> = new Map();
+  private status: UpdateXMLScanStatus = "SCAN";
+  private reports: Map<string, ESLint.LintResult> = new Map<string, ESLint.LintResult>();
 
   getStatus(): UpdateXMLScanStatus {
-    return this._status;
+    if (this.action === "DELETE") {
+      return "DELETED";
+    }
+
+    if (this.hasReportsErrors()) {
+      return "ERROR";
+    }
+
+    if (this.hasReportsWarnings()) {
+      return "WARNING";
+    }
+
+    if (this.hasReports()) {
+      return "OK";
+    }
+
+    return this.status;
   }
 
   setIgnore(): void {
-    this._status = "IGNORED";
+    this.status = "IGNORED";
   }
 
   setManual(): void {
-    this._status = "MANUAL";
+    this.status = "MANUAL";
   }
 
   setSkip(): void {
-    this._status = "SKIPPED";
+    this.status = "SKIPPED";
   }
 
   getReportsWarningCount(): number {
@@ -57,6 +72,18 @@ export class UpdateXMLScan extends SNUpdateXML {
     let count = 0;
     this.reports.forEach((value) => count = count + (value.warningCount ?? 0));
     return count;
+  }
+
+  setReport(field: string, report: ESLint.LintResult): void {
+    this.reports.set(field, report);
+  }
+
+  getReports() {
+    return this.reports;
+  }
+
+  hasReports(): boolean {
+    return this.reports.size > 0;
   }
 
   hasReportsWarnings(): boolean {
