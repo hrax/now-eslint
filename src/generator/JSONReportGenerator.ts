@@ -7,7 +7,12 @@ export default class JSONReportGenerator extends AbstractReportGenerator {
   private padding = 2;
 
   build(data: unknown): string {
-    return JSON.stringify(data, null, this.padding);
+    return JSON.stringify(data, function(key: unknown, value: unknown) {
+      if (typeof value === "object" && value instanceof Map) {
+        return Object.fromEntries((value as Map<unknown, unknown>).entries());
+      }
+      return value;
+    }, this.padding);
   }
 
   extension(): string {

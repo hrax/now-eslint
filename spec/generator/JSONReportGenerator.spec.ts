@@ -1,9 +1,8 @@
-const JSONReportGenerator = require("../../modules/generator/JSONReportGenerator.js");
+import JSONReportGenerator from "../../src/generator/JSONReportGenerator.js";
+import { UpdateXMLScan } from "../../src/linter/UpdateXMLScan.js";
 
-const UpdateXMLScan = require("../../modules/linter/UpdateXMLScan.js");
-
-xdescribe("JSONReportGenerator", () => {
-  let data = {}
+describe("JSONReportGenerator", () => {
+  let data = {};
 
   beforeAll(() => {
     data = {
@@ -12,7 +11,8 @@ xdescribe("JSONReportGenerator", () => {
       title: "title",
       query: "query",
       changes: [
-        ["change1", 
+        [
+          "change1",
           {
             targetName: "targetName",
             type: "type",
@@ -21,7 +21,7 @@ xdescribe("JSONReportGenerator", () => {
             createdOn: "createdOn",
             updatedBy: "updatedBy",
             updatedOn: "updatedOn",
-            status: UpdateXMLScan.STATUS.ERROR,
+            status: "ERROR",
             action: "INSERT_OR_UPDATE",
             updates: "1",
             errorCount: "1",
@@ -30,21 +30,24 @@ xdescribe("JSONReportGenerator", () => {
             targetTable: "targetTable",
             targetId: "targetId",
             reports: [
-              ["script", {
-                messages: [
-                  {
-                    line: 1,
-                    column: 1,
-                    severity: 2,
-                    ruleId: "no-console",
-                    message: "message"
-                  }
-                ]
-              }]
+              [
+                "script", {
+                  messages: [
+                    {
+                      line: 1,
+                      column: 1,
+                      severity: 2,
+                      ruleId: "no-console",
+                      message: "message"
+                    }
+                  ]
+                }
+              ]
             ]
           }
         ],
-        ["change2", 
+        [
+          "change2",
           {
             targetName: "targetName",
             type: "type",
@@ -53,7 +56,7 @@ xdescribe("JSONReportGenerator", () => {
             createdOn: "createdOn",
             updatedBy: "updatedBy",
             updatedOn: "updatedOn",
-            status: UpdateXMLScan.STATUS.WARNING,
+            status: "WARNING",
             action: "INSERT_OR_UPDATE",
             updates: "1",
             errorCount: "0",
@@ -62,36 +65,42 @@ xdescribe("JSONReportGenerator", () => {
             targetTable: "targetTable",
             targetId: "targetId",
             reports: [
-              ["script", {
-                messages: [
-                  {
-                    line: 1,
-                    column: 1,
-                    severity: 1,
-                    ruleId: "no-console",
-                    message: "message"
-                  }
-                ]
-              }]
+              [
+                "script", {
+                  messages: [
+                    {
+                      line: 1,
+                      column: 1,
+                      severity: 1,
+                      ruleId: "no-console",
+                      message: "message"
+                    }
+                  ]
+                }
+              ]
             ]
           }
         ]
       ],
       resources: {
-        "overview-resources": [{
-          label: "Google",
-          link: "http://example.com"
-        }]
+        "overview-resources": [
+          {
+            label: "Google",
+            link: "http://example.com"
+          }
+        ]
       }
     };
   });
 
-  it("builds document body", () => {
+  it("should build document body", () => {
     const generator = new JSONReportGenerator();
     const document = generator.build(data);
 
     // Just check that output is string and 2nd line starts with 2 spaces
-    expect(document).toBeInstanceOf(String);
-    expect(document).toMatch(/^\{\n  .*/);
+    expect(typeof document).toBe("string");
+    expect(document).toMatch(/^\{\n {2}.*/);
   });
+
+  it.todo("should serialize map properties as Object");
 });
